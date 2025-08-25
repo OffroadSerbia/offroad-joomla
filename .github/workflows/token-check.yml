@@ -11,14 +11,10 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.BOT_TOKEN }}
       - name: Show repo via GitHub API (curl)
-        env:
-          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           set -e
           echo "Who am I?"
-          curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user | jq -r '.login'
+          curl -s -H "Authorization: token ${{ github.token }}" https://api.github.com/user | jq -r '.login'
           echo "Repo:"
-          curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }} | jq -r '.full_name'
+          curl -s -H "Authorization: token ${{ github.token }}" https://api.github.com/repos/${{ github.repository }} | jq -r '.full_name'

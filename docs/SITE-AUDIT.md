@@ -3,6 +3,7 @@
 Ovo je brz, praktičan plan kako da unapredimo sajt i spremimo ga za AI pretragu, SEO i bolju organizaciju.
 
 ## 1) Brzi nalazi
+
 1. Sadržaj je bogat (događaji, video, galerije). Nedostaje dosledan strukturirani format.
 2. URL struktura i jezici: delovi su na srpskom i engleskom; nema jasnog i18n sistema.
 3. Performance: hero sekcije sa velikim slikama/video; verovatno veliki LCP/CLS.
@@ -10,6 +11,7 @@ Ovo je brz, praktičan plan kako da unapredimo sajt i spremimo ga za AI pretragu
 5. Navigacija: CTA za članstvo dobar; nema centralnog indeksa ekspedicija sa filterima.
 
 ## 2) Prioritetne akcije (MVP)
+
 1. Struktura sadržaja u Joomli:
    - Kategorije: Ekspedicije (godina), Vesti, Oprema i saveti, O udruženju, Članstvo.
    - Za ekspediciju: naziv, datum, lokacije (tagovi), nivo težine, GPX/KML, galerija, video URL.
@@ -28,6 +30,7 @@ Ovo je brz, praktičan plan kako da unapredimo sajt i spremimo ga za AI pretragu
    - Interna pretraga: tagovi (lokacije, tematika), filter po godini i težini.
 
 ## 3) Tehnički koraci u repou
+
 1. Napraviti `joomla/` folder za template overrides, plugin-e i build skripte.
 2. Kreirati minimalan Joomla plugin `plg_content_offroadmeta`:
    - Izvlači polja članka i ubacuje meta/OG i schema.org JSON-LD.
@@ -35,6 +38,7 @@ Ovo je brz, praktičan plan kako da unapredimo sajt i spremimo ga za AI pretragu
 4. GitHub Actions: deploy artefakata (ZIP) i opcioni rsync/SFTP na staging.
 
 ## 4) Sledeći koraci
+
 1. Potvrdi da imamo admin (super user) pristup Joomli.
 2. Pokaži koji je template (Helix, Yootheme, Cassiopeia, custom?).
 3. Dogovor oko jezika: jednojezično (sr) ili dvojezično (sr/en).
