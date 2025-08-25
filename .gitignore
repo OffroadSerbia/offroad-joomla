@@ -7,3 +7,6 @@ node_modules/
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Docs: prevent accidental secrets
+docs/Untitled-1.txt
