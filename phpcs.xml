@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<ruleset name="OffRoad Joomla">
+  <description>PSR-12 i osnovna pravila za Joomla/PHP.</description>
+  <file>src</file>
+  <rule ref="PSR12"/>
+  <arg name="basepath" value="."/>
+  <arg name="colors" value="1"/>
+  <exclude-pattern>vendor/*</exclude-pattern>
+</ruleset>

@@ -1,0 +1,17 @@
+{
+  "name": "offroadserbia/joomla-dev",
+  "description": "Monorepo for Joomla development (plugins/modules/templates) for OffRoad Serbia.",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.1"
+  },
+  "require-dev": {
+    "squizlabs/php_codesniffer": "^3.10",
+    "phpstan/phpstan": "^1.11"
+  },
+  "scripts": {
+    "lint": "phpcs -p -s --standard=phpcs.xml --extensions=php,inc,php3,php4",
+    "stan": "phpstan analyse --memory-limit=1G"
+  }
+}

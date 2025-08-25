@@ -1,0 +1,9 @@
+# Continue/AI tooling
+.continue/secrets.json
+
+# Node/JS common
+node_modules/
+
+# OS junk
+.DS_Store
+Thumbs.db
