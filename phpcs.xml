@@ -4,6 +4,6 @@
   <file>src</file>
   <rule ref="PSR12"/>
   <arg name="basepath" value="."/>
-  <arg name="colors" value="1"/>
+  <!-- Keep output simple for CI runners; colors not supported on some images -->
   <exclude-pattern>vendor/*</exclude-pattern>
 </ruleset>
