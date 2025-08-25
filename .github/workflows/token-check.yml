@@ -1,0 +1,23 @@
+name: token-check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+      - name: Show repo via GH API
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          gh --version
+          gh auth status || true
+          gh auth login --with-token <<< "$GITHUB_TOKEN"
+          gh api repos/${{ github.repository }} --jq '.full_name'
