@@ -1,0 +1,16 @@
+{
+  "models": [
+    {
+      "title": "GPT-4o Mini",
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "apiKey": "${OPENAI_API_KEY}"
+    }
+  ],
+  "embeddings": {
+    "provider": "openai",
+    "model": "text-embedding-3-small",
+    "apiKey": "${OPENAI_API_KEY}"
+  },
+  "allowAnonymousTelemetry": false
+}
