@@ -1,5 +1,5 @@
 param(
-  [string]$Message = "chore: quick push"
+    [string]$Message = "chore: quick push"
 )
 
 # Fail on errors
@@ -14,12 +14,13 @@ git add -A
 
 # Commit if there are staged changes
 if ($null -ne (git diff --cached --name-only) -and (git diff --cached --name-only).Trim() -ne '') {
-  git commit -m $Message | Out-Host
-} else {
-  Write-Host "Nothing to commit."
+    git commit -m $Message | Out-Host
+}
+else {
+    Write-Host "Nothing to commit."
 }
 
 # Push to origin/<branch>
- git push origin $branch | Out-Host
+git push origin $branch | Out-Host
 
 Write-Host "Done: pushed to origin/$branch"
