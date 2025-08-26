@@ -22,13 +22,13 @@ jobs:
         uses: actions/checkout@v4
 
       # FTP/FTPS deploy – tri ciljne putanje
-      - name: Upload offroadseo via FTP/FTPS
+      - name: Upload offroadseo via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.STAGING_FTP_HOST }}
           username: ${{ secrets.STAGING_FTP_USER }}
           password: ${{ secrets.STAGING_FTP_PASS }}
-          protocol: ftps
+          protocol: ftp
           security: loose
           local-dir: src/plugins/system/offroadseo/
           server-dir: ${{ secrets.STAGING_DOCROOT_RELATIVE }}/plugins/system/offroadseo/
@@ -36,13 +36,13 @@ jobs:
           log-level: verbose
           timeout: 120000
 
-      - name: Upload offroadstage via FTP/FTPS
+      - name: Upload offroadstage via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.STAGING_FTP_HOST }}
           username: ${{ secrets.STAGING_FTP_USER }}
           password: ${{ secrets.STAGING_FTP_PASS }}
-          protocol: ftps
+          protocol: ftp
           security: loose
           local-dir: src/plugins/system/offroadstage/
           server-dir: ${{ secrets.STAGING_DOCROOT_RELATIVE }}/plugins/system/offroadstage/
@@ -50,13 +50,13 @@ jobs:
           log-level: verbose
           timeout: 120000
 
-      - name: Upload YOOtheme child via FTP/FTPS
+      - name: Upload YOOtheme child via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.STAGING_FTP_HOST }}
           username: ${{ secrets.STAGING_FTP_USER }}
           password: ${{ secrets.STAGING_FTP_PASS }}
-          protocol: ftps
+          protocol: ftp
           security: loose
           local-dir: src/templates/yootheme_offroad/
           server-dir: ${{ secrets.STAGING_DOCROOT_RELATIVE }}/templates/yootheme_offroad/
