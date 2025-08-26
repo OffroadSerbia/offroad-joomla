@@ -26,6 +26,19 @@
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
+                <field name="include_website" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_WEBSITE" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="search_url_template" type="text" label="PLG_SYSTEM_OFFROADSEO_SEARCH_URL_TEMPLATE" default="index.php?option=com_finder&amp;view=search&amp;q={search_term_string}" />
+                <field name="include_webpage" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_WEBPAGE" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="include_breadcrumbs" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_BREADCRUMBS" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
                 <field name="org_name" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_NAME" default="Offroad Serbia" />
                 <field name="org_alt" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_ALT" default="4x4 Off-Road Srbija" />
                 <field name="org_url" type="url" label="PLG_SYSTEM_OFFROADSEO_ORG_URL" default="https://offroadserbia.com/" />
@@ -33,6 +46,10 @@
                 <field name="org_tel" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_TEL" default="+381-63-348-555" />
                 <field name="org_sameas" type="textarea" label="PLG_SYSTEM_OFFROADSEO_ORG_SAMEAS" description="PLG_SYSTEM_OFFROADSEO_ORG_SAMEAS_DESC" rows="3" />
                 <field name="og_enable" type="radio" label="PLG_SYSTEM_OFFROADSEO_OG_ENABLE" default="0">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="og_override" type="radio" label="PLG_SYSTEM_OFFROADSEO_OG_OVERRIDE" default="0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
