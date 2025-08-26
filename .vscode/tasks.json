@@ -23,6 +23,10 @@
         "-Message",
         "${input:commitMessage}"
       ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
       "problemMatcher": []
     }
   ]
