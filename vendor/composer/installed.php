@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'offroadserbia/joomla-dev',
-        'pretty_version' => 'dev-main',
-        'version' => 'dev-main',
-        'reference' => '877607e939c4ebfc936d90ed8aba1f161b26a7a1',
+        'pretty_version' => 'dev-copilot/vscode1756204192144',
+        'version' => 'dev-copilot/vscode1756204192144',
+        'reference' => '01f6906699d3c8b42219fa52bad3c3b438117699',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'offroadserbia/joomla-dev' => array(
-            'pretty_version' => 'dev-main',
-            'version' => 'dev-main',
-            'reference' => '877607e939c4ebfc936d90ed8aba1f161b26a7a1',
+            'pretty_version' => 'dev-copilot/vscode1756204192144',
+            'version' => 'dev-copilot/vscode1756204192144',
+            'reference' => '01f6906699d3c8b42219fa52bad3c3b438117699',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
