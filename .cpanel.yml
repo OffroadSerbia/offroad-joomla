@@ -1,0 +1,33 @@
+# Disabled on purpose
+# We use GitHub Actions (deploy-staging.yml) for selective deploy.
+# This file is intentionally left empty to avoid cPanel Git Deploy usage.
+
+---
+deployment:
+  tasks:
+    - export REPO_ROOT="$PWD"
+    - export DOCROOT="/home/montstar/public_html/staging.offroadserbia.com"
+    - echo "Deploying from $REPO_ROOT to $DOCROOT"
+removed: true
+    # Ensure target directories exist
+    - mkdir -p "$DOCROOT/plugins/system/offroadseo"
+    - mkdir -p "$DOCROOT/plugins/system/offroadstage"
+    - mkdir -p "$DOCROOT/templates/yootheme_offroad"
+
+  # Sync plugins and template (delete removed files to stay in sync)
+  - bash -lc 'if command -v rsync >/dev/null 2>&1; then rsync -a --delete "$REPO_ROOT/src/plugins/system/offroadseo/" "$DOCROOT/plugins/system/offroadseo/"; else rm -rf "$DOCROOT/plugins/system/offroadseo" && mkdir -p "$DOCROOT/plugins/system/offroadseo" && cp -a "$REPO_ROOT/src/plugins/system/offroadseo/." "$DOCROOT/plugins/system/offroadseo/"; fi'
+  - bash -lc 'if command -v rsync >/dev/null 2>&1; then rsync -a --delete "$REPO_ROOT/src/plugins/system/offroadstage/" "$DOCROOT/plugins/system/offroadstage/"; else rm -rf "$DOCROOT/plugins/system/offroadstage" && mkdir -p "$DOCROOT/plugins/system/offroadstage" && cp -a "$REPO_ROOT/src/plugins/system/offroadstage/." "$DOCROOT/plugins/system/offroadstage/"; fi'
+  - bash -lc 'if command -v rsync >/dev/null 2>&1; then rsync -a --delete "$REPO_ROOT/src/templates/yootheme_offroad/" "$DOCROOT/templates/yootheme_offroad/"; else rm -rf "$DOCROOT/templates/yootheme_offroad" && mkdir -p "$DOCROOT/templates/yootheme_offroad" && cp -a "$REPO_ROOT/src/templates/yootheme_offroad/." "$DOCROOT/templates/yootheme_offroad/"; fi'
+
+    # Permissions (safe defaults)
+    - find "$DOCROOT/plugins/system/offroadseo" -type d -exec chmod 755 {} \; || true
+    - find "$DOCROOT/plugins/system/offroadseo" -type f -exec chmod 644 {} \; || true
+    - find "$DOCROOT/plugins/system/offroadstage" -type d -exec chmod 755 {} \; || true
+    - find "$DOCROOT/plugins/system/offroadstage" -type f -exec chmod 644 {} \; || true
+    - find "$DOCROOT/templates/yootheme_offroad" -type d -exec chmod 755 {} \; || true
+    - find "$DOCROOT/templates/yootheme_offroad" -type f -exec chmod 644 {} \; || true
+
+    # Clear Joomla cache (non-fatal if paths differ)
+    - rm -rf "$DOCROOT/cache/*" "$DOCROOT/administrator/cache/*" || true
+
+    - echo "Deployment finished."

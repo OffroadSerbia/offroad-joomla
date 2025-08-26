@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="4.0" type="template" client="site" method="upgrade">
+  <name>yootheme_offroad</name>
+  <title>Offroad Child for YOOtheme Pro</title>
+  <creationDate>2025-08-26</creationDate>
+  <author>OffroadSerbia</author>
+  <authorEmail>admin@offroadserbia.com</authorEmail>
+  <version>1.0.0</version>
+  <description>Child template for YOOtheme Pro. Keep custom CSS/JS and hooks here.</description>
+  <files>
+    <filename>templateDetails.xml</filename>
+    <filename>functions.php</filename>
+    <folder>css</folder>
+    <folder>js</folder>
+    <folder>builder</folder>
+    <folder>layouts</folder>
+    <folder>images</folder>
+  </files>
+  <config>
+    <parent>yootheme</parent>
+  </config>
+</extension>

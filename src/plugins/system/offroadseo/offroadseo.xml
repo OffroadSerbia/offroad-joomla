@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="system" method="upgrade" version="5.0">
+    <name>Offroad Serbia - SEO</name>
+    <element>offroadseo</element>
+    <group>system</group>
+    <author>OffroadSerbia</author>
+    <authorEmail>admin@offroadserbia.com</authorEmail>
+    <authorUrl>https://offroadserbia.com</authorUrl>
+    <license>GPL-2.0-or-later</license>
+    <creationDate>2025-08-26</creationDate>
+    <version>1.0.0</version>
+    <description>PLG_SYSTEM_OFFROADSEO_DESC</description>
+    <namespace path="offroadseo">Joomla\\Plugin\\System\\Offroadseo</namespace>
+    <files>
+        <filename plugin="offroadseo">offroadseo.php</filename>
+        <folder>language</folder>
+    </files>
+    <languages>
+        <language tag="en-GB">language/en-GB/en-GB.plg_system_offroadseo.ini</language>
+        <language tag="sr-RS">language/sr-RS/sr-RS.plg_system_offroadseo.ini</language>
+    </languages>
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field name="only_home" type="radio" label="PLG_SYSTEM_OFFROADSEO_ONLY_HOME" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="org_name" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_NAME" default="Offroad Serbia" />
+                <field name="org_alt" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_ALT" default="4x4 Off-Road Srbija" />
+                <field name="org_url" type="url" label="PLG_SYSTEM_OFFROADSEO_ORG_URL" default="https://offroadserbia.com/" />
+                <field name="org_logo" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_LOGO" default="https://offroadserbia.com/images/logo/logo-offroad-serbia-4x4.webp" />
+                <field name="org_tel" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_TEL" default="+381-63-348-555" />
+                <field name="org_sameas" type="textarea" label="PLG_SYSTEM_OFFROADSEO_ORG_SAMEAS" description="PLG_SYSTEM_OFFROADSEO_ORG_SAMEAS_DESC" rows="3" />
+                <field name="og_enable" type="radio" label="PLG_SYSTEM_OFFROADSEO_OG_ENABLE" default="0">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="og_site_name" type="text" label="PLG_SYSTEM_OFFROADSEO_OG_SITENAME" />
+                <field name="og_image" type="text" label="PLG_SYSTEM_OFFROADSEO_OG_IMAGE" />
+            </fieldset>
+        </fields>
+    </config>
+</extension>
