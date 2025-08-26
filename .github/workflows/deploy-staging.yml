@@ -1,4 +1,4 @@
-name: Deploy to Staging (SFTP)
+name: Deploy to Staging (FTP/FTPS)
 
 on:
   workflow_dispatch:
@@ -21,91 +21,45 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare artifacts (optional)
-        run: |
-          mkdir -p dist || true
-          # Optional: build installable ZIPs (not required for sync deploy)
-          if command -v php >/dev/null 2>&1; then
-            php tools/build_offroadseo.php || true
-            php tools/build_offroadstage.php || true
-          fi
-
-      - name: Upload offroadseo plugin (rsync-like)
-        uses: burnett01/rsync-deployments@6.0.0
-        with:
-          switches: -avz --delete
-          path: src/plugins/system/offroadseo/
-          remote_path: ${{ secrets.STAGING_DOCROOT }}/plugins/system/offroadseo/
-          remote_host: ${{ secrets.STAGING_HOST }}
-          remote_user: ${{ secrets.STAGING_USER }}
-          remote_key: ${{ secrets.STAGING_SSH_KEY }}
-        if: ${{ success() && secrets.STAGING_HOST && secrets.STAGING_SSH_KEY }}
-
-      - name: Upload offroadstage plugin (rsync-like)
-        uses: burnett01/rsync-deployments@6.0.0
-        with:
-          switches: -avz --delete
-          path: src/plugins/system/offroadstage/
-          remote_path: ${{ secrets.STAGING_DOCROOT }}/plugins/system/offroadstage/
-          remote_host: ${{ secrets.STAGING_HOST }}
-          remote_user: ${{ secrets.STAGING_USER }}
-          remote_key: ${{ secrets.STAGING_SSH_KEY }}
-        if: ${{ success() && secrets.STAGING_HOST && secrets.STAGING_SSH_KEY }}
-
-      - name: Upload YOOtheme child template (rsync-like)
-        uses: burnett01/rsync-deployments@6.0.0
-        with:
-          switches: -avz --delete
-          path: src/templates/yootheme_offroad/
-          remote_path: ${{ secrets.STAGING_DOCROOT }}/templates/yootheme_offroad/
-          remote_host: ${{ secrets.STAGING_HOST }}
-          remote_user: ${{ secrets.STAGING_USER }}
-          remote_key: ${{ secrets.STAGING_SSH_KEY }}
-        if: ${{ success() && secrets.STAGING_HOST && secrets.STAGING_SSH_KEY }}
-
-      - name: Clear Joomla cache (optional)
-        uses: appleboy/ssh-action@v1.1.0
-        with:
-          host: ${{ secrets.STAGING_HOST }}
-          username: ${{ secrets.STAGING_USER }}
-          key: ${{ secrets.STAGING_SSH_KEY }}
-          script: |
-            rm -rf "${{ secrets.STAGING_DOCROOT }}/cache/*" "${{ secrets.STAGING_DOCROOT }}/administrator/cache/*" || true
-        if: ${{ success() && secrets.STAGING_HOST && secrets.STAGING_SSH_KEY }}
-
-      # Fallback for FTP/FTPS (no SSH). Run three targeted uploads.
-      - name: Upload offroadseo via FTP (fallback)
+      # FTP/FTPS deploy – tri ciljne putanje
+      - name: Upload offroadseo via FTP/FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.STAGING_FTP_HOST }}
           username: ${{ secrets.STAGING_FTP_USER }}
           password: ${{ secrets.STAGING_FTP_PASS }}
           protocol: ftps
+          security: loose
           local-dir: src/plugins/system/offroadseo/
           server-dir: ${{ secrets.STAGING_DOCROOT_RELATIVE }}/plugins/system/offroadseo/
           dangerous-clean-slate: true
-        if: ${{ success() && secrets.STAGING_FTP_HOST && secrets.STAGING_FTP_PASS }}
+          log-level: verbose
+          timeout: 120000
 
-      - name: Upload offroadstage via FTP (fallback)
+      - name: Upload offroadstage via FTP/FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.STAGING_FTP_HOST }}
           username: ${{ secrets.STAGING_FTP_USER }}
           password: ${{ secrets.STAGING_FTP_PASS }}
           protocol: ftps
+          security: loose
           local-dir: src/plugins/system/offroadstage/
           server-dir: ${{ secrets.STAGING_DOCROOT_RELATIVE }}/plugins/system/offroadstage/
           dangerous-clean-slate: true
-        if: ${{ success() && secrets.STAGING_FTP_HOST && secrets.STAGING_FTP_PASS }}
+          log-level: verbose
+          timeout: 120000
 
-      - name: Upload YOOtheme child via FTP (fallback)
+      - name: Upload YOOtheme child via FTP/FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.STAGING_FTP_HOST }}
           username: ${{ secrets.STAGING_FTP_USER }}
           password: ${{ secrets.STAGING_FTP_PASS }}
           protocol: ftps
+          security: loose
           local-dir: src/templates/yootheme_offroad/
           server-dir: ${{ secrets.STAGING_DOCROOT_RELATIVE }}/templates/yootheme_offroad/
           dangerous-clean-slate: true
-        if: ${{ success() && secrets.STAGING_FTP_HOST && secrets.STAGING_FTP_PASS }}
+          log-level: verbose
+          timeout: 120000
