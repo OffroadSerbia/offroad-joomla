@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="plugin" group="system" method="upgrade" version="5.0">
+<extension type="plugin" group="system" method="upgrade" version="4.0">
     <name>Offroad Serbia - SEO</name>
     <element>offroadseo</element>
     <group>system</group>
@@ -8,7 +8,7 @@
     <authorUrl>https://offroadserbia.com</authorUrl>
     <license>GPL-2.0-or-later</license>
     <creationDate>2025-08-26</creationDate>
-    <version>1.0.0</version>
+    <version>1.0.6</version>
     <description>PLG_SYSTEM_OFFROADSEO_DESC</description>
     <namespace path="offroadseo">Joomla\\Plugin\\System\\Offroadseo</namespace>
     <files>

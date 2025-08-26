@@ -1,7 +1,31 @@
 {
-    "editor.formatOnSave": true,
-    "files.eol": "\n",
-    "[php]": {
-        "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
-    }
+  // Editor defaults
+  "editor.formatOnSave": true,
+  "files.eol": "\n",
+  "[php]": {
+    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
+  },
+
+  // Intelephense: smanji lažne greške jer nemamo Joomla core u workspace-u
+  "intelephense.environment.phpVersion": "8.2",
+  "intelephense.files.exclude": [
+    "**/vendor/**",
+    "src/plugins/**",
+    "src/templates/**"
+  ],
+  // Alternativno, možeš umesto exclude da ugasiš undefined* dijagnostiku:
+  "intelephense.diagnostics.undefinedTypes": false,
+  "intelephense.diagnostics.undefinedFunctions": false,
+  "intelephense.diagnostics.undefinedMethods": false,
+
+  // Prikaz i pretraga
+  "files.exclude": {
+    "**/vendor/**": true
+  },
+  "search.exclude": {
+    "**/vendor/**": true
+  },
+
+  // PHP validator
+  "php.validate.run": "onSave"
 }
