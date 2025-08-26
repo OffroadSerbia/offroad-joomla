@@ -17,6 +17,11 @@ jobs:
         with:
           php-version: "8.2"
           coverage: none
+      - name: Show PHP and Composer versions
+        run: |
+          php -v
+          composer -V
+          composer validate --no-check-publish --strict
       - name: Cache Composer
         uses: actions/cache@v4
         with:

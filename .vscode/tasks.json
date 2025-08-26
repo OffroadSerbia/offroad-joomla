@@ -1,0 +1,29 @@
+{
+  // VS Code tasks for quick Git automation
+  "version": "2.0.0",
+  "inputs": [
+    {
+      "id": "commitMessage",
+      "type": "promptString",
+      "description": "Commit message",
+      "default": "chore: quick push"
+    }
+  ],
+  "tasks": [
+    {
+      "label": "Git: Quick Push",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/tools/git-quick-push.ps1",
+        "-Message",
+        "${input:commitMessage}"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}

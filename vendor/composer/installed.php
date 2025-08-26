@@ -3,7 +3,7 @@
         'name' => 'offroadserbia/joomla-dev',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '877607e939c4ebfc936d90ed8aba1f161b26a7a1',
+        'reference' => 'e179873912dd568d1d42f75544d457163ba36d7f',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'offroadserbia/joomla-dev' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '877607e939c4ebfc936d90ed8aba1f161b26a7a1',
+            'reference' => 'e179873912dd568d1d42f75544d457163ba36d7f',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
