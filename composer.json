@@ -11,7 +11,7 @@
     "phpstan/phpstan": "^1.11"
   },
   "scripts": {
-  "lint": "PHPCS_ENABLE_COLORS=0 vendor/bin/phpcs -n --no-colors -p -s --standard=phpcs.xml --extensions=php,inc,php3,php4",
+    "lint": "PHPCS_ENABLE_COLORS=0 vendor/bin/phpcs -n --no-colors -p -s --standard=phpcs.xml --extensions=php,inc,php3,php4",
     "stan": "phpstan analyse --memory-limit=1G"
   }
 }
