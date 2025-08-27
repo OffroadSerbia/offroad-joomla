@@ -28,6 +28,36 @@
         "isDefault": true
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Git: Quick Push (Deploy only)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/tools/git-quick-push.ps1",
+        "-Message",
+        "${input:commitMessage} [skip ci]"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Git: Quick Push (CI only)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/tools/git-quick-push.ps1",
+        "-Message",
+        "${input:commitMessage} [skip deploy]"
+      ],
+      "problemMatcher": []
     }
   ]
 }
