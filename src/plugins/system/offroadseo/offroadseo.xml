@@ -8,7 +8,7 @@
     <authorUrl>https://offroadserbia.com</authorUrl>
     <license>GPL-2.0-or-later</license>
     <creationDate>2025-08-27</creationDate>
-    <version>1.3.1</version>
+    <version>1.3.3</version>
     <description>PLG_SYSTEM_OFFROADSEO_DESC</description>
     
     <files>
@@ -97,6 +97,10 @@
                 </field>
                 <field name="og_site_name" type="text" label="PLG_SYSTEM_OFFROADSEO_OG_SITENAME" />
                 <field name="og_image" type="text" label="PLG_SYSTEM_OFFROADSEO_OG_IMAGE" />
+                <field name="force_og_head" type="radio" label="PLG_SYSTEM_OFFROADSEO_FORCE_OG_HEAD" description="PLG_SYSTEM_OFFROADSEO_FORCE_OG_HEAD_DESC" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
             </fieldset>
 
             <fieldset name="debug" label="PLG_SYSTEM_OFFROADSEO_TAB_DEBUG">

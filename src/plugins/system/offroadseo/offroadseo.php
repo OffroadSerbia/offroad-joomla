@@ -19,9 +19,11 @@ use Joomla\CMS\Date\Date;
  */
 class PlgSystemOffroadseo extends CMSPlugin
 {
-    private const VERSION = '1.3.1';
+    private const VERSION = '1.3.3';
     // Buffer for JSON-LD when injecting at body end
     private array $offseoJsonLd = [];
+    // Buffer for OG/Twitter tags to repair head at onAfterRender if needed
+    private array $offseoOgMeta = [];
     /** @var \Joomla\CMS\Application\CMSApplication */
     protected $app;
 
@@ -43,9 +45,35 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
         $emitComment = (bool) $this->params->get('emit_version_comment', 1);
         $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
+        $forceOgHead = (bool) $this->params->get('force_og_head', 1);
         $body = $this->app->getBody();
         if (!$body || !is_string($body)) {
             return;
+        }
+        // Optionally repair OG/Twitter meta in <head> if some minifier/theme stripped them
+        if ($forceOgHead && !empty($this->offseoOgMeta)) {
+            $missing = [];
+            foreach ($this->offseoOgMeta as $tag) {
+                $prop = strtolower($tag['attr']);
+                $name = strtolower($tag['name']);
+                $pattern = $prop === 'property'
+                    ? '/<meta[^>]*property\s*=\s*\"' . preg_quote($name, '/') . '\"/i'
+                    : '/<meta[^>]*name\s*=\s*\"' . preg_quote($name, '/') . '\"/i';
+                if (!preg_match($pattern, $body)) {
+                    $missing[] = $tag;
+                }
+            }
+            if (!empty($missing)) {
+                $metaStr = "\n";
+                foreach ($missing as $tag) {
+                    $metaStr .= '<meta ' . $tag['attr'] . '="' . htmlspecialchars($tag['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '" content="' . htmlspecialchars($tag['content'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '" />' . "\n";
+                }
+                if (stripos($body, '</head>') !== false) {
+                    $body = preg_replace('/<\/head>/i', $metaStr . '</head>', $body, 1);
+                } else {
+                    $body = $metaStr . $body;
+                }
+            }
         }
         // Emit buffered JSON-LD just before </body>
         if (!empty($this->offseoJsonLd)) {
@@ -489,7 +517,7 @@ class PlgSystemOffroadseo extends CMSPlugin
             }
         }
 
-        // Optional OG/Twitter fallbacks
+    // Optional OG/Twitter fallbacks
         if ((bool) $this->params->get('og_enable', 0)) {
             $head = $doc->getHeadData();
             $hasOgImage = false;
@@ -526,6 +554,42 @@ class PlgSystemOffroadseo extends CMSPlugin
             $override = (bool) $this->params->get('og_override', 0);
             $fallbackName = (string) $this->params->get('og_site_name', (string) $this->params->get('org_name', 'Offroad Serbia'));
             $fallbackImage = (string) $this->params->get('og_image', (string) $this->params->get('org_logo', ''));
+            // Prefer article image when on article view
+            $articleImage = '';
+            if ($option === 'com_content' && $view === 'article') {
+                // Try from previously built WebPage data
+                if (isset($webPage) && is_array($webPage) && !empty($webPage['image'])) {
+                    $articleImage = (string) $webPage['image'];
+                } else {
+                    // Fallback: fetch images from DB
+                    try {
+                        $id = $input->getInt('id');
+                        if ($id) {
+                            $db = Factory::getDbo();
+                            $db->setQuery(
+                                $db->getQuery(true)
+                                    ->select($db->quoteName('images'))
+                                    ->from($db->quoteName('#__content'))
+                                    ->where($db->quoteName('id') . ' = ' . (int) $id)
+                            );
+                            $imagesJson = (string) $db->loadResult();
+                            if ($imagesJson) {
+                                $imgs = json_decode($imagesJson, true) ?: [];
+                                $img = $imgs['image_fulltext'] ?? ($imgs['image_intro'] ?? '');
+                                if ($img !== '') {
+                                    $img = explode('#', $img, 2)[0];
+                                    $img = trim($img);
+                                    if (!preg_match('#^https?://#i', $img)) {
+                                        $img = rtrim(Uri::root(), '/') . '/' . ltrim($img, '/');
+                                    }
+                                    $articleImage = $img;
+                                }
+                            }
+                        }
+                    } catch (\Throwable $e) { /* ignore */ }
+                }
+            }
+            $ogImageToUse = $articleImage !== '' ? $articleImage : $fallbackImage;
             $metaDesc = (string) $doc->getDescription();
             $pageTitle = $doc->getTitle();
             // Prefer SEF URL for articles
@@ -555,30 +619,36 @@ class PlgSystemOffroadseo extends CMSPlugin
             }
             $pageType = ($option === 'com_content' && $view === 'article') ? 'article' : 'website';
 
+            // helper to add and remember tags for later repair
+            $remember = function(string $attr, string $name, string $content) use ($doc) {
+                $doc->setMetaData($name, $content, $attr);
+                $this->offseoOgMeta[] = ['attr' => $attr, 'name' => $name, 'content' => $content];
+            };
+
             if ($fallbackName !== '' && ($override || !$hasOgSiteName)) {
-                $doc->setMetaData('og:site_name', $fallbackName, 'property');
+                $remember('property', 'og:site_name', $fallbackName);
             }
-            if ($fallbackImage !== '' && ($override || !$hasOgImage)) {
-                $doc->setMetaData('og:image', $fallbackImage, 'property');
+            if ($ogImageToUse !== '' && ($override || !$hasOgImage)) {
+                $remember('property', 'og:image', $ogImageToUse);
             }
-            if ($fallbackImage !== '' && ($override || !$hasTwitterImage)) {
-                $doc->setMetaData('twitter:image', $fallbackImage, 'name');
+            if ($ogImageToUse !== '' && ($override || !$hasTwitterImage)) {
+                $remember('name', 'twitter:image', $ogImageToUse);
             }
-            $doc->setMetaData('twitter:card', 'summary_large_image', 'name');
+            $remember('name', 'twitter:card', 'summary_large_image');
 
             // Title / Description / URL / Type
             if ($pageTitle !== '' && ($override || !$hasOgTitle)) {
-                $doc->setMetaData('og:title', $pageTitle, 'property');
-                $doc->setMetaData('twitter:title', $pageTitle, 'name');
+                $remember('property', 'og:title', $pageTitle);
+                $remember('name', 'twitter:title', $pageTitle);
             }
             if ($metaDesc !== '' && ($override || !$hasOgDescription)) {
-                $doc->setMetaData('og:description', $metaDesc, 'property');
-                $doc->setMetaData('twitter:description', $metaDesc, 'name');
+                $remember('property', 'og:description', $metaDesc);
+                $remember('name', 'twitter:description', $metaDesc);
             }
             if ($pageUrl !== '' && ($override || !$hasOgUrl)) {
-                $doc->setMetaData('og:url', $pageUrl, 'property');
+                $remember('property', 'og:url', $pageUrl);
             }
-            $doc->setMetaData('og:type', $pageType, 'property');
+            $remember('property', 'og:type', $pageType);
         }
     }
 }
