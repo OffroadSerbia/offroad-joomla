@@ -8,7 +8,7 @@
     <authorUrl>https://offroadserbia.com</authorUrl>
     <license>GPL-2.0-or-later</license>
     <creationDate>2025-08-27</creationDate>
-    <version>1.5.7</version>
+    <version>1.6.0</version>
     <description>PLG_SYSTEM_OFFROADSEO_DESC</description>
     
     <files>
@@ -25,6 +25,18 @@
         <fields name="params">
             <!-- Global/basic tab -->
             <fieldset name="basic" label="PLG_SYSTEM_OFFROADSEO_TAB_GLOBAL">
+                <field name="enable_hreflang" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_HREFLANG" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="enable_custom_injections" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_CUSTOM_INJECTIONS" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="respect_third_party" type="radio" label="PLG_SYSTEM_OFFROADSEO_RESPECT_THIRD_PARTY" description="PLG_SYSTEM_OFFROADSEO_RESPECT_THIRD_PARTY_DESC" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
                 <field name="only_home" type="radio" label="PLG_SYSTEM_OFFROADSEO_ONLY_HOME" default="1">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
@@ -46,10 +58,19 @@
                 <field name="head_end_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_HEAD_END_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_HEAD_END_CUSTOM_CODE_DESC" filter="raw" rows="4" />
                 <field name="body_start_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_BODY_START_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_BODY_START_CUSTOM_CODE_DESC" filter="raw" rows="4" />
                 <field name="body_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_BODY_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_BODY_CUSTOM_CODE_DESC" filter="raw" rows="4" />
+
+                <field name="spacer_scope" type="spacer" hr="true" label="PLG_SYSTEM_OFFROADSEO_SCOPE_SPACER" />
+                <field name="scope_components" type="text" label="PLG_SYSTEM_OFFROADSEO_SCOPE_COMPONENTS" description="PLG_SYSTEM_OFFROADSEO_SCOPE_COMPONENTS_DESC" />
+                <field name="scope_views" type="text" label="PLG_SYSTEM_OFFROADSEO_SCOPE_VIEWS" description="PLG_SYSTEM_OFFROADSEO_SCOPE_VIEWS_DESC" />
+                <field name="scope_menu_ids" type="text" label="PLG_SYSTEM_OFFROADSEO_SCOPE_MENU_IDS" description="PLG_SYSTEM_OFFROADSEO_SCOPE_MENU_IDS_DESC" />
             </fieldset>
 
             <!-- Schema and Structured Data -->
             <fieldset name="schema" label="PLG_SYSTEM_OFFROADSEO_TAB_SCHEMA">
+                <field name="enable_schema" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_SCHEMA" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
                 <field name="spacer_org" type="spacer" hr="true" label="PLG_SYSTEM_OFFROADSEO_TAB_ORG" />
                 <field name="org_name" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_NAME" default="Offroad Serbia" />
                 <field name="org_alt" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_ALT" default="4x4 Off-Road Srbija" />
@@ -93,6 +114,10 @@
 
             <!-- OpenGraph/Twitter -->
             <fieldset name="opengraph" label="PLG_SYSTEM_OFFROADSEO_TAB_OG">
+                <field name="enable_opengraph" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_OPENGRAPH" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
                 <field name="og_enable" type="radio" label="PLG_SYSTEM_OFFROADSEO_OG_ENABLE" default="0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
@@ -111,6 +136,10 @@
 
             <!-- Analytics -->
             <fieldset name="analytics" label="PLG_SYSTEM_OFFROADSEO_TAB_ANALYTICS">
+                <field name="enable_analytics" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_ANALYTICS" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
                 <field name="ga_measurement_id" type="text" label="PLG_SYSTEM_OFFROADSEO_GA_MEASUREMENT_ID" description="PLG_SYSTEM_OFFROADSEO_GA_MEASUREMENT_ID_DESC" />
                 <field name="ga_config_options" type="text" label="PLG_SYSTEM_OFFROADSEO_GA_CONFIG_OPTIONS" description="PLG_SYSTEM_OFFROADSEO_GA_CONFIG_OPTIONS_DESC" />
                 <field name="fb_pixel_id" type="text" label="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_ID" description="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_ID_DESC" />
@@ -146,6 +175,10 @@
 
             <!-- Debug -->
             <fieldset name="debug" label="PLG_SYSTEM_OFFROADSEO_TAB_DEBUG">
+                <field name="debug_master" type="radio" label="PLG_SYSTEM_OFFROADSEO_DEBUG_MASTER" description="PLG_SYSTEM_OFFROADSEO_DEBUG_MASTER_DESC" default="0">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
                 <field name="force_noindex" type="radio" label="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX" description="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX_DESC" default="0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>

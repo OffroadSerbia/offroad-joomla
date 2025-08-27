@@ -22,7 +22,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.5.7';
+    private const VERSION = '1.6.0';
     // Buffer for JSON-LD when injecting at body end
     private array $offseoJsonLd = [];
     // Buffer for OG/Twitter tags to repair head at onAfterRender if needed
@@ -72,11 +72,21 @@ class PlgSystemOffroadseo extends CMSPlugin
         if (!$this->app->isClient('site')) {
             return;
         }
-        $emitComment = (bool) $this->params->get('emit_version_comment', 1);
+    $debugMaster = (bool) $this->params->get('debug_master', 0);
+    $emitComment = $debugMaster || (bool) $this->params->get('emit_version_comment', 1);
         $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
         $forceOgHead = (bool) $this->params->get('force_og_head', 1);
         $forceNoindex = (bool) $this->params->get('force_noindex', 0);
-        $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
+    $wrapMarkers = $debugMaster || (bool) $this->params->get('debug_wrap_markers', 0);
+    // Scope filters
+    $scopeAllowed = $this->isScopeAllowed();
+    // Master group switches
+    $enableSchema   = (bool) $this->params->get('enable_schema', 1);
+    $enableOg       = (bool) $this->params->get('enable_opengraph', 1);
+    $enableAnalytics= (bool) $this->params->get('enable_analytics', 1);
+    $enableHreflang = (bool) $this->params->get('enable_hreflang', 1);
+    $enableCustom   = (bool) $this->params->get('enable_custom_injections', 1);
+    $respectThird   = (bool) $this->params->get('respect_third_party', 1);
         // Re-assert header as some stacks override headers late
         if ($forceNoindex) {
             $this->emitNoindexHeader();
@@ -87,10 +97,12 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // Inject custom HTML attributes into <html ...> if configured
-        $htmlAttrs = trim((string) $this->params->get('html_attrs', ''));
-        if ($htmlAttrs !== '' && stripos($body, '<html ') !== false) {
-            $attrs = preg_replace('/\s+/', ' ', strip_tags($htmlAttrs));
-            $body = preg_replace('/<html\s+/i', '<html ' . $attrs . ' ', $body, 1);
+        if ($scopeAllowed && $enableCustom) {
+            $htmlAttrs = trim((string) $this->params->get('html_attrs', ''));
+            if ($htmlAttrs !== '' && stripos($body, '<html ') !== false) {
+                $attrs = preg_replace('/\s+/', ' ', strip_tags($htmlAttrs));
+                $body = preg_replace('/<html\s+/i', '<html ' . $attrs . ' ', $body, 1);
+            }
         }
         // Optionally repair OG/Twitter meta in <head> if some minifier/theme stripped them
         if ($forceOgHead && !empty($this->offseoOgMeta)) {
@@ -136,19 +148,39 @@ class PlgSystemOffroadseo extends CMSPlugin
                 }
             }
         }
+        // Respect third-party: filter our JSON-LD if external types already exist
+        if ($respectThird && $scopeAllowed && $enableSchema && !empty($this->offseoJsonLd)) {
+            $hasOrg = (bool) preg_match('/<script[^>]*application\/ld\+json[^>]*>.*?"@type"\s*:\s*"Organization"/is', $body);
+            $hasWebSite = (bool) preg_match('/<script[^>]*application\/ld\+json[^>]*>.*?"@type"\s*:\s*"WebSite"/is', $body);
+            $hasWebPage = (bool) preg_match('/<script[^>]*application\/ld\+json[^>]*>.*?"@type"\s*:\s*"WebPage"/is', $body);
+            $hasArticle = (bool) preg_match('/<script[^>]*application\/ld\+json[^>]*>.*?"@type"\s*:\s*"(Article|BlogPosting)"/is', $body);
+            $hasBreadcrumb = (bool) preg_match('/<script[^>]*application\/ld\+json[^>]*>.*?"@type"\s*:\s*"BreadcrumbList"/is', $body);
+            $filtered = [];
+            foreach ($this->offseoJsonLd as $script) {
+                $s = $script;
+                if ($hasOrg && stripos($s, '"@type"') !== false && preg_match('/"@type"\s*:\s*"Organization"/i', $s)) { continue; }
+                if ($hasWebSite && preg_match('/"@type"\s*:\s*"WebSite"/i', $s)) { continue; }
+                if ($hasWebPage && preg_match('/"@type"\s*:\s*"WebPage"/i', $s)) { continue; }
+                if ($hasArticle && preg_match('/"@type"\s*:\s*"(Article|BlogPosting)"/i', $s)) { continue; }
+                if ($hasBreadcrumb && preg_match('/"@type"\s*:\s*"BreadcrumbList"/i', $s)) { continue; }
+                $filtered[] = $script;
+            }
+            $this->offseoJsonLd = $filtered;
+        }
+
         // Build final body-end injections: JSON-LD, custom, badge, comment
         $endPieces = [];
-        if (!empty($this->offseoJsonLd)) {
+        if ($scopeAllowed && $enableSchema && !empty($this->offseoJsonLd)) {
             $endPieces[] = implode("\n", $this->offseoJsonLd);
         }
         $bodyStartCustom = (string) $this->params->get('body_start_custom_code', '');
-        if ($bodyStartCustom !== '') {
+        if ($scopeAllowed && $enableCustom && $bodyStartCustom !== '') {
             $this->injectBodyStart[] = $wrapMarkers
                 ? ("<!-- OffroadSEO: Custom (body-start) start -->\n" . $bodyStartCustom . "\n<!-- OffroadSEO: Custom (body-start) end -->")
                 : $bodyStartCustom;
         }
         $bodyEndCustom = (string) $this->params->get('body_custom_code', '');
-        if ($bodyEndCustom !== '') {
+        if ($scopeAllowed && $enableCustom && $bodyEndCustom !== '') {
             $endPieces[] = $wrapMarkers
                 ? ("<!-- OffroadSEO: Custom (body-end) start -->\n" . $bodyEndCustom . "\n<!-- OffroadSEO: Custom (body-end) end -->")
                 : $bodyEndCustom;
@@ -165,7 +197,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 
         // Apply precise placements
         // 1) Head TOP: before first <script> in <head>, or immediately after <head> if none
-        if (!empty($this->injectHeadTop)) {
+    if ($scopeAllowed && !empty($this->injectHeadTop)) {
             $headTop = "\n" . ($wrapMarkers ? "<!-- OffroadSEO: HEAD TOP start -->\n" : '') . implode("\n\n", $this->injectHeadTop) . ($wrapMarkers ? "\n<!-- OffroadSEO: HEAD TOP end -->" : '') . "\n";
             if (preg_match('/<head\b[^>]*>/i', $body, $m, PREG_OFFSET_CAPTURE)) {
                 $headOpenPos = $m[0][1];
@@ -186,7 +218,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // 2) Head END: before </head>
-        if (!empty($this->injectHeadEnd)) {
+    if ($scopeAllowed && !empty($this->injectHeadEnd)) {
             $headEnd = "\n" . ($wrapMarkers ? "<!-- OffroadSEO: HEAD END start -->\n" : '') . implode("\n\n", $this->injectHeadEnd) . ($wrapMarkers ? "\n<!-- OffroadSEO: HEAD END end -->" : '') . "\n";
             if (stripos($body, '</head>') !== false) {
                 $body = preg_replace('/<\/head>/i', $headEnd . '</head>', $body, 1);
@@ -196,7 +228,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // 3) Body START: right after <body ...>
-        if (!empty($this->injectBodyStart)) {
+    if ($scopeAllowed && !empty($this->injectBodyStart)) {
             $bodyStart = "\n" . ($wrapMarkers ? "<!-- OffroadSEO: BODY START start -->\n" : '') . implode("\n\n", $this->injectBodyStart) . ($wrapMarkers ? "\n<!-- OffroadSEO: BODY START end -->" : '') . "\n";
             if (preg_match('/<body\b[^>]*>/i', $body, $bm, PREG_OFFSET_CAPTURE)) {
                 $openEnd = $bm[0][1] + strlen($bm[0][0]);
@@ -207,7 +239,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // 4) Body END: before </body>
-        if (!empty($this->injectBodyEnd)) {
+    if ($scopeAllowed && !empty($this->injectBodyEnd)) {
             $bodyEnd = "\n" . ($wrapMarkers ? "<!-- OffroadSEO: BODY END start -->\n" : '') . implode("\n\n", $this->injectBodyEnd) . ($wrapMarkers ? "\n<!-- OffroadSEO: BODY END end -->" : '') . "\n";
             if (stripos($body, '</body>') !== false) {
                 $body = preg_replace('/<\/body>/i', $bodyEnd . '</body>', $body, 1);
@@ -237,10 +269,20 @@ class PlgSystemOffroadseo extends CMSPlugin
             $this->emitNoindexHeader();
         }
 
-        $injectInBody = (bool) $this->params->get('inject_jsonld_body', 1);
-        $prettyJson  = (bool) $this->params->get('debug_pretty_json', 0);
-        $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
-        $add = function (array $data) use ($doc, $injectInBody, $prettyJson, $wrapMarkers) {
+    // Scope and master toggles
+    $debugMaster = (bool) $this->params->get('debug_master', 0);
+    $injectInBody = (bool) $this->params->get('inject_jsonld_body', 1);
+    $prettyJson  = $debugMaster || (bool) $this->params->get('debug_pretty_json', 0);
+    $wrapMarkers = $debugMaster || (bool) $this->params->get('debug_wrap_markers', 0);
+    $scopeAllowed = $this->isScopeAllowed();
+    $enableSchema   = (bool) $this->params->get('enable_schema', 1);
+    $enableOg       = (bool) $this->params->get('enable_opengraph', 1);
+    $enableAnalytics= (bool) $this->params->get('enable_analytics', 1);
+    $enableHreflang = (bool) $this->params->get('enable_hreflang', 1);
+    $enableCustom   = (bool) $this->params->get('enable_custom_injections', 1);
+    $respectThird   = (bool) $this->params->get('respect_third_party', 1);
+
+    $add = function (array $data) use ($doc, $injectInBody, $prettyJson, $wrapMarkers) {
             $flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
             if ($prettyJson) {
                 $flags |= JSON_PRETTY_PRINT;
@@ -261,13 +303,25 @@ class PlgSystemOffroadseo extends CMSPlugin
         };
 
         // Add meta version marker as durable fallback
-        if ((bool) $this->params->get('emit_version_header', 1)) {
+    if ($debugMaster || (bool) $this->params->get('emit_version_header', 1)) {
             $doc->setMetaData('x-offroadseo-version', self::VERSION, 'name');
         }
 
         // Optional: Google Analytics 4 (gtag.js) minimal snippet (GA4 only; requires ID starting with G-)
         $gaId = trim((string) $this->params->get('ga_measurement_id', ''));
-        if ($gaId !== '' && stripos($gaId, 'G-') === 0) {
+        // Respect existing GA if third-party present
+        $hasThirdGa = false;
+        if ($respectThird) {
+            $hd = $doc->getHeadData();
+            $scripts = isset($hd['scripts']) ? array_keys($hd['scripts']) : [];
+            foreach ($scripts as $src) {
+                if (stripos($src, 'googletagmanager.com/gtag/js') !== false) { $hasThirdGa = true; break; }
+            }
+            if (!$hasThirdGa && isset($hd['custom']) && is_array($hd['custom'])) {
+                foreach ($hd['custom'] as $c) { if (stripos($c, 'gtag(') !== false) { $hasThirdGa = true; break; } }
+            }
+        }
+        if ($scopeAllowed && $enableAnalytics && !$hasThirdGa && $gaId !== '' && stripos($gaId, 'G-') === 0) {
             $gaOpts = trim((string) $this->params->get('ga_config_options', ''));
             $ga = [];
             $ga[] = '<script async src="https://www.googletagmanager.com/gtag/js?id=' . htmlspecialchars($gaId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"></script>';
@@ -286,7 +340,19 @@ class PlgSystemOffroadseo extends CMSPlugin
 
         // Optional: Meta (Facebook) Pixel
         $fbIdsRaw = trim((string) $this->params->get('fb_pixel_id', ''));
-        if ($fbIdsRaw !== '') {
+        // Respect existing Pixel if third-party present
+        $hasThirdPixel = false;
+        if ($respectThird) {
+            $hd = $doc->getHeadData();
+            $scripts = isset($hd['scripts']) ? array_keys($hd['scripts']) : [];
+            foreach ($scripts as $src) {
+                if (stripos($src, 'connect.facebook.net') !== false) { $hasThirdPixel = true; break; }
+            }
+            if (!$hasThirdPixel && isset($hd['custom']) && is_array($hd['custom'])) {
+                foreach ($hd['custom'] as $c) { if (stripos($c, 'fbq(') !== false) { $hasThirdPixel = true; break; } }
+            }
+        }
+        if ($scopeAllowed && $enableAnalytics && $fbIdsRaw !== '' && !$hasThirdPixel) {
             // Allow comma/newline separated IDs
             $ids = array_values(array_filter(array_map('trim', preg_split('/\s*[\n,]+\s*/', $fbIdsRaw))));
             if (!empty($ids)) {
@@ -341,27 +407,17 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // Raw custom code placement preferences
-        $headTopCustom = (string) $this->params->get('head_top_custom_code', '');
-        if ($headTopCustom !== '') {
+    $headTopCustom = (string) $this->params->get('head_top_custom_code', '');
+    if ($scopeAllowed && $enableCustom && $headTopCustom !== '') {
             if ($prettyJson && !str_ends_with($headTopCustom, "\n")) { $headTopCustom .= "\n"; }
             $this->injectHeadTop[] = $wrapMarkers ? ("<!-- OffroadSEO: Custom (head-top) start -->\n" . $headTopCustom . "<!-- OffroadSEO: Custom (head-top) end -->") : $headTopCustom;
         }
         $headEndCustom = (string) $this->params->get('head_end_custom_code', '');
-        if ($headEndCustom !== '') {
+    if ($scopeAllowed && $enableCustom && $headEndCustom !== '') {
             if ($prettyJson && !str_ends_with($headEndCustom, "\n")) { $headEndCustom .= "\n"; }
             $this->injectHeadEnd[] = $wrapMarkers ? ("<!-- OffroadSEO: Custom (head-end) start -->\n" . $headEndCustom . "<!-- OffroadSEO: Custom (head-end) end -->") : $headEndCustom;
         }
-        // Backward compatibility: legacy single field + position
-        $legacyHead = (string) $this->params->get('head_custom_code', '');
-        if ($legacyHead !== '') {
-            $legacyPos = (string) $this->params->get('head_custom_position', 'end');
-            if ($prettyJson && !str_ends_with($legacyHead, "\n")) { $legacyHead .= "\n"; }
-            if ($legacyPos === 'top') {
-                $this->injectHeadTop[] = $wrapMarkers ? ("<!-- OffroadSEO: Custom (head-legacy top) start -->\n" . $legacyHead . "<!-- OffroadSEO: Custom (head-legacy top) end -->") : $legacyHead;
-            } else {
-                $this->injectHeadEnd[] = $wrapMarkers ? ("<!-- OffroadSEO: Custom (head-legacy end) start -->\n" . $legacyHead . "<!-- OffroadSEO: Custom (head-legacy end) end -->") : $legacyHead;
-            }
-        }
+    // Legacy custom head fields removed (migration-only)
 
         // Build Organization JSON-LD from params
         $onlyHome = (bool) $this->params->get('only_home', 1);
@@ -405,7 +461,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // Hreflang (alternate languages) before JSON-LD to ensure links appear early
-        if ((bool) $this->params->get('include_hreflang', 1)) {
+    if ($scopeAllowed && $enableHreflang && (bool) $this->params->get('include_hreflang', 1)) {
             try {
                 $app = $this->app;
                 $menu = $app->getMenu();
@@ -455,7 +511,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // WebSite + Sitelinks SearchBox (optional)
-        if ((bool) $this->params->get('include_website', 1) && ($isHome || !$onlyHome)) {
+    if ($scopeAllowed && $enableSchema && (bool) $this->params->get('include_website', 1) && ($isHome || !$onlyHome)) {
             $searchTemplate = (string) $this->params->get('search_url_template', 'index.php?option=com_finder&view=search&q={search_term_string}');
             $website = [
                 '@context' => 'https://schema.org',
@@ -483,7 +539,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         $title = $doc->getTitle();
         $currentUrl = (string) Uri::getInstance();
 
-        if (($includeWebPage || $includeArticle) && $option === 'com_content' && $view === 'article') {
+    if ($scopeAllowed && $enableSchema && ($includeWebPage || $includeArticle) && $option === 'com_content' && $view === 'article') {
             $webPage = [
                 '@context' => 'https://schema.org',
                 '@type' => 'WebPage',
@@ -714,7 +770,7 @@ class PlgSystemOffroadseo extends CMSPlugin
             }
         }
 
-        if ($includeBreadcrumbs) {
+    if ($scopeAllowed && $enableSchema && $includeBreadcrumbs) {
             $pathway = $this->app->getPathway();
             $crumbs = method_exists($pathway, 'getPathway') ? (array) $pathway->getPathway() : [];
             if (!empty($crumbs)) {
@@ -763,7 +819,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // Optional OG/Twitter fallbacks
-        if ((bool) $this->params->get('og_enable', 0)) {
+    if ($scopeAllowed && $enableOg && (bool) $this->params->get('og_enable', 0)) {
             $head = $doc->getHeadData();
             $hasOgImage = false;
             $hasTwitterImage = false;
@@ -896,5 +952,56 @@ class PlgSystemOffroadseo extends CMSPlugin
             }
             $remember('property', 'og:type', $pageType);
         }
+    }
+
+    /**
+     * Determine if current request matches configured scope filters.
+     */
+    private function isScopeAllowed(): bool
+    {
+        try {
+            $input = $this->app->getInput();
+            $option = $input->getCmd('option');
+            $view = $input->getCmd('view');
+            $menu = $this->app->getMenu();
+            $active = $menu ? $menu->getActive() : null;
+            $activeId = $active ? (int) $active->id : 0;
+
+            $cmp = trim((string) $this->params->get('scope_components', ''));
+            if ($cmp !== '') {
+                $list = $this->parseList($cmp);
+                if (!empty($list) && !in_array($option, $list, true)) {
+                    return false;
+                }
+            }
+            $vw = trim((string) $this->params->get('scope_views', ''));
+            if ($vw !== '') {
+                $list = $this->parseList($vw);
+                if (!empty($list) && !in_array($view, $list, true)) {
+                    return false;
+                }
+            }
+            $menuIds = trim((string) $this->params->get('scope_menu_ids', ''));
+            if ($menuIds !== '') {
+                $list = array_values(array_filter(array_map('intval', $this->parseList($menuIds))));
+                if (!empty($list) && !in_array($activeId, $list, true)) {
+                    return false;
+                }
+            }
+        } catch (\Throwable $e) {
+            // If something goes wrong, allow by default
+        }
+        return true;
+    }
+
+    private function parseList(string $raw): array
+    {
+        $parts = preg_split('/\s*[\n,]+\s*/', $raw) ?: [];
+        $out = [];
+        foreach ($parts as $p) {
+            $p = trim($p);
+            if ($p !== '') { $out[] = $p; }
+        }
+        return array_values(array_unique($out));
     }
 }
