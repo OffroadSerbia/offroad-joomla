@@ -7,10 +7,10 @@
     <authorEmail>admin@offroadserbia.com</authorEmail>
     <authorUrl>https://offroadserbia.com</authorUrl>
     <license>GPL-2.0-or-later</license>
-    <creationDate>2025-08-26</creationDate>
-    <version>1.0.6</version>
+    <creationDate>2025-08-27</creationDate>
+    <version>1.1.4</version>
     <description>PLG_SYSTEM_OFFROADSEO_DESC</description>
-    <namespace path="offroadseo">Joomla\\Plugin\\System\\Offroadseo</namespace>
+    
     <files>
         <filename plugin="offroadseo">offroadseo.php</filename>
         <folder>language</folder>
@@ -55,6 +55,22 @@
                 </field>
                 <field name="og_site_name" type="text" label="PLG_SYSTEM_OFFROADSEO_OG_SITENAME" />
                 <field name="og_image" type="text" label="PLG_SYSTEM_OFFROADSEO_OG_IMAGE" />
+                <field name="emit_version_comment" type="radio" label="PLG_SYSTEM_OFFROADSEO_EMIT_VERSION_COMMENT" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="emit_version_header" type="radio" label="PLG_SYSTEM_OFFROADSEO_EMIT_VERSION_HEADER" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="show_staging_badge" type="radio" label="PLG_SYSTEM_OFFROADSEO_SHOW_STAGING_BADGE" description="PLG_SYSTEM_OFFROADSEO_SHOW_STAGING_BADGE_DESC" default="0">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="inject_jsonld_body" type="radio" label="PLG_SYSTEM_OFFROADSEO_INJECT_JSONLD_BODY" description="PLG_SYSTEM_OFFROADSEO_INJECT_JSONLD_BODY_DESC" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
             </fieldset>
         </fields>
     </config>

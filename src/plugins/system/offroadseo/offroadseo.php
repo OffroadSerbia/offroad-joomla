@@ -5,19 +5,73 @@
  * Injects Organization JSON-LD and optional OG/Twitter fallbacks.
  */
 
-namespace Joomla\Plugin\System\Offroadseo;
-
 \defined('_JEXEC') or die;
 
 use Joomla\CMS\Document\HtmlDocument;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Router\Route;
 
+/**
+ * @property \Joomla\Registry\Registry $params Inherited plugin parameters
+ */
 class PlgSystemOffroadseo extends CMSPlugin
 {
+    private const VERSION = '1.1.4';
+    // Buffer for JSON-LD when injecting at body end
+    private array $offseoJsonLd = [];
     /** @var \Joomla\CMS\Application\CMSApplication */
     protected $app;
+
+    public function onAfterInitialise(): void
+    {
+        if (!$this->app->isClient('site')) {
+            return;
+        }
+        $emitHeader  = (bool) $this->params->get('emit_version_header', 1);
+        if ($emitHeader && method_exists($this->app, 'setHeader')) {
+            $this->app->setHeader('X-OffroadSEO-Version', self::VERSION, true);
+        }
+    }
+
+    public function onAfterRender(): void
+    {
+        if (!$this->app->isClient('site')) {
+            return;
+        }
+        $emitComment = (bool) $this->params->get('emit_version_comment', 1);
+        $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
+        $body = $this->app->getBody();
+        if (!$body || !is_string($body)) {
+            return;
+        }
+        // Emit buffered JSON-LD just before </body>
+        if (!empty($this->offseoJsonLd)) {
+            $scripts = "\n" . implode("\n", array_map(fn($j) => '<script type="application/ld+json">' . $j . '</script>', $this->offseoJsonLd)) . "\n";
+            if (stripos($body, '</body>') !== false) {
+                $body = preg_replace('/<\/body>/i', $scripts . '</body>', $body, 1);
+            } else {
+                $body .= $scripts;
+            }
+        }
+        if ($showBadge) {
+            $badge = '<div id="offseo-staging-badge" style="position:fixed;z-index:99999;right:12px;bottom:12px;background:#c00;color:#fff;font:600 12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:8px 10px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:.9;pointer-events:none;">STAGING • OffroadSEO v' . self::VERSION . '</div>';
+            if (stripos($body, '</body>') !== false) {
+                $body = preg_replace('/<\/body>/i', "\n$badge\n</body>", $body, 1);
+            } else {
+                $body .= "\n$badge\n";
+            }
+        }
+        if ($emitComment) {
+            if (stripos($body, '</body>') !== false) {
+                $body = preg_replace('/<\/body>/i', "\n<!-- OffroadSEO v" . self::VERSION . " -->\n</body>", $body, 1);
+            } else {
+                $body .= "\n<!-- OffroadSEO v" . self::VERSION . " -->\n";
+            }
+        }
+        $this->app->setBody($body);
+    }
 
     public function onBeforeCompileHead(): void
     {
@@ -30,12 +84,27 @@ class PlgSystemOffroadseo extends CMSPlugin
             return;
         }
 
+        $injectInBody = (bool) $this->params->get('inject_jsonld_body', 1);
+        $add = function (array $data) use ($doc, $injectInBody) {
+            $json = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            if ($injectInBody) {
+                $this->offseoJsonLd[] = $json;
+            } else {
+                $doc->addCustomTag('<script type="application/ld+json">' . $json . '</script>');
+            }
+        };
+
+        // Add meta version marker as durable fallback
+        if ((bool) $this->params->get('emit_version_header', 1)) {
+            $doc->setMetaData('x-offroadseo-version', self::VERSION, 'name');
+        }
+
+        // Build Organization JSON-LD from params
+        $onlyHome = (bool) $this->params->get('only_home', 1);
         $menu = $this->app->getMenu();
         $active = $menu ? $menu->getActive() : null;
         $isHome = $active && $active->home;
-        $onlyHome = (bool) $this->params->get('only_home', 1);
 
-        // Build Organization JSON-LD from params
         if (!$onlyHome || ($onlyHome && $isHome)) {
             $org = [
                 '@context' => 'https://schema.org',
@@ -63,8 +132,7 @@ class PlgSystemOffroadseo extends CMSPlugin
                 }
             }
 
-            $json = json_encode($org, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-            $doc->addCustomTag('<script type="application/ld+json">' . $json . '</script>');
+            $add($org);
         }
 
         // WebSite + Sitelinks SearchBox (optional)
@@ -81,7 +149,7 @@ class PlgSystemOffroadseo extends CMSPlugin
                     'query-input' => 'required name=search_term_string',
                 ],
             ];
-            $doc->addCustomTag('<script type="application/ld+json">' . json_encode($website, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>');
+            $add($website);
         }
 
         // WebPage + BreadcrumbList on article pages (optional)
@@ -98,9 +166,112 @@ class PlgSystemOffroadseo extends CMSPlugin
                 '@context' => 'https://schema.org',
                 '@type' => 'WebPage',
                 'name' => $title,
+                'headline' => $title,
                 'url' => $currentUrl,
+                'mainEntityOfPage' => $currentUrl,
+                'isPartOf' => [
+                    '@type' => 'WebSite',
+                    'url' => Uri::root(),
+                ],
+                'inLanguage' => $doc->getLanguage(),
             ];
-            $doc->addCustomTag('<script type="application/ld+json">' . json_encode($webPage, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>');
+
+            // Try to enrich with article data
+            try {
+                $id = $input->getInt('id');
+                if ($id) {
+                    $db = Factory::getDbo();
+                    $query = $db->getQuery(true)
+                        ->select($db->quoteName([
+                            'id',
+                            'title',
+                            'introtext',
+                            'fulltext',
+                            'images',
+                            'language',
+                            'created',
+                            'publish_up',
+                            'modified',
+                            'created_by',
+                        ]))
+                        ->from($db->quoteName('#__content'))
+                        ->where($db->quoteName('id') . ' = ' . (int) $id);
+                    $db->setQuery($query);
+                    $row = $db->loadObject();
+                    if ($row) {
+                        // Dates
+                        $datePublished = $row->publish_up ?: $row->created;
+                        if (!empty($datePublished)) {
+                            $webPage['datePublished'] = substr($datePublished, 0, 19);
+                        }
+                        if (!empty($row->modified)) {
+                            $webPage['dateModified'] = substr($row->modified, 0, 19);
+                        }
+
+                        // Author
+                        if (!empty($row->created_by)) {
+                            $user = Factory::getUser((int) $row->created_by);
+                            if ($user && !empty($user->name)) {
+                                $webPage['author'] = [
+                                    '@type' => 'Person',
+                                    'name' => $user->name,
+                                ];
+                            }
+                        }
+
+                        // Description: meta description or introtext fallback
+                        $desc = $doc->getDescription();
+                        if (!$desc && !empty($row->introtext)) {
+                            $desc = trim(strip_tags($row->introtext));
+                            if (mb_strlen($desc) > 250) {
+                                $desc = rtrim(mb_substr($desc, 0, 247)) . '…';
+                            }
+                        }
+                        if ($desc) {
+                            $webPage['description'] = $desc;
+                        }
+
+                        // Image from images JSON (image_fulltext preferred)
+                        if (!empty($row->images)) {
+                            $imgs = json_decode($row->images, true) ?: [];
+                            $img = $imgs['image_fulltext'] ?? ($imgs['image_intro'] ?? '');
+                            if ($img !== '') {
+                                if (!preg_match('#^https?://#i', $img)) {
+                                    $img = rtrim(Uri::root(), '/') . '/' . ltrim($img, '/');
+                                }
+                                $webPage['primaryImageOfPage'] = [
+                                    '@type' => 'ImageObject',
+                                    'url' => $img,
+                                ];
+                                $webPage['image'] = $img;
+                            }
+                        }
+
+                        // Publisher (Organization) from params
+                        $orgName = (string) $this->params->get('org_name', 'Offroad Serbia');
+                        $orgLogo = (string) $this->params->get('org_logo', '');
+                        $publisher = [
+                            '@type' => 'Organization',
+                            'name' => $orgName,
+                        ];
+                        if ($orgLogo !== '') {
+                            $logoUrl = $orgLogo;
+                            if (!preg_match('#^https?://#i', $logoUrl)) {
+                                $logoUrl = rtrim(Uri::root(), '/') . '/' . ltrim($logoUrl, '/');
+                            }
+                            $publisher['logo'] = [
+                                '@type' => 'ImageObject',
+                                'url' => $logoUrl,
+                            ];
+                        }
+                        $webPage['publisher'] = $publisher;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Fail silently; keep minimal WebPage
+            }
+
+            $add($webPage);
         }
 
         if ($includeBreadcrumbs) {
@@ -115,11 +286,24 @@ class PlgSystemOffroadseo extends CMSPlugin
                     if ($name === '') {
                         continue;
                     }
+                    $itemUrl = null;
+                    if ($link !== '') {
+                        // Build absolute SEF URL
+                        $r = Route::_($link);
+                        if (preg_match('#^https?://#i', $r)) {
+                            $itemUrl = $r;
+                        } else {
+                            $itemUrl = rtrim(Uri::root(), '/') . '/' . ltrim($r, '/');
+                        }
+                    } else {
+                        // Use current page URL for the last crumb without link
+                        $itemUrl = $currentUrl;
+                    }
                     $items[] = [
                         '@type' => 'ListItem',
                         'position' => $pos++,
                         'name' => $name,
-                        'item' => $link !== '' ? (Uri::root() . ltrim($link, '/')) : null,
+                        'item' => $itemUrl,
                     ];
                 }
                 if ($items) {
@@ -128,7 +312,7 @@ class PlgSystemOffroadseo extends CMSPlugin
                         '@type' => 'BreadcrumbList',
                         'itemListElement' => $items,
                     ];
-                    $doc->addCustomTag('<script type="application/ld+json">' . json_encode($breadcrumb, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>');
+                    $add($breadcrumb);
                 }
             }
         }
