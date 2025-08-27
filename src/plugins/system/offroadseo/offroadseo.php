@@ -54,6 +54,10 @@ class PlgSystemOffroadseo extends CMSPlugin
         $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
         $forceOgHead = (bool) $this->params->get('force_og_head', 1);
         $forceNoindex = (bool) $this->params->get('force_noindex', 0);
+        // Re-assert header as some stacks override headers late
+        if ($forceNoindex) {
+            $this->app->setHeader('X-Robots-Tag', 'noindex, nofollow', true);
+        }
         $body = $this->app->getBody();
         if (!$body || !is_string($body)) {
             return;
@@ -140,6 +144,10 @@ class PlgSystemOffroadseo extends CMSPlugin
         $doc = Factory::getDocument();
         if (!$doc instanceof HtmlDocument) {
             return;
+        }
+        // Re-assert X-Robots-Tag before head compile if needed
+        if ((bool) $this->params->get('force_noindex', 0)) {
+            $this->app->setHeader('X-Robots-Tag', 'noindex, nofollow', true);
         }
 
         $injectInBody = (bool) $this->params->get('inject_jsonld_body', 1);
