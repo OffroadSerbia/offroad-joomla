@@ -16,8 +16,10 @@
         <folder>language</folder>
     </files>
     <languages>
-        <language tag="en-GB">language/en-GB/en-GB.plg_system_offroadseo.ini</language>
-        <language tag="sr-RS">language/sr-RS/sr-RS.plg_system_offroadseo.ini</language>
+    <language tag="en-GB">language/en-GB/en-GB.plg_system_offroadseo.ini</language>
+    <language tag="en-GB">language/en-GB/en-GB.plg_system_offroadseo.sys.ini</language>
+    <language tag="sr-RS">language/sr-RS/sr-RS.plg_system_offroadseo.ini</language>
+    <language tag="sr-RS">language/sr-RS/sr-RS.plg_system_offroadseo.sys.ini</language>
     </languages>
     <config>
         <fields name="params">

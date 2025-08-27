@@ -20,6 +20,8 @@ use Joomla\CMS\Date\Date;
  */
 class PlgSystemOffroadseo extends CMSPlugin
 {
+    /** Auto-load plugin language files */
+    protected $autoloadLanguage = true;
     private const VERSION = '1.3.5';
     // Buffer for JSON-LD when injecting at body end
     private array $offseoJsonLd = [];
