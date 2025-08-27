@@ -32,6 +32,9 @@
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
+                <field name="html_attrs" type="text" label="PLG_SYSTEM_OFFROADSEO_HTML_ATTRS" description="PLG_SYSTEM_OFFROADSEO_HTML_ATTRS_DESC" />
+                <field name="head_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_HEAD_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_HEAD_CUSTOM_CODE_DESC" filter="raw" rows="4" />
+                <field name="body_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_BODY_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_BODY_CUSTOM_CODE_DESC" filter="raw" rows="4" />
             </fieldset>
 
             <fieldset name="organization" label="PLG_SYSTEM_OFFROADSEO_TAB_ORG">
@@ -103,6 +106,11 @@
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
+            </fieldset>
+
+            <fieldset name="analytics" label="PLG_SYSTEM_OFFROADSEO_TAB_ANALYTICS">
+                <field name="ga_measurement_id" type="text" label="PLG_SYSTEM_OFFROADSEO_GA_MEASUREMENT_ID" description="PLG_SYSTEM_OFFROADSEO_GA_MEASUREMENT_ID_DESC" />
+                <field name="ga_config_options" type="text" label="PLG_SYSTEM_OFFROADSEO_GA_CONFIG_OPTIONS" description="PLG_SYSTEM_OFFROADSEO_GA_CONFIG_OPTIONS_DESC" />
             </fieldset>
 
             <fieldset name="debug" label="PLG_SYSTEM_OFFROADSEO_TAB_DEBUG">

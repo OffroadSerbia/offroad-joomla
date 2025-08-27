@@ -79,6 +79,13 @@ class PlgSystemOffroadseo extends CMSPlugin
         if (!$body || !is_string($body)) {
             return;
         }
+
+        // Inject custom HTML attributes into <html ...> if configured
+        $htmlAttrs = trim((string) $this->params->get('html_attrs', ''));
+        if ($htmlAttrs !== '' && stripos($body, '<html ') !== false) {
+            $attrs = preg_replace('/\s+/', ' ', strip_tags($htmlAttrs));
+            $body = preg_replace('/<html\s+/i', '<html ' . $attrs . ' ', $body, 1);
+        }
         // Optionally repair OG/Twitter meta in <head> if some minifier/theme stripped them
         if ($forceOgHead && !empty($this->offseoOgMeta)) {
             $missing = [];
@@ -132,6 +139,16 @@ class PlgSystemOffroadseo extends CMSPlugin
                 $body .= $scripts;
             }
         }
+
+        // Optional: custom body-end code injection
+        $bodyCustom = (string) $this->params->get('body_custom_code', '');
+        if ($bodyCustom !== '') {
+            if (stripos($body, '</body>') !== false) {
+                $body = preg_replace('/<\/body>/i', $bodyCustom . "\n</body>", $body, 1);
+            } else {
+                $body .= "\n" . $bodyCustom;
+            }
+        }
         if ($showBadge) {
             $badge = '<div id="offseo-staging-badge" style="position:fixed;z-index:99999;right:12px;bottom:12px;background:#c00;color:#fff;font:600 12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:8px 10px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:.9;pointer-events:none;">STAGING • OffroadSEO v' . self::VERSION . '</div>';
             if (stripos($body, '</body>') !== false) {
@@ -147,7 +164,7 @@ class PlgSystemOffroadseo extends CMSPlugin
                 $body .= "\n<!-- OffroadSEO v" . self::VERSION . " -->\n";
             }
         }
-        $this->app->setBody($body);
+    $this->app->setBody($body);
     }
 
 
@@ -180,6 +197,25 @@ class PlgSystemOffroadseo extends CMSPlugin
         // Add meta version marker as durable fallback
         if ((bool) $this->params->get('emit_version_header', 1)) {
             $doc->setMetaData('x-offroadseo-version', self::VERSION, 'name');
+        }
+
+        // Optional: raw custom code to <head>, added early to appear before other scripts
+        $headCustom = (string) $this->params->get('head_custom_code', '');
+        if ($headCustom !== '') {
+            $doc->addCustomTag($headCustom);
+        }
+
+        // Optional: Google Analytics (gtag.js) minimal snippet
+        $gaId = trim((string) $this->params->get('ga_measurement_id', ''));
+        if ($gaId !== '') {
+            $gaOpts = trim((string) $this->params->get('ga_config_options', ''));
+            $ga = [];
+            $ga[] = '<script async src="https://www.googletagmanager.com/gtag/js?id=' . htmlspecialchars($gaId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"></script>';
+            $ga[] = '<script>';
+            $ga[] = 'window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag(\'js\', new Date());';
+            $ga[] = 'gtag(\'config\', \'' . htmlspecialchars($gaId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '\'' . ($gaOpts !== '' ? ', { ' . $gaOpts . ' }' : '') . ');';
+            $ga[] = '</script>';
+            $doc->addCustomTag(implode("\n", $ga));
         }
 
         // Build Organization JSON-LD from params
