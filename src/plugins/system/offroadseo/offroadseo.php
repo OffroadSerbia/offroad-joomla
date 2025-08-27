@@ -30,6 +30,23 @@ class PlgSystemOffroadseo extends CMSPlugin
     /** @var \Joomla\CMS\Application\CMSApplication */
     protected $app;
 
+    /**
+     * Ensure X-Robots-Tag header is sent even on stacks that ignore Joomla setHeader.
+     */
+    private function emitNoindexHeader(): void
+    {
+        try {
+            if (method_exists($this->app, 'setHeader')) {
+                $this->app->setHeader('X-Robots-Tag', 'noindex, nofollow', true);
+            }
+            if (!headers_sent()) {
+                @header('X-Robots-Tag: noindex, nofollow', true);
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+    }
+
     public function onAfterInitialise(): void
     {
         if (!$this->app->isClient('site')) {
@@ -41,7 +58,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
         // Staging noindex header (consolidated behavior)
         if ((bool) $this->params->get('force_noindex', 0)) {
-            $this->app->setHeader('X-Robots-Tag', 'noindex, nofollow', true);
+            $this->emitNoindexHeader();
         }
     }
 
@@ -56,7 +73,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         $forceNoindex = (bool) $this->params->get('force_noindex', 0);
         // Re-assert header as some stacks override headers late
         if ($forceNoindex) {
-            $this->app->setHeader('X-Robots-Tag', 'noindex, nofollow', true);
+            $this->emitNoindexHeader();
         }
         $body = $this->app->getBody();
         if (!$body || !is_string($body)) {
@@ -147,7 +164,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
         // Re-assert X-Robots-Tag before head compile if needed
         if ((bool) $this->params->get('force_noindex', 0)) {
-            $this->app->setHeader('X-Robots-Tag', 'noindex, nofollow', true);
+            $this->emitNoindexHeader();
         }
 
         $injectInBody = (bool) $this->params->get('inject_jsonld_body', 1);
