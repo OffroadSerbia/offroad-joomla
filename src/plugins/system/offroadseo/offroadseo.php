@@ -57,10 +57,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         if (!$this->app->isClient('site')) {
             return;
         }
-        $emitHeader  = (bool) $this->params->get('emit_version_header', 1);
-        if ($emitHeader && method_exists($this->app, 'setHeader')) {
-            $this->app->setHeader('X-OffroadSEO-Version', self::VERSION, true);
-        }
+    // removed version header emission per simplified debug options
         // Staging noindex header (consolidated behavior)
         if ((bool) $this->params->get('force_noindex', 0)) {
             $this->emitNoindexHeader();
@@ -72,12 +69,11 @@ class PlgSystemOffroadseo extends CMSPlugin
         if (!$this->app->isClient('site')) {
             return;
         }
-    $debugMaster = (bool) $this->params->get('debug_master', 0);
-    $emitComment = $debugMaster || (bool) $this->params->get('emit_version_comment', 1);
+    $emitComment = false; // removed version HTML comment per simplified debug options
         $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
         $forceOgHead = (bool) $this->params->get('force_og_head', 1);
         $forceNoindex = (bool) $this->params->get('force_noindex', 0);
-    $wrapMarkers = $debugMaster || (bool) $this->params->get('debug_wrap_markers', 0);
+    $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
     // Scope filters
     $scopeAllowed = $this->isScopeAllowed();
     // Master group switches
@@ -186,11 +182,8 @@ class PlgSystemOffroadseo extends CMSPlugin
                 : $bodyEndCustom;
         }
         // Visible badges: staging badge and debug badge (debug badge shows whenever debug_master is ON)
-        if ($showBadge) {
+    if ($showBadge) {
             $endPieces[] = '<div id="offseo-staging-badge" style="position:fixed;z-index:99999;right:12px;bottom:12px;background:#c00;color:#fff;font:600 12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:8px 10px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:.9;pointer-events:none;">STAGING • OffroadSEO v' . self::VERSION . '</div>';
-        }
-        if ($debugMaster) {
-            $endPieces[] = '<div id="offseo-debug-badge" style="position:fixed;z-index:99999;left:12px;top:12px;background:#ffcc00;color:#000;font:600 12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:8px 10px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:.95;pointer-events:none;">DEBUG • OffroadSEO v' . self::VERSION . '</div>';
         }
         if ($emitComment) {
             $endPieces[] = '<!-- OffroadSEO v' . self::VERSION . ' -->';
@@ -274,10 +267,9 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
     // Scope and master toggles
-    $debugMaster = (bool) $this->params->get('debug_master', 0);
     $injectInBody = true; // simplified: always inject JSON-LD at end of body for compatibility
-    $prettyJson  = $debugMaster || (bool) $this->params->get('debug_pretty_json', 0);
-    $wrapMarkers = $debugMaster || (bool) $this->params->get('debug_wrap_markers', 0);
+    $prettyJson  = (bool) $this->params->get('debug_pretty_json', 0);
+    $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
     $scopeAllowed = $this->isScopeAllowed();
     $enableSchema   = (bool) $this->params->get('enable_schema', 1);
     $enableOg       = (bool) $this->params->get('enable_opengraph', 1);
@@ -307,9 +299,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         };
 
         // Add meta version marker as durable fallback
-    if ($debugMaster || (bool) $this->params->get('emit_version_header', 1)) {
-            $doc->setMetaData('x-offroadseo-version', self::VERSION, 'name');
-        }
+    // removed meta version marker per simplified debug options
 
         // Optional: Google Analytics 4 (gtag.js) minimal snippet (GA4 only; requires ID starting with G-)
         $gaId = trim((string) $this->params->get('ga_measurement_id', ''));

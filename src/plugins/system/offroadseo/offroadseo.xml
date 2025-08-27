@@ -171,19 +171,7 @@
 
             <!-- Debug -->
             <fieldset name="debug" label="PLG_SYSTEM_OFFROADSEO_TAB_DEBUG">
-                <field name="debug_master" type="radio" label="PLG_SYSTEM_OFFROADSEO_DEBUG_MASTER" description="PLG_SYSTEM_OFFROADSEO_DEBUG_MASTER_DESC" default="0">
-                    <option value="1">JYES</option>
-                    <option value="0">JNO</option>
-                </field>
                 <field name="force_noindex" type="radio" label="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX" description="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX_DESC" default="0">
-                    <option value="1">JYES</option>
-                    <option value="0">JNO</option>
-                </field>
-                <field name="emit_version_comment" type="radio" label="PLG_SYSTEM_OFFROADSEO_EMIT_VERSION_COMMENT" default="1">
-                    <option value="1">JYES</option>
-                    <option value="0">JNO</option>
-                </field>
-                <field name="emit_version_header" type="radio" label="PLG_SYSTEM_OFFROADSEO_EMIT_VERSION_HEADER" default="1">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
