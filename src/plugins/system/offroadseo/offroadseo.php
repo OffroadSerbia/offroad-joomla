@@ -12,13 +12,14 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Router\Route;
+use Joomla\CMS\Date\Date;
 
 /**
  * @property \Joomla\Registry\Registry $params Inherited plugin parameters
  */
 class PlgSystemOffroadseo extends CMSPlugin
 {
-    private const VERSION = '1.1.4';
+    private const VERSION = '1.3.1';
     // Buffer for JSON-LD when injecting at body end
     private array $offseoJsonLd = [];
     /** @var \Joomla\CMS\Application\CMSApplication */
@@ -135,6 +136,56 @@ class PlgSystemOffroadseo extends CMSPlugin
             $add($org);
         }
 
+        // Hreflang (alternate languages) before JSON-LD to ensure links appear early
+        if ((bool) $this->params->get('include_hreflang', 1)) {
+            try {
+                $app = $this->app;
+                $menu = $app->getMenu();
+                $active = $menu ? $menu->getActive() : null;
+                $langAssoc = \JLanguageAssociations::isEnabled();
+                $languages = \Joomla\CMS\Language\LanguageHelper::getLanguages('lang_code');
+                $current = (string) $doc->getLanguage(); // e.g., en-gb
+
+                $links = [];
+                if ($active && $langAssoc) {
+                    // Menu item associations
+                    $assocs = \Joomla\CMS\Association\AssociationHelper::getAssociations('com_menus', 'item', $menu->getDefault()->language ?? '*', (int) $active->id);
+                    foreach ($assocs as $code => $assoc) {
+                        if (!isset($languages[$code])) {
+                            continue;
+                        }
+                        $url = Route::_('index.php?Itemid=' . (int) $assoc->id);
+                        if (!preg_match('#^https?://#i', $url)) {
+                            $url = rtrim(Uri::root(), '/') . '/' . ltrim($url, '/');
+                        }
+                        $links[strtolower($code)] = $url;
+                    }
+                }
+
+                // Fallback: build per-language home links
+                if (empty($links)) {
+                    foreach ($languages as $code => $lang) {
+                        if (!empty($lang->home)) {
+                            $url = Route::_('index.php?Itemid=' . (int) $lang->home);
+                            if (!preg_match('#^https?://#i', $url)) {
+                                $url = rtrim(Uri::root(), '/') . '/' . ltrim($url, '/');
+                            }
+                            $links[strtolower($code)] = $url;
+                        }
+                    }
+                }
+
+                foreach ($links as $code => $url) {
+                    $doc->addHeadLink($url, 'alternate', 'rel', ['hreflang' => strtolower($code)]);
+                }
+                if ((bool) $this->params->get('hreflang_xdefault', 1)) {
+                    $doc->addHeadLink(Uri::root(), 'alternate', 'rel', ['hreflang' => 'x-default']);
+                }
+            } catch (\Throwable $e) {
+                // ignore
+            }
+        }
+
         // WebSite + Sitelinks SearchBox (optional)
         if ((bool) $this->params->get('include_website', 1) && ($isHome || !$onlyHome)) {
             $searchTemplate = (string) $this->params->get('search_url_template', 'index.php?option=com_finder&view=search&q={search_term_string}');
@@ -152,8 +203,11 @@ class PlgSystemOffroadseo extends CMSPlugin
             $add($website);
         }
 
-        // WebPage + BreadcrumbList on article pages (optional)
+        // WebPage + Article + BreadcrumbList on article pages (optional)
         $includeWebPage = (bool) $this->params->get('include_webpage', 1);
+        $includeArticle = (bool) $this->params->get('include_article', 1);
+        $articleType = (string) $this->params->get('article_type', 'BlogPosting');
+        $articleKeywords = (bool) $this->params->get('article_keywords', 1);
         $includeBreadcrumbs = (bool) $this->params->get('include_breadcrumbs', 1);
         $input = $this->app->getInput();
         $option = $input->getCmd('option');
@@ -161,7 +215,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         $title = $doc->getTitle();
         $currentUrl = (string) Uri::getInstance();
 
-        if ($includeWebPage && $option === 'com_content' && $view === 'article') {
+        if (($includeWebPage || $includeArticle) && $option === 'com_content' && $view === 'article') {
             $webPage = [
                 '@context' => 'https://schema.org',
                 '@type' => 'WebPage',
@@ -185,9 +239,11 @@ class PlgSystemOffroadseo extends CMSPlugin
                         ->select($db->quoteName([
                             'id',
                             'title',
+                            'alias',
                             'introtext',
                             'fulltext',
                             'images',
+                            'catid',
                             'language',
                             'created',
                             'publish_up',
@@ -199,13 +255,33 @@ class PlgSystemOffroadseo extends CMSPlugin
                     $db->setQuery($query);
                     $row = $db->loadObject();
                     if ($row) {
+                        // Build SEF absolute URL for the article
+                        $sef = Route::_('index.php?option=com_content&view=article&id=' . (int) $row->id . '&catid=' . (int) $row->catid);
+                        if (!preg_match('#^https?://#i', $sef)) {
+                            $sef = rtrim(Uri::root(), '/') . '/' . ltrim($sef, '/');
+                        }
+                        $webPage['url'] = $sef;
+                        $webPage['mainEntityOfPage'] = $sef;
                         // Dates
+                        $siteTz = Factory::getConfig()->get('offset') ?: 'UTC';
                         $datePublished = $row->publish_up ?: $row->created;
                         if (!empty($datePublished)) {
-                            $webPage['datePublished'] = substr($datePublished, 0, 19);
+                            try {
+                                $dp = new Date($datePublished, 'UTC');
+                                $dp->setTimezone(new \DateTimeZone($siteTz));
+                                $webPage['datePublished'] = $dp->format(DATE_ATOM);
+                            } catch (\Throwable $e) {
+                                $webPage['datePublished'] = substr($datePublished, 0, 19) . 'Z';
+                            }
                         }
                         if (!empty($row->modified)) {
-                            $webPage['dateModified'] = substr($row->modified, 0, 19);
+                            try {
+                                $dm = new Date($row->modified, 'UTC');
+                                $dm->setTimezone(new \DateTimeZone($siteTz));
+                                $webPage['dateModified'] = $dm->format(DATE_ATOM);
+                            } catch (\Throwable $e) {
+                                $webPage['dateModified'] = substr($row->modified, 0, 19) . 'Z';
+                            }
                         }
 
                         // Author
@@ -216,6 +292,32 @@ class PlgSystemOffroadseo extends CMSPlugin
                                     '@type' => 'Person',
                                     'name' => $user->name,
                                 ];
+                                // Try author profile URL via Contacts component
+                                try {
+                                    $db->setQuery(
+                                        $db->getQuery(true)
+                                            ->select($db->quoteName(['id', 'catid']))
+                                            ->from($db->quoteName('#__contact_details'))
+                                            ->where($db->quoteName('user_id') . ' = ' . (int) $row->created_by)
+                                            ->where($db->quoteName('published') . ' = 1')
+                                            ->order($db->quoteName('default_con') . ' DESC')
+                                            ->setLimit(1)
+                                    );
+                                    $contact = $db->loadObject();
+                                    if ($contact && isset($contact->id)) {
+                                        $contactRoute = 'index.php?option=com_contact&view=contact&id=' . (int) $contact->id;
+                                        if (!empty($contact->catid)) {
+                                            $contactRoute .= '&catid=' . (int) $contact->catid;
+                                        }
+                                        $contactUrl = Route::_($contactRoute);
+                                        if (!preg_match('#^https?://#i', $contactUrl)) {
+                                            $contactUrl = rtrim(Uri::root(), '/') . '/' . ltrim($contactUrl, '/');
+                                        }
+                                        $webPage['author']['url'] = $contactUrl;
+                                    }
+                                } catch (\Throwable $e) {
+                                    // ignore
+                                }
                             }
                         }
 
@@ -236,6 +338,9 @@ class PlgSystemOffroadseo extends CMSPlugin
                             $imgs = json_decode($row->images, true) ?: [];
                             $img = $imgs['image_fulltext'] ?? ($imgs['image_intro'] ?? '');
                             if ($img !== '') {
+                                // Strip fragment refs like #joomlaImage://local-images/... from URL
+                                $img = explode('#', $img, 2)[0];
+                                $img = trim($img);
                                 if (!preg_match('#^https?://#i', $img)) {
                                     $img = rtrim(Uri::root(), '/') . '/' . ltrim($img, '/');
                                 }
@@ -265,13 +370,80 @@ class PlgSystemOffroadseo extends CMSPlugin
                             ];
                         }
                         $webPage['publisher'] = $publisher;
+
+                        // Article/BlogPosting
+                        if ($includeArticle) {
+                            $article = [
+                                '@context' => 'https://schema.org',
+                                '@type' => in_array($articleType, ['Article', 'BlogPosting'], true) ? $articleType : 'BlogPosting',
+                                'headline' => $row->title ?: $title,
+                                'mainEntityOfPage' => $sef,
+                                'inLanguage' => $doc->getLanguage(),
+                                'url' => $sef,
+                            ];
+                            if (!empty($webPage['datePublished'])) {
+                                $article['datePublished'] = $webPage['datePublished'];
+                            }
+                            if (!empty($webPage['dateModified'])) {
+                                $article['dateModified'] = $webPage['dateModified'];
+                            }
+                            if (!empty($webPage['author'])) {
+                                $article['author'] = $webPage['author'];
+                            }
+                            if (!empty($webPage['description'])) {
+                                $article['description'] = $webPage['description'];
+                            }
+                            if (!empty($webPage['image'])) {
+                                $article['image'] = $webPage['image'];
+                            }
+                            if (!empty($publisher)) {
+                                $article['publisher'] = $publisher;
+                            }
+
+                            // Category as articleSection, tags as keywords
+                            if ($articleKeywords) {
+                                try {
+                                    if (!empty($row->catid)) {
+                                        $db->setQuery(
+                                            $db->getQuery(true)
+                                                ->select($db->quoteName('title'))
+                                                ->from($db->quoteName('#__categories'))
+                                                ->where($db->quoteName('id') . ' = ' . (int) $row->catid)
+                                        );
+                                        $catTitle = (string) $db->loadResult();
+                                        if ($catTitle !== '') {
+                                            $article['articleSection'] = $catTitle;
+                                        }
+                                    }
+                                    // Tags
+                                    $db->setQuery(
+                                        $db->getQuery(true)
+                                            ->select('t.' . $db->quoteName('title'))
+                                            ->from($db->quoteName('#__tags', 't'))
+                                            ->join('INNER', $db->quoteName('#__contentitem_tag_map', 'm') . ' ON m.tag_id = t.id')
+                                            ->where('m.' . $db->quoteName('type_alias') . ' = ' . $db->quote('com_content.article'))
+                                            ->where('m.' . $db->quoteName('content_item_id') . ' = ' . (int) $row->id)
+                                    );
+                                    $tags = (array) $db->loadColumn();
+                                    if (!empty($tags)) {
+                                        $article['keywords'] = array_values(array_filter(array_map('strval', $tags)));
+                                    }
+                                } catch (\Throwable $e) {
+                                    // ignore
+                                }
+                            }
+
+                            $add($article);
+                        }
                     }
                 }
             } catch (\Throwable $e) {
                 // Fail silently; keep minimal WebPage
             }
 
-            $add($webPage);
+            if ($includeWebPage) {
+                $add($webPage);
+            }
         }
 
         if ($includeBreadcrumbs) {
@@ -323,6 +495,9 @@ class PlgSystemOffroadseo extends CMSPlugin
             $hasOgImage = false;
             $hasTwitterImage = false;
             $hasOgSiteName = false;
+            $hasOgTitle = false;
+            $hasOgDescription = false;
+            $hasOgUrl = false;
             if (isset($head['metaTags'])) {
                 foreach ($head['metaTags'] as $type => $tags) {
                     foreach ($tags as $k => $v) {
@@ -335,6 +510,15 @@ class PlgSystemOffroadseo extends CMSPlugin
                         if (in_array($k, ['og:site_name', 'property:og:site_name'], true)) {
                             $hasOgSiteName = true;
                         }
+                        if (in_array($k, ['og:title', 'property:og:title'], true)) {
+                            $hasOgTitle = true;
+                        }
+                        if (in_array($k, ['og:description', 'property:og:description'], true)) {
+                            $hasOgDescription = true;
+                        }
+                        if (in_array($k, ['og:url', 'property:og:url'], true)) {
+                            $hasOgUrl = true;
+                        }
                     }
                 }
             }
@@ -342,6 +526,34 @@ class PlgSystemOffroadseo extends CMSPlugin
             $override = (bool) $this->params->get('og_override', 0);
             $fallbackName = (string) $this->params->get('og_site_name', (string) $this->params->get('org_name', 'Offroad Serbia'));
             $fallbackImage = (string) $this->params->get('og_image', (string) $this->params->get('org_logo', ''));
+            $metaDesc = (string) $doc->getDescription();
+            $pageTitle = $doc->getTitle();
+            // Prefer SEF URL for articles
+            $pageUrl = $currentUrl;
+            if ($option === 'com_content' && $view === 'article') {
+                try {
+                    $id = $input->getInt('id');
+                    if ($id) {
+                        $db = Factory::getDbo();
+                        $db->setQuery(
+                            $db->getQuery(true)
+                                ->select($db->quoteName(['id', 'catid']))
+                                ->from($db->quoteName('#__content'))
+                                ->where($db->quoteName('id') . ' = ' . (int) $id)
+                        );
+                        $row = $db->loadObject();
+                        if ($row) {
+                            $sef = \Joomla\CMS\Router\Route::_('index.php?option=com_content&view=article&id=' . (int) $row->id . '&catid=' . (int) $row->catid);
+                            if (!preg_match('#^https?://#i', $sef)) {
+                                $sef = rtrim(Uri::root(), '/') . '/' . ltrim($sef, '/');
+                            }
+                            $pageUrl = $sef;
+                        }
+                    }
+                } catch (\Throwable $e) { /* ignore */
+                }
+            }
+            $pageType = ($option === 'com_content' && $view === 'article') ? 'article' : 'website';
 
             if ($fallbackName !== '' && ($override || !$hasOgSiteName)) {
                 $doc->setMetaData('og:site_name', $fallbackName, 'property');
@@ -353,6 +565,20 @@ class PlgSystemOffroadseo extends CMSPlugin
                 $doc->setMetaData('twitter:image', $fallbackImage, 'name');
             }
             $doc->setMetaData('twitter:card', 'summary_large_image', 'name');
+
+            // Title / Description / URL / Type
+            if ($pageTitle !== '' && ($override || !$hasOgTitle)) {
+                $doc->setMetaData('og:title', $pageTitle, 'property');
+                $doc->setMetaData('twitter:title', $pageTitle, 'name');
+            }
+            if ($metaDesc !== '' && ($override || !$hasOgDescription)) {
+                $doc->setMetaData('og:description', $metaDesc, 'property');
+                $doc->setMetaData('twitter:description', $metaDesc, 'name');
+            }
+            if ($pageUrl !== '' && ($override || !$hasOgUrl)) {
+                $doc->setMetaData('og:url', $pageUrl, 'property');
+            }
+            $doc->setMetaData('og:type', $pageType, 'property');
         }
     }
 }
