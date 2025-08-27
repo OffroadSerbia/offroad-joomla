@@ -40,7 +40,7 @@
         "-File",
         "${workspaceFolder}/tools/git-quick-push.ps1",
         "-Message",
-        "${input:commitMessage} [skip ci]"
+  "${input:commitMessage}"
       ],
       "problemMatcher": []
     },
