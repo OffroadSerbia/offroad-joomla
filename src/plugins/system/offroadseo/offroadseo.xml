@@ -15,6 +15,9 @@
         <filename plugin="offroadseo">offroadseo.php</filename>
         <folder>language</folder>
     </files>
+    <media destination="plg_system_offroadseo" folder="media/plg_system_offroadseo">
+        <filename>admin.css</filename>
+    </media>
     <languages>
     <language tag="en-GB">language/en-GB/en-GB.plg_system_offroadseo.ini</language>
     <language tag="en-GB">language/en-GB/en-GB.plg_system_offroadseo.sys.ini</language>
@@ -24,7 +27,26 @@
     <config>
         <fields name="params">
             <!-- Global/basic tab -->
-            <fieldset name="basic" label="PLG_SYSTEM_OFFROADSEO_TAB_GLOBAL">
+            <fieldset name="basic" label="PLG_SYSTEM_OFFROADSEO_TAB_GLOBAL" class="offseo-grid offseo-two">
+                <field name="env_spacer" type="spacer" label="PLG_SYSTEM_OFFROADSEO_ENV_FIELDSET" />
+                <field name="env_auto" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_AUTO" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="primary_domain" type="text" label="PLG_SYSTEM_OFFROADSEO_PRIMARY_DOMAIN" description="PLG_SYSTEM_OFFROADSEO_PRIMARY_DOMAIN_DESC" />
+                <field name="staging_domains" type="textarea" rows="3" label="PLG_SYSTEM_OFFROADSEO_STAGING_DOMAINS" description="PLG_SYSTEM_OFFROADSEO_STAGING_DOMAINS_DESC" />
+                <field name="env_force_noindex_on_staging" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_FORCE_NOINDEX" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="env_disable_analytics_on_staging" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_DISABLE_ANALYTICS" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="env_show_staging_badge" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_BADGE" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
                 <field name="enable_hreflang" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_HREFLANG" default="1">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
@@ -62,7 +84,7 @@
             </fieldset>
 
             <!-- Schema and Structured Data -->
-            <fieldset name="schema" label="PLG_SYSTEM_OFFROADSEO_TAB_SCHEMA">
+            <fieldset name="schema" label="PLG_SYSTEM_OFFROADSEO_TAB_SCHEMA" class="offseo-grid offseo-two">
                 <field name="enable_schema" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_SCHEMA" default="1">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
@@ -109,7 +131,7 @@
             </fieldset>
 
             <!-- OpenGraph/Twitter -->
-            <fieldset name="opengraph" label="PLG_SYSTEM_OFFROADSEO_TAB_OG">
+            <fieldset name="opengraph" label="PLG_SYSTEM_OFFROADSEO_TAB_OG" class="offseo-grid offseo-two">
                 <field name="enable_opengraph" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_OPENGRAPH" default="1">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
@@ -131,7 +153,7 @@
             </fieldset>
 
             <!-- Analytics -->
-            <fieldset name="analytics" label="PLG_SYSTEM_OFFROADSEO_TAB_ANALYTICS">
+            <fieldset name="analytics" label="PLG_SYSTEM_OFFROADSEO_TAB_ANALYTICS" class="offseo-grid offseo-two">
                 <field name="enable_analytics" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_ANALYTICS" default="1">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
@@ -170,7 +192,7 @@
             </fieldset>
 
             <!-- Debug -->
-            <fieldset name="debug" label="PLG_SYSTEM_OFFROADSEO_TAB_DEBUG">
+            <fieldset name="debug" label="PLG_SYSTEM_OFFROADSEO_TAB_DEBUG" class="offseo-grid offseo-two">
                 <field name="force_noindex" type="radio" label="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX" description="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX_DESC" default="0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>

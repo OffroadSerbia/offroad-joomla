@@ -1,0 +1,16 @@
+/* Two-column layout for OffroadSEO plugin fields */
+.offseo-grid.offseo-two .control-group {
+  width: 48%;
+  display: inline-block;
+  vertical-align: top;
+  margin-right: 2%;
+}
+.offseo-grid.offseo-two .control-group:nth-child(2n) {
+  margin-right: 0;
+}
+@media (max-width: 1024px) {
+  .offseo-grid.offseo-two .control-group {
+    width: 100%;
+    margin-right: 0;
+  }
+}

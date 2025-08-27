@@ -23,6 +23,8 @@ class PlgSystemOffroadseo extends CMSPlugin
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
     private const VERSION = '1.6.0';
+    // Environment flag (auto-detected): true on staging/dev, false on production
+    private bool $isStaging = false;
     // Buffer for JSON-LD when injecting at body end
     private array $offseoJsonLd = [];
     // Buffer for OG/Twitter tags to repair head at onAfterRender if needed
@@ -54,11 +56,31 @@ class PlgSystemOffroadseo extends CMSPlugin
 
     public function onAfterInitialise(): void
     {
+        // Load admin CSS for better layout when editing plugin (2-column grid)
+        if ($this->app->isClient('administrator')) {
+            try {
+                $doc = Factory::getDocument();
+                if ($doc instanceof HtmlDocument) {
+                    $doc->addStyleSheet(Uri::root(true) . '/media/plg_system_offroadseo/admin.css');
+                }
+            } catch (\Throwable $e) {
+                // ignore
+            }
+        }
+
         if (!$this->app->isClient('site')) {
             return;
         }
-    // removed version header emission per simplified debug options
-        // Staging noindex header (consolidated behavior)
+
+        // Environment detection (staging/production) and policies
+        $this->detectEnvironment();
+
+        $autoEnv = (bool) $this->params->get('env_auto', 1);
+        $forceNoindexOnStaging = (bool) $this->params->get('env_force_noindex_on_staging', 1);
+        if ($autoEnv && $this->isStaging && $forceNoindexOnStaging) {
+            $this->emitNoindexHeader();
+        }
+        // Manual noindex still supported
         if ((bool) $this->params->get('force_noindex', 0)) {
             $this->emitNoindexHeader();
         }
@@ -73,6 +95,16 @@ class PlgSystemOffroadseo extends CMSPlugin
         $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
         $forceOgHead = (bool) $this->params->get('force_og_head', 1);
         $forceNoindex = (bool) $this->params->get('force_noindex', 0);
+        // Env-driven overrides
+        $autoEnv = (bool) $this->params->get('env_auto', 1);
+        $forceNoindexOnStaging = (bool) $this->params->get('env_force_noindex_on_staging', 1);
+        $showBadgeEnv = (bool) $this->params->get('env_show_staging_badge', 1);
+        if ($autoEnv && $this->isStaging && $forceNoindexOnStaging) {
+            $forceNoindex = true;
+        }
+        if ($autoEnv && $this->isStaging && $showBadgeEnv) {
+            $showBadge = true;
+        }
     $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
     // Scope filters
     $scopeAllowed = $this->isScopeAllowed();
@@ -277,6 +309,12 @@ class PlgSystemOffroadseo extends CMSPlugin
     $enableHreflang = (bool) $this->params->get('enable_hreflang', 1);
     $enableCustom   = (bool) $this->params->get('enable_custom_injections', 1);
     $respectThird   = (bool) $this->params->get('respect_third_party', 1);
+    // Env policy: disable analytics on staging if enabled
+    $autoEnv = (bool) $this->params->get('env_auto', 1);
+    $disableAnalyticsOnStaging = (bool) $this->params->get('env_disable_analytics_on_staging', 1);
+    if ($autoEnv && $this->isStaging && $disableAnalyticsOnStaging) {
+        $enableAnalytics = false;
+    }
 
     $add = function (array $data) use ($doc, $injectInBody, $prettyJson, $wrapMarkers) {
             $flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
@@ -298,8 +336,7 @@ class PlgSystemOffroadseo extends CMSPlugin
             }
         };
 
-        // Add meta version marker as durable fallback
-    // removed meta version marker per simplified debug options
+    // Version meta marker removed by design
 
         // Optional: Google Analytics 4 (gtag.js) minimal snippet (GA4 only; requires ID starting with G-)
         $gaId = trim((string) $this->params->get('ga_measurement_id', ''));
@@ -997,5 +1034,42 @@ class PlgSystemOffroadseo extends CMSPlugin
             if ($p !== '') { $out[] = $p; }
         }
         return array_values(array_unique($out));
+    }
+
+    /**
+     * Detect environment as staging/production based on configured domains and heuristics.
+     */
+    private function detectEnvironment(): void
+    {
+        try {
+            $uri = Uri::getInstance();
+            $host = method_exists($uri, 'getHost') ? strtolower((string) $uri->getHost()) : strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+            $primary = strtolower(trim((string) $this->params->get('primary_domain', '')));
+            $stagingListRaw = trim((string) $this->params->get('staging_domains', ''));
+            $patterns = $this->parseList($stagingListRaw);
+
+            $isStg = false;
+            foreach ($patterns as $p) {
+                if ($this->hostMatches($host, $p)) { $isStg = true; break; }
+            }
+            if (!$isStg && $primary !== '' && $host !== '' && $host !== $primary) {
+                $isStg = true;
+            }
+            if (!$isStg && preg_match('/\b(staging|dev|test|preprod)\b/i', $host)) {
+                $isStg = true;
+            }
+            $this->isStaging = $isStg;
+        } catch (\Throwable $e) {
+            $this->isStaging = false;
+        }
+    }
+
+    private function hostMatches(string $host, string $pattern): bool
+    {
+        $pattern = strtolower(trim($pattern));
+        if ($pattern === '') return false;
+        // Support simple wildcard '*'
+        $regex = '/^' . str_replace(['\\*'], ['.*'], preg_quote($pattern, '/')) . '$/i';
+        return (bool) preg_match($regex, $host);
     }
 }
