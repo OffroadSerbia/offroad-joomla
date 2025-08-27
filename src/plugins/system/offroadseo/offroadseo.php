@@ -19,7 +19,7 @@ use Joomla\CMS\Date\Date;
  */
 class PlgSystemOffroadseo extends CMSPlugin
 {
-    private const VERSION = '1.3.3';
+    private const VERSION = '1.3.4';
     // Buffer for JSON-LD when injecting at body end
     private array $offseoJsonLd = [];
     // Buffer for OG/Twitter tags to repair head at onAfterRender if needed
@@ -35,6 +35,10 @@ class PlgSystemOffroadseo extends CMSPlugin
         $emitHeader  = (bool) $this->params->get('emit_version_header', 1);
         if ($emitHeader && method_exists($this->app, 'setHeader')) {
             $this->app->setHeader('X-OffroadSEO-Version', self::VERSION, true);
+        }
+        // Staging noindex header (consolidated behavior)
+        if ((bool) $this->params->get('force_noindex', 0)) {
+            $this->app->setHeader('X-Robots-Tag', 'noindex, nofollow', true);
         }
     }
 
@@ -101,6 +105,8 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
         $this->app->setBody($body);
     }
+
+    
 
     public function onBeforeCompileHead(): void
     {
@@ -517,7 +523,12 @@ class PlgSystemOffroadseo extends CMSPlugin
             }
         }
 
-    // Optional OG/Twitter fallbacks
+        // Force noindex meta if enabled (applies to all pages on site client)
+        if ((bool) $this->params->get('force_noindex', 0)) {
+            $doc->setMetaData('robots', 'noindex, nofollow');
+        }
+
+        // Optional OG/Twitter fallbacks
         if ((bool) $this->params->get('og_enable', 0)) {
             $head = $doc->getHeadData();
             $hasOgImage = false;

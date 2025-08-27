@@ -6,7 +6,6 @@ on:
     branches: [main]
     paths:
       - "src/plugins/system/offroadseo/**"
-      - "src/plugins/system/offroadstage/**"
       - "src/templates/yootheme_offroad/**"
       - ".github/workflows/deploy-staging.yml"
 
@@ -37,19 +36,6 @@ jobs:
           log-level: verbose
           timeout: 120000
 
-      - name: Upload offroadstage via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.STAGING_FTP_HOST }}
-          username: ${{ secrets.STAGING_FTP_USER }}
-          password: ${{ secrets.STAGING_FTP_PASS }}
-          protocol: ftp
-          security: loose
-          local-dir: src/plugins/system/offroadstage/
-          server-dir: ${{ secrets.STAGING_DOCROOT_RELATIVE }}/plugins/system/offroadstage/
-          dangerous-clean-slate: true
-          log-level: verbose
-          timeout: 120000
 
       - name: Upload YOOtheme child via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
