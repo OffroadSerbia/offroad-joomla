@@ -41,10 +41,6 @@
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="inject_jsonld_body" type="radio" label="PLG_SYSTEM_OFFROADSEO_INJECT_JSONLD_BODY" description="PLG_SYSTEM_OFFROADSEO_INJECT_JSONLD_BODY_DESC" default="1">
-                    <option value="1">JYES</option>
-                    <option value="0">JNO</option>
-                </field>
                 <field name="include_hreflang" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_HREFLANG" description="PLG_SYSTEM_OFFROADSEO_INCLUDE_HREFLANG_DESC" default="1">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>

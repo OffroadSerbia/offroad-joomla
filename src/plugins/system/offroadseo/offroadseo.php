@@ -185,8 +185,12 @@ class PlgSystemOffroadseo extends CMSPlugin
                 ? ("<!-- OffroadSEO: Custom (body-end) start -->\n" . $bodyEndCustom . "\n<!-- OffroadSEO: Custom (body-end) end -->")
                 : $bodyEndCustom;
         }
+        // Visible badges: staging badge and debug badge (debug badge shows whenever debug_master is ON)
         if ($showBadge) {
             $endPieces[] = '<div id="offseo-staging-badge" style="position:fixed;z-index:99999;right:12px;bottom:12px;background:#c00;color:#fff;font:600 12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:8px 10px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:.9;pointer-events:none;">STAGING • OffroadSEO v' . self::VERSION . '</div>';
+        }
+        if ($debugMaster) {
+            $endPieces[] = '<div id="offseo-debug-badge" style="position:fixed;z-index:99999;left:12px;top:12px;background:#ffcc00;color:#000;font:600 12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:8px 10px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:.95;pointer-events:none;">DEBUG • OffroadSEO v' . self::VERSION . '</div>';
         }
         if ($emitComment) {
             $endPieces[] = '<!-- OffroadSEO v' . self::VERSION . ' -->';
@@ -271,7 +275,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 
     // Scope and master toggles
     $debugMaster = (bool) $this->params->get('debug_master', 0);
-    $injectInBody = (bool) $this->params->get('inject_jsonld_body', 1);
+    $injectInBody = true; // simplified: always inject JSON-LD at end of body for compatibility
     $prettyJson  = $debugMaster || (bool) $this->params->get('debug_pretty_json', 0);
     $wrapMarkers = $debugMaster || (bool) $this->params->get('debug_wrap_markers', 0);
     $scopeAllowed = $this->isScopeAllowed();
