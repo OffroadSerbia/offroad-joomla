@@ -3,6 +3,7 @@
 /**
  * OffroadSerbia - SEO plugin
  * Injects Organization JSON-LD and optional OG/Twitter fallbacks.
+ * Note: v1.3.4 deploy trigger comment.
  */
 
 \defined('_JEXEC') or die;
