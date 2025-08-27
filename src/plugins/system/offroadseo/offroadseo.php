@@ -258,13 +258,22 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // Raw custom code placement preferences
-        $headCustom = (string) $this->params->get('head_custom_code', '');
-        if ($headCustom !== '') {
-            $position = (string) $this->params->get('head_custom_position', 'end');
-            if ($position === 'top') {
-                $this->injectHeadTop[] = $headCustom;
+        $headTopCustom = (string) $this->params->get('head_top_custom_code', '');
+        if ($headTopCustom !== '') {
+            $this->injectHeadTop[] = $headTopCustom;
+        }
+        $headEndCustom = (string) $this->params->get('head_end_custom_code', '');
+        if ($headEndCustom !== '') {
+            $this->injectHeadEnd[] = $headEndCustom;
+        }
+        // Backward compatibility: legacy single field + position
+        $legacyHead = (string) $this->params->get('head_custom_code', '');
+        if ($legacyHead !== '') {
+            $legacyPos = (string) $this->params->get('head_custom_position', 'end');
+            if ($legacyPos === 'top') {
+                $this->injectHeadTop[] = $legacyHead;
             } else {
-                $this->injectHeadEnd[] = $headCustom;
+                $this->injectHeadEnd[] = $legacyHead;
             }
         }
 
