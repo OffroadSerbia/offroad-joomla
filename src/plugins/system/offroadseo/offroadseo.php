@@ -61,7 +61,8 @@ class PlgSystemOffroadseo extends CMSPlugin
             try {
                 $doc = Factory::getDocument();
                 if ($doc instanceof HtmlDocument) {
-                    $doc->addStyleSheet(Uri::root(true) . '/media/plg_system_offroadseo/admin.css');
+                    // Use site root media path so it works in administrator context
+                    $doc->addStyleSheet(Uri::root() . 'media/plg_system_offroadseo/admin.css');
                 }
             } catch (\Throwable $e) {
                 // ignore
