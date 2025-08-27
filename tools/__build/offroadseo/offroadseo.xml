@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="system" method="upgrade" version="4.0">
+    <name>Offroad Serbia - SEO</name>
+    <element>offroadseo</element>
+    <group>system</group>
+    <author>OffroadSerbia</author>
+    <authorEmail>admin@offroadserbia.com</authorEmail>
+    <authorUrl>https://offroadserbia.com</authorUrl>
+    <license>GPL-2.0-or-later</license>
+    <creationDate>2025-08-27</creationDate>
+    <version>1.3.5</version>
+    <description>PLG_SYSTEM_OFFROADSEO_DESC</description>
+    
+    <files>
+        <filename plugin="offroadseo">offroadseo.php</filename>
+        <folder>language</folder>
+    </files>
+    <languages>
+    <language tag="en-GB">language/en-GB/en-GB.plg_system_offroadseo.ini</language>
+    <language tag="en-GB">language/en-GB/en-GB.plg_system_offroadseo.sys.ini</language>
+    <language tag="sr-RS">language/sr-RS/sr-RS.plg_system_offroadseo.ini</language>
+    <language tag="sr-RS">language/sr-RS/sr-RS.plg_system_offroadseo.sys.ini</language>
+    </languages>
+    <config>
+        <fields name="params">
+            <fieldset name="general" label="PLG_SYSTEM_OFFROADSEO_TAB_GENERAL">
+                <field name="only_home" type="radio" label="PLG_SYSTEM_OFFROADSEO_ONLY_HOME" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="inject_jsonld_body" type="radio" label="PLG_SYSTEM_OFFROADSEO_INJECT_JSONLD_BODY" description="PLG_SYSTEM_OFFROADSEO_INJECT_JSONLD_BODY_DESC" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+            </fieldset>
+
+            <fieldset name="organization" label="PLG_SYSTEM_OFFROADSEO_TAB_ORG">
+                <field name="org_name" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_NAME" default="Offroad Serbia" />
+                <field name="org_alt" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_ALT" default="4x4 Off-Road Srbija" />
+                <field name="org_url" type="url" label="PLG_SYSTEM_OFFROADSEO_ORG_URL" default="https://offroadserbia.com/" />
+                <field name="org_logo" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_LOGO" default="https://offroadserbia.com/images/logo/logo-offroad-serbia-4x4.webp" />
+                <field name="org_tel" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_TEL" default="+381-63-348-555" />
+                <field name="org_sameas" type="textarea" label="PLG_SYSTEM_OFFROADSEO_ORG_SAMEAS" description="PLG_SYSTEM_OFFROADSEO_ORG_SAMEAS_DESC" rows="3" />
+            </fieldset>
+
+            <fieldset name="website" label="PLG_SYSTEM_OFFROADSEO_TAB_WEBSITE">
+                <field name="include_website" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_WEBSITE" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="search_url_template" type="text" label="PLG_SYSTEM_OFFROADSEO_SEARCH_URL_TEMPLATE" default="index.php?option=com_finder&amp;view=search&amp;q={search_term_string}" />
+            </fieldset>
+
+            <fieldset name="article" label="PLG_SYSTEM_OFFROADSEO_TAB_ARTICLE">
+                <field name="include_webpage" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_WEBPAGE" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="include_article" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_ARTICLE" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="article_type" type="list" label="PLG_SYSTEM_OFFROADSEO_ARTICLE_TYPE" default="BlogPosting">
+                    <option value="Article">PLG_SYSTEM_OFFROADSEO_ARTICLE_TYPE_ARTICLE</option>
+                    <option value="BlogPosting">PLG_SYSTEM_OFFROADSEO_ARTICLE_TYPE_BLOGPOSTING</option>
+                </field>
+                <field name="article_keywords" type="radio" label="PLG_SYSTEM_OFFROADSEO_ARTICLE_KEYWORDS" description="PLG_SYSTEM_OFFROADSEO_ARTICLE_KEYWORDS_DESC" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+            </fieldset>
+
+            <fieldset name="breadcrumbs" label="PLG_SYSTEM_OFFROADSEO_TAB_BREADCRUMBS">
+                <field name="include_breadcrumbs" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_BREADCRUMBS" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+            </fieldset>
+
+            <fieldset name="hreflang" label="PLG_SYSTEM_OFFROADSEO_TAB_HREFLANG">
+                <field name="include_hreflang" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_HREFLANG" description="PLG_SYSTEM_OFFROADSEO_INCLUDE_HREFLANG_DESC" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="hreflang_xdefault" type="radio" label="PLG_SYSTEM_OFFROADSEO_HREFLANG_XDEFAULT" description="PLG_SYSTEM_OFFROADSEO_HREFLANG_XDEFAULT_DESC" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+            </fieldset>
+
+            <fieldset name="opengraph" label="PLG_SYSTEM_OFFROADSEO_TAB_OG">
+                <field name="og_enable" type="radio" label="PLG_SYSTEM_OFFROADSEO_OG_ENABLE" default="0">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="og_override" type="radio" label="PLG_SYSTEM_OFFROADSEO_OG_OVERRIDE" default="0">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="og_site_name" type="text" label="PLG_SYSTEM_OFFROADSEO_OG_SITENAME" />
+                <field name="og_image" type="text" label="PLG_SYSTEM_OFFROADSEO_OG_IMAGE" />
+                <field name="force_og_head" type="radio" label="PLG_SYSTEM_OFFROADSEO_FORCE_OG_HEAD" description="PLG_SYSTEM_OFFROADSEO_FORCE_OG_HEAD_DESC" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+            </fieldset>
+
+            <fieldset name="debug" label="PLG_SYSTEM_OFFROADSEO_TAB_DEBUG">
+                <field name="force_noindex" type="radio" label="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX" description="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX_DESC" default="0">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="emit_version_comment" type="radio" label="PLG_SYSTEM_OFFROADSEO_EMIT_VERSION_COMMENT" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="emit_version_header" type="radio" label="PLG_SYSTEM_OFFROADSEO_EMIT_VERSION_HEADER" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="show_staging_badge" type="radio" label="PLG_SYSTEM_OFFROADSEO_SHOW_STAGING_BADGE" description="PLG_SYSTEM_OFFROADSEO_SHOW_STAGING_BADGE_DESC" default="0">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+            </fieldset>
+        </fields>
+    </config>
+</extension>
