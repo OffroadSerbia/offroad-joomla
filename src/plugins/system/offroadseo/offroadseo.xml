@@ -34,7 +34,12 @@
                 </field>
                 <field name="html_attrs" type="text" label="PLG_SYSTEM_OFFROADSEO_HTML_ATTRS" description="PLG_SYSTEM_OFFROADSEO_HTML_ATTRS_DESC" />
                 <field name="head_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_HEAD_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_HEAD_CUSTOM_CODE_DESC" filter="raw" rows="4" />
+                <field name="head_custom_position" type="list" label="PLG_SYSTEM_OFFROADSEO_HEAD_CUSTOM_POSITION" default="end">
+                    <option value="top">PLG_SYSTEM_OFFROADSEO_POSITION_TOP</option>
+                    <option value="end">PLG_SYSTEM_OFFROADSEO_POSITION_END</option>
+                </field>
                 <field name="body_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_BODY_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_BODY_CUSTOM_CODE_DESC" filter="raw" rows="4" />
+                <field name="body_start_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_BODY_START_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_BODY_START_CUSTOM_CODE_DESC" filter="raw" rows="4" />
             </fieldset>
 
             <fieldset name="organization" label="PLG_SYSTEM_OFFROADSEO_TAB_ORG">

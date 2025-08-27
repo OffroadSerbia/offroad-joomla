@@ -27,6 +27,11 @@ class PlgSystemOffroadseo extends CMSPlugin
     private array $offseoJsonLd = [];
     // Buffer for OG/Twitter tags to repair head at onAfterRender if needed
     private array $offseoOgMeta = [];
+    // Precise injection buffers
+    private array $injectHeadTop = [];
+    private array $injectHeadEnd = [];
+    private array $injectBodyStart = [];
+    private array $injectBodyEnd = [];
     /** @var \Joomla\CMS\Application\CMSApplication */
     protected $app;
 
@@ -130,41 +135,81 @@ class PlgSystemOffroadseo extends CMSPlugin
                 }
             }
         }
-        // Emit buffered JSON-LD just before </body>
+        // Build final body-end injections: JSON-LD, custom, badge, comment
+        $endPieces = [];
         if (!empty($this->offseoJsonLd)) {
-            $scripts = "\n" . implode("\n", array_map(fn($j) => '<script type="application/ld+json">' . $j . '</script>', $this->offseoJsonLd)) . "\n";
-            if (stripos($body, '</body>') !== false) {
-                $body = preg_replace('/<\/body>/i', $scripts . '</body>', $body, 1);
+            $endPieces[] = implode("\n", array_map(fn($j) => '<script type="application/ld+json">' . $j . '</script>', $this->offseoJsonLd));
+        }
+        $bodyStartCustom = (string) $this->params->get('body_start_custom_code', '');
+        if ($bodyStartCustom !== '') {
+            $this->injectBodyStart[] = $bodyStartCustom;
+        }
+        $bodyEndCustom = (string) $this->params->get('body_custom_code', '');
+        if ($bodyEndCustom !== '') {
+            $endPieces[] = $bodyEndCustom;
+        }
+        if ($showBadge) {
+            $endPieces[] = '<div id="offseo-staging-badge" style="position:fixed;z-index:99999;right:12px;bottom:12px;background:#c00;color:#fff;font:600 12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:8px 10px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:.9;pointer-events:none;">STAGING • OffroadSEO v' . self::VERSION . '</div>';
+        }
+        if ($emitComment) {
+            $endPieces[] = '<!-- OffroadSEO v' . self::VERSION . ' -->';
+        }
+        if (!empty($endPieces)) {
+            $this->injectBodyEnd[] = implode("\n", $endPieces);
+        }
+
+        // Apply precise placements
+        // 1) Head TOP: before first <script> in <head>, or immediately after <head> if none
+        if (!empty($this->injectHeadTop)) {
+            $headTop = "\n" . implode("\n", $this->injectHeadTop) . "\n";
+            if (preg_match('/<head\b[^>]*>/i', $body, $m, PREG_OFFSET_CAPTURE)) {
+                $headOpenPos = $m[0][1];
+                $headContentStart = $headOpenPos + strlen($m[0][0]);
+                $headClosePos = stripos($body, '</head>', $headContentStart);
+                if ($headClosePos !== false) {
+                    $headContent = substr($body, $headContentStart, $headClosePos - $headContentStart);
+                    $scriptPosInHead = stripos($headContent, '<script');
+                    $insertPos = ($scriptPosInHead !== false) ? ($headContentStart + $scriptPosInHead) : $headContentStart;
+                    $body = substr($body, 0, $insertPos) . $headTop . substr($body, $insertPos);
+                } else {
+                    // Fallback: prepend to body
+                    $body = $headTop . $body;
+                }
             } else {
-                $body .= $scripts;
+                $body = $headTop . $body;
             }
         }
 
-        // Optional: custom body-end code injection
-        $bodyCustom = (string) $this->params->get('body_custom_code', '');
-        if ($bodyCustom !== '') {
-            if (stripos($body, '</body>') !== false) {
-                $body = preg_replace('/<\/body>/i', $bodyCustom . "\n</body>", $body, 1);
+        // 2) Head END: before </head>
+        if (!empty($this->injectHeadEnd)) {
+            $headEnd = "\n" . implode("\n", $this->injectHeadEnd) . "\n";
+            if (stripos($body, '</head>') !== false) {
+                $body = preg_replace('/<\/head>/i', $headEnd . '</head>', $body, 1);
             } else {
-                $body .= "\n" . $bodyCustom;
+                $body = $headEnd . $body;
             }
         }
-        if ($showBadge) {
-            $badge = '<div id="offseo-staging-badge" style="position:fixed;z-index:99999;right:12px;bottom:12px;background:#c00;color:#fff;font:600 12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:8px 10px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:.9;pointer-events:none;">STAGING • OffroadSEO v' . self::VERSION . '</div>';
-            if (stripos($body, '</body>') !== false) {
-                $body = preg_replace('/<\/body>/i', "\n$badge\n</body>", $body, 1);
+
+        // 3) Body START: right after <body ...>
+        if (!empty($this->injectBodyStart)) {
+            $bodyStart = "\n" . implode("\n", $this->injectBodyStart) . "\n";
+            if (preg_match('/<body\b[^>]*>/i', $body, $bm, PREG_OFFSET_CAPTURE)) {
+                $openEnd = $bm[0][1] + strlen($bm[0][0]);
+                $body = substr($body, 0, $openEnd) . $bodyStart . substr($body, $openEnd);
             } else {
-                $body .= "\n$badge\n";
+                $body = $bodyStart . $body;
             }
         }
-        if ($emitComment) {
+
+        // 4) Body END: before </body>
+        if (!empty($this->injectBodyEnd)) {
+            $bodyEnd = "\n" . implode("\n", $this->injectBodyEnd) . "\n";
             if (stripos($body, '</body>') !== false) {
-                $body = preg_replace('/<\/body>/i', "\n<!-- OffroadSEO v" . self::VERSION . " -->\n</body>", $body, 1);
+                $body = preg_replace('/<\/body>/i', $bodyEnd . '</body>', $body, 1);
             } else {
-                $body .= "\n<!-- OffroadSEO v" . self::VERSION . " -->\n";
+                $body .= $bodyEnd;
             }
         }
-    $this->app->setBody($body);
     }
 
 
@@ -194,18 +239,12 @@ class PlgSystemOffroadseo extends CMSPlugin
             }
         };
 
-        // Add meta version marker as durable fallback
+    // Add meta version marker as durable fallback
         if ((bool) $this->params->get('emit_version_header', 1)) {
             $doc->setMetaData('x-offroadseo-version', self::VERSION, 'name');
         }
 
-        // Optional: raw custom code to <head>, added early to appear before other scripts
-        $headCustom = (string) $this->params->get('head_custom_code', '');
-        if ($headCustom !== '') {
-            $doc->addCustomTag($headCustom);
-        }
-
-        // Optional: Google Analytics (gtag.js) minimal snippet
+        // Optional: Google Analytics (gtag.js) minimal snippet (we'll place it by position at head top)
         $gaId = trim((string) $this->params->get('ga_measurement_id', ''));
         if ($gaId !== '') {
             $gaOpts = trim((string) $this->params->get('ga_config_options', ''));
@@ -215,7 +254,18 @@ class PlgSystemOffroadseo extends CMSPlugin
             $ga[] = 'window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag(\'js\', new Date());';
             $ga[] = 'gtag(\'config\', \'' . htmlspecialchars($gaId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '\'' . ($gaOpts !== '' ? ', { ' . $gaOpts . ' }' : '') . ');';
             $ga[] = '</script>';
-            $doc->addCustomTag(implode("\n", $ga));
+            $this->injectHeadTop[] = implode("\n", $ga);
+        }
+
+        // Raw custom code placement preferences
+        $headCustom = (string) $this->params->get('head_custom_code', '');
+        if ($headCustom !== '') {
+            $position = (string) $this->params->get('head_custom_position', 'end');
+            if ($position === 'top') {
+                $this->injectHeadTop[] = $headCustom;
+            } else {
+                $this->injectHeadEnd[] = $headCustom;
+            }
         }
 
         // Build Organization JSON-LD from params
