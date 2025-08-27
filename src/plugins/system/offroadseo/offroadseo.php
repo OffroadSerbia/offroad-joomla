@@ -20,7 +20,7 @@ use Joomla\CMS\Date\Date;
  */
 class PlgSystemOffroadseo extends CMSPlugin
 {
-    private const VERSION = '1.3.4';
+    private const VERSION = '1.3.5';
     // Buffer for JSON-LD when injecting at body end
     private array $offseoJsonLd = [];
     // Buffer for OG/Twitter tags to repair head at onAfterRender if needed
@@ -51,6 +51,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         $emitComment = (bool) $this->params->get('emit_version_comment', 1);
         $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
         $forceOgHead = (bool) $this->params->get('force_og_head', 1);
+    $forceNoindex = (bool) $this->params->get('force_noindex', 0);
         $body = $this->app->getBody();
         if (!$body || !is_string($body)) {
             return;
@@ -77,6 +78,25 @@ class PlgSystemOffroadseo extends CMSPlugin
                     $body = preg_replace('/<\/head>/i', $metaStr . '</head>', $body, 1);
                 } else {
                     $body = $metaStr . $body;
+                }
+            }
+        }
+        // Ensure robots noindex meta survives head minifiers if enabled
+        if ($forceNoindex) {
+            $hasRobots = (bool) preg_match('/<meta[^>]*name\s*=\s*"robots"[^>]*>/i', $body);
+            if ($hasRobots) {
+                // Replace any existing robots content with noindex,nofollow
+                $body = preg_replace(
+                    '/(<meta[^>]*name\s*=\s*"robots"[^>]*content\s*=\s*")(.*?)("[^>]*>)/i',
+                    '$1noindex, nofollow$3',
+                    $body
+                );
+            } else {
+                $meta = "\n<meta name=\"robots\" content=\"noindex, nofollow\" />\n";
+                if (stripos($body, '</head>') !== false) {
+                    $body = preg_replace('/<\/head>/i', $meta . '</head>', $body, 1);
+                } else {
+                    $body = $meta . $body;
                 }
             }
         }
@@ -107,7 +127,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         $this->app->setBody($body);
     }
 
-    
+
 
     public function onBeforeCompileHead(): void
     {
@@ -598,7 +618,8 @@ class PlgSystemOffroadseo extends CMSPlugin
                                 }
                             }
                         }
-                    } catch (\Throwable $e) { /* ignore */ }
+                    } catch (\Throwable $e) { /* ignore */
+                    }
                 }
             }
             $ogImageToUse = $articleImage !== '' ? $articleImage : $fallbackImage;
@@ -632,7 +653,7 @@ class PlgSystemOffroadseo extends CMSPlugin
             $pageType = ($option === 'com_content' && $view === 'article') ? 'article' : 'website';
 
             // helper to add and remember tags for later repair
-            $remember = function(string $attr, string $name, string $content) use ($doc) {
+            $remember = function (string $attr, string $name, string $content) use ($doc) {
                 $doc->setMetaData($name, $content, $attr);
                 $this->offseoOgMeta[] = ['attr' => $attr, 'name' => $name, 'content' => $content];
             };

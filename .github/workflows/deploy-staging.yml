@@ -36,7 +36,6 @@ jobs:
           log-level: verbose
           timeout: 120000
 
-
       - name: Upload YOOtheme child via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
