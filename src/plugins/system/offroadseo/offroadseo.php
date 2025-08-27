@@ -61,8 +61,18 @@ class PlgSystemOffroadseo extends CMSPlugin
             try {
                 $doc = Factory::getDocument();
                 if ($doc instanceof HtmlDocument) {
-                    // Use site root media path so it works in administrator context
+                    // Load external CSS (installed via <media>)
                     $doc->addStyleSheet(Uri::root() . 'media/plg_system_offroadseo/admin.css');
+                    // Fallback inline CSS to guarantee layout even if file path differs
+                    $doc->addStyleDeclaration(
+                        '/* OffroadSEO admin two-column layout */\n'
+                        . '.offseo-grid.offseo-two{display:flex;flex-wrap:wrap;gap:16px 2%;}\n'
+                        . '.offseo-grid.offseo-two .control-group{flex:1 1 49%;min-width:420px;}\n'
+                        . '.offseo-grid.offseo-two .control-label{max-width:100%;}\n'
+                        . '.offseo-grid.offseo-two .controls{max-width:100%;}\n'
+                        . '.offseo-section label{font-weight:600;}\n'
+                        . '@media (max-width:1024px){.offseo-grid.offseo-two .control-group{flex:1 1 100%;min-width:0;}}'
+                    );
                 }
             } catch (\Throwable $e) {
                 // ignore
