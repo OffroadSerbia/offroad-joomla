@@ -22,7 +22,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.5.0';
+    private const VERSION = '1.5.6';
     // Buffer for JSON-LD when injecting at body end
     private array $offseoJsonLd = [];
     // Buffer for OG/Twitter tags to repair head at onAfterRender if needed
@@ -72,10 +72,11 @@ class PlgSystemOffroadseo extends CMSPlugin
         if (!$this->app->isClient('site')) {
             return;
         }
-        $emitComment = (bool) $this->params->get('emit_version_comment', 1);
+    $emitComment = (bool) $this->params->get('emit_version_comment', 1);
         $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
         $forceOgHead = (bool) $this->params->get('force_og_head', 1);
         $forceNoindex = (bool) $this->params->get('force_noindex', 0);
+    $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
         // Re-assert header as some stacks override headers late
         if ($forceNoindex) {
             $this->emitNoindexHeader();
@@ -138,7 +139,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         // Build final body-end injections: JSON-LD, custom, badge, comment
         $endPieces = [];
         if (!empty($this->offseoJsonLd)) {
-            $endPieces[] = implode("\n", array_map(fn($j) => '<script type="application/ld+json">' . $j . '</script>', $this->offseoJsonLd));
+            $endPieces[] = implode("\n", $this->offseoJsonLd);
         }
         $bodyStartCustom = (string) $this->params->get('body_start_custom_code', '');
         if ($bodyStartCustom !== '') {
@@ -161,7 +162,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         // Apply precise placements
         // 1) Head TOP: before first <script> in <head>, or immediately after <head> if none
         if (!empty($this->injectHeadTop)) {
-            $headTop = "\n" . implode("\n", $this->injectHeadTop) . "\n";
+            $headTop = "\n" . ($wrapMarkers ? "<!-- OffroadSEO: HEAD TOP start -->\n" : '') . implode("\n\n", $this->injectHeadTop) . ($wrapMarkers ? "\n<!-- OffroadSEO: HEAD TOP end -->" : '') . "\n";
             if (preg_match('/<head\b[^>]*>/i', $body, $m, PREG_OFFSET_CAPTURE)) {
                 $headOpenPos = $m[0][1];
                 $headContentStart = $headOpenPos + strlen($m[0][0]);
@@ -182,7 +183,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 
         // 2) Head END: before </head>
         if (!empty($this->injectHeadEnd)) {
-            $headEnd = "\n" . implode("\n", $this->injectHeadEnd) . "\n";
+            $headEnd = "\n" . ($wrapMarkers ? "<!-- OffroadSEO: HEAD END start -->\n" : '') . implode("\n\n", $this->injectHeadEnd) . ($wrapMarkers ? "\n<!-- OffroadSEO: HEAD END end -->" : '') . "\n";
             if (stripos($body, '</head>') !== false) {
                 $body = preg_replace('/<\/head>/i', $headEnd . '</head>', $body, 1);
             } else {
@@ -192,7 +193,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 
         // 3) Body START: right after <body ...>
         if (!empty($this->injectBodyStart)) {
-            $bodyStart = "\n" . implode("\n", $this->injectBodyStart) . "\n";
+            $bodyStart = "\n" . ($wrapMarkers ? "<!-- OffroadSEO: BODY START start -->\n" : '') . implode("\n\n", $this->injectBodyStart) . ($wrapMarkers ? "\n<!-- OffroadSEO: BODY START end -->" : '') . "\n";
             if (preg_match('/<body\b[^>]*>/i', $body, $bm, PREG_OFFSET_CAPTURE)) {
                 $openEnd = $bm[0][1] + strlen($bm[0][0]);
                 $body = substr($body, 0, $openEnd) . $bodyStart . substr($body, $openEnd);
@@ -203,13 +204,16 @@ class PlgSystemOffroadseo extends CMSPlugin
 
         // 4) Body END: before </body>
         if (!empty($this->injectBodyEnd)) {
-            $bodyEnd = "\n" . implode("\n", $this->injectBodyEnd) . "\n";
+            $bodyEnd = "\n" . ($wrapMarkers ? "<!-- OffroadSEO: BODY END start -->\n" : '') . implode("\n\n", $this->injectBodyEnd) . ($wrapMarkers ? "\n<!-- OffroadSEO: BODY END end -->" : '') . "\n";
             if (stripos($body, '</body>') !== false) {
                 $body = preg_replace('/<\/body>/i', $bodyEnd . '</body>', $body, 1);
             } else {
                 $body .= $bodyEnd;
             }
         }
+
+        // Commit mutated output back to the application response
+        $this->app->setBody($body);
     }
 
 
@@ -230,23 +234,29 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         $injectInBody = (bool) $this->params->get('inject_jsonld_body', 1);
-        $add = function (array $data) use ($doc, $injectInBody) {
-            $json = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $prettyJson  = (bool) $this->params->get('debug_pretty_json', 0);
+        $add = function (array $data) use ($doc, $injectInBody, $prettyJson) {
+            $flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
+            if ($prettyJson) {
+                $flags |= JSON_PRETTY_PRINT;
+            }
+            $json = json_encode($data, $flags);
+            $script = '<script type="application/ld+json">' . $json . '</script>';
             if ($injectInBody) {
-                $this->offseoJsonLd[] = $json;
+                $this->offseoJsonLd[] = $script;
             } else {
-                $doc->addCustomTag('<script type="application/ld+json">' . $json . '</script>');
+                $doc->addCustomTag($script);
             }
         };
 
-    // Add meta version marker as durable fallback
+        // Add meta version marker as durable fallback
         if ((bool) $this->params->get('emit_version_header', 1)) {
             $doc->setMetaData('x-offroadseo-version', self::VERSION, 'name');
         }
 
-        // Optional: Google Analytics (gtag.js) minimal snippet (we'll place it by position at head top)
+        // Optional: Google Analytics 4 (gtag.js) minimal snippet (GA4 only; requires ID starting with G-)
         $gaId = trim((string) $this->params->get('ga_measurement_id', ''));
-        if ($gaId !== '') {
+        if ($gaId !== '' && stripos($gaId, 'G-') === 0) {
             $gaOpts = trim((string) $this->params->get('ga_config_options', ''));
             $ga = [];
             $ga[] = '<script async src="https://www.googletagmanager.com/gtag/js?id=' . htmlspecialchars($gaId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"></script>';
@@ -255,6 +265,54 @@ class PlgSystemOffroadseo extends CMSPlugin
             $ga[] = 'gtag(\'config\', \'' . htmlspecialchars($gaId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '\'' . ($gaOpts !== '' ? ', { ' . $gaOpts . ' }' : '') . ');';
             $ga[] = '</script>';
             $this->injectHeadTop[] = implode("\n", $ga);
+        }
+
+        // Optional: Meta (Facebook) Pixel
+        $fbIdsRaw = trim((string) $this->params->get('fb_pixel_id', ''));
+        if ($fbIdsRaw !== '') {
+            // Allow comma/newline separated IDs
+            $ids = array_values(array_filter(array_map('trim', preg_split('/\s*[\n,]+\s*/', $fbIdsRaw))));
+            if (!empty($ids)) {
+                $initOpts = trim((string) $this->params->get('fb_pixel_init_options', ''));
+                $trackPv = (bool) $this->params->get('fb_pixel_track_pageview', 1);
+                $lines = [];
+                $lines[] = '<script>';
+                $lines[] = '!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?';
+                $lines[] = "n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;";
+                $lines[] = "n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;";
+                $lines[] = "t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');";
+                foreach ($ids as $id) {
+                    $idEsc = htmlspecialchars($id, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+                    if ($initOpts !== '') {
+                        $lines[] = "fbq('init','" . $idEsc . "', { " . $initOpts . " });";
+                    } else {
+                        $lines[] = "fbq('init','" . $idEsc . "');";
+                    }
+                }
+                if ($trackPv) {
+                    $lines[] = "fbq('track','PageView');";
+                }
+                // Extra events site-wide
+                $events = (array) $this->params->get('fb_pixel_events', []);
+                foreach ($events as $ev) {
+                    $ev = trim((string) $ev);
+                    if ($ev !== '' && $ev !== 'PageView') {
+                        $lines[] = "fbq('track','" . addslashes($ev) . "');";
+                    }
+                }
+                $lines[] = '</script>';
+                $this->injectHeadTop[] = implode("\n", $lines);
+
+                // noscript pixel(s) appended at body end when PageView tracking is enabled
+                if ($trackPv) {
+                    $imgs = [];
+                    foreach ($ids as $id) {
+                        $idEsc = rawurlencode($id);
+                        $imgs[] = '<img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=' . $idEsc . '&ev=PageView&noscript=1" />';
+                    }
+                    $this->injectBodyEnd[] = '<noscript>' . implode('', $imgs) . '</noscript>';
+                }
+            }
         }
 
         // Raw custom code placement preferences
@@ -292,6 +350,11 @@ class PlgSystemOffroadseo extends CMSPlugin
                 'url' => (string) $this->params->get('org_url', Uri::root()),
                 'logo' => (string) $this->params->get('org_logo', ''),
             ];
+
+            $orgDesc = trim((string) $this->params->get('org_desc', ''));
+            if ($orgDesc !== '') {
+                $org['description'] = $orgDesc;
+            }
 
             $tel = (string) $this->params->get('org_tel', '');
             if ($tel !== '') {
