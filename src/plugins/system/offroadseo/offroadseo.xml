@@ -7,8 +7,8 @@
     <authorEmail>admin@offroadserbia.com</authorEmail>
     <authorUrl>https://offroadserbia.com</authorUrl>
     <license>GPL-2.0-or-later</license>
-    <creationDate>2025-08-27</creationDate>
-    <version>1.6.7</version>
+    <creationDate>2025-08-28</creationDate>
+    <version>1.7.0</version>
     <description>PLG_SYSTEM_OFFROADSEO_DESC</description>
     
     <files>
@@ -212,6 +212,10 @@
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
+                <field name="sitemap_use_index" type="radio" label="PLG_SYSTEM_OFFROADSEO_SITEMAP_USE_INDEX" description="PLG_SYSTEM_OFFROADSEO_SITEMAP_USE_INDEX_DESC" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
                 <field name="sitemap_include_menu" type="radio" label="PLG_SYSTEM_OFFROADSEO_SITEMAP_INCLUDE_MENU" default="1">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
@@ -220,7 +224,17 @@
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
+                <field name="sitemap_include_images" type="radio" label="PLG_SYSTEM_OFFROADSEO_SITEMAP_INCLUDE_IMAGES" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="sitemap_include_alternates" type="radio" label="PLG_SYSTEM_OFFROADSEO_SITEMAP_INCLUDE_ALTERNATES" description="PLG_SYSTEM_OFFROADSEO_SITEMAP_INCLUDE_ALTERNATES_DESC" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
                 <field name="sitemap_max_articles" type="number" label="PLG_SYSTEM_OFFROADSEO_SITEMAP_MAX_ARTICLES" default="1000" min="0" showon="ui_mode:advanced" />
+                <field name="sitemap_exclude_menu_ids" type="text" label="PLG_SYSTEM_OFFROADSEO_SITEMAP_EXCLUDE_MENU_IDS" description="PLG_SYSTEM_OFFROADSEO_SITEMAP_EXCLUDE_MENU_IDS_DESC" showon="ui_mode:advanced" />
+                <field name="sitemap_exclude_category_ids" type="text" label="PLG_SYSTEM_OFFROADSEO_SITEMAP_EXCLUDE_CATEGORY_IDS" description="PLG_SYSTEM_OFFROADSEO_SITEMAP_EXCLUDE_CATEGORY_IDS_DESC" showon="ui_mode:advanced" />
                 <field name="sitemap_changefreq_home" type="list" label="PLG_SYSTEM_OFFROADSEO_SITEMAP_CHANGEFREQ_HOME" default="weekly">
                     <option value="always">always</option>
                     <option value="hourly">hourly</option>
