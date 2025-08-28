@@ -8,7 +8,7 @@
     <authorUrl>https://offroadserbia.com</authorUrl>
     <license>GPL-2.0-or-later</license>
     <creationDate>2025-08-27</creationDate>
-    <version>1.6.1</version>
+    <version>1.6.3</version>
     <description>PLG_SYSTEM_OFFROADSEO_DESC</description>
     
     <files>
@@ -27,153 +27,153 @@
     <config>
         <fields name="params">
             <!-- Global/basic tab -->
-            <fieldset name="basic" label="PLG_SYSTEM_OFFROADSEO_TAB_GLOBAL" class="offseo-grid offseo-two">
+            <fieldset name="basic" label="PLG_SYSTEM_OFFROADSEO_TAB_GLOBAL">
                 <field name="basic_spacer_global" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_BASIC" />
                 <field name="env_spacer" type="spacer" label="PLG_SYSTEM_OFFROADSEO_ENV_FIELDSET" />
-                <field name="env_auto" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_AUTO" default="1">
+                <field name="env_auto" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_AUTO" default="1" class="two-col-left">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="primary_domain" type="text" label="PLG_SYSTEM_OFFROADSEO_PRIMARY_DOMAIN" description="PLG_SYSTEM_OFFROADSEO_PRIMARY_DOMAIN_DESC" />
-                <field name="staging_domains" type="textarea" rows="3" label="PLG_SYSTEM_OFFROADSEO_STAGING_DOMAINS" description="PLG_SYSTEM_OFFROADSEO_STAGING_DOMAINS_DESC" />
-                <field name="env_force_noindex_on_staging" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_FORCE_NOINDEX" default="1">
+                <field name="primary_domain" type="text" label="PLG_SYSTEM_OFFROADSEO_PRIMARY_DOMAIN" description="PLG_SYSTEM_OFFROADSEO_PRIMARY_DOMAIN_DESC" class="two-col-right" />
+                <field name="staging_domains" type="textarea" rows="3" label="PLG_SYSTEM_OFFROADSEO_STAGING_DOMAINS" description="PLG_SYSTEM_OFFROADSEO_STAGING_DOMAINS_DESC" class="two-col-left" />
+                <field name="env_force_noindex_on_staging" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_FORCE_NOINDEX" default="1" class="two-col-right">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="env_disable_analytics_on_staging" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_DISABLE_ANALYTICS" default="1">
+                <field name="env_disable_analytics_on_staging" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_DISABLE_ANALYTICS" default="1" class="two-col-left">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="env_show_staging_badge" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_BADGE" default="1">
+                <field name="env_show_staging_badge" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_BADGE" default="1" class="two-col-right">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="enable_hreflang" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_HREFLANG" default="1">
+                <field name="enable_hreflang" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_HREFLANG" default="1" class="two-col-left">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="enable_custom_injections" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_CUSTOM_INJECTIONS" default="1">
+                <field name="enable_custom_injections" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_CUSTOM_INJECTIONS" default="1" class="two-col-right">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="respect_third_party" type="radio" label="PLG_SYSTEM_OFFROADSEO_RESPECT_THIRD_PARTY" description="PLG_SYSTEM_OFFROADSEO_RESPECT_THIRD_PARTY_DESC" default="1">
+                <field name="respect_third_party" type="radio" label="PLG_SYSTEM_OFFROADSEO_RESPECT_THIRD_PARTY" description="PLG_SYSTEM_OFFROADSEO_RESPECT_THIRD_PARTY_DESC" default="1" class="two-col-left">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="only_home" type="radio" label="PLG_SYSTEM_OFFROADSEO_ONLY_HOME" default="1">
+                <field name="only_home" type="radio" label="PLG_SYSTEM_OFFROADSEO_ONLY_HOME" default="1" class="two-col-right">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="include_hreflang" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_HREFLANG" description="PLG_SYSTEM_OFFROADSEO_INCLUDE_HREFLANG_DESC" default="1">
+                <field name="include_hreflang" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_HREFLANG" description="PLG_SYSTEM_OFFROADSEO_INCLUDE_HREFLANG_DESC" default="1" class="two-col-left">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="hreflang_xdefault" type="radio" label="PLG_SYSTEM_OFFROADSEO_HREFLANG_XDEFAULT" description="PLG_SYSTEM_OFFROADSEO_HREFLANG_XDEFAULT_DESC" default="1">
+                <field name="hreflang_xdefault" type="radio" label="PLG_SYSTEM_OFFROADSEO_HREFLANG_XDEFAULT" description="PLG_SYSTEM_OFFROADSEO_HREFLANG_XDEFAULT_DESC" default="1" class="two-col-right">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
                 <field name="advanced_spacer_global" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_ADVANCED" />
-                <field name="html_attrs" type="text" label="PLG_SYSTEM_OFFROADSEO_HTML_ATTRS" description="PLG_SYSTEM_OFFROADSEO_HTML_ATTRS_DESC" />
-                <field name="head_top_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_HEAD_TOP_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_HEAD_TOP_CUSTOM_CODE_DESC" filter="raw" rows="4" />
-                <field name="head_end_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_HEAD_END_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_HEAD_END_CUSTOM_CODE_DESC" filter="raw" rows="4" />
-                <field name="body_start_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_BODY_START_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_BODY_START_CUSTOM_CODE_DESC" filter="raw" rows="4" />
-                <field name="body_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_BODY_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_BODY_CUSTOM_CODE_DESC" filter="raw" rows="4" />
-                <field name="scope_components" type="text" label="PLG_SYSTEM_OFFROADSEO_SCOPE_COMPONENTS" description="PLG_SYSTEM_OFFROADSEO_SCOPE_COMPONENTS_DESC" />
-                <field name="scope_views" type="text" label="PLG_SYSTEM_OFFROADSEO_SCOPE_VIEWS" description="PLG_SYSTEM_OFFROADSEO_SCOPE_VIEWS_DESC" />
-                <field name="scope_menu_ids" type="text" label="PLG_SYSTEM_OFFROADSEO_SCOPE_MENU_IDS" description="PLG_SYSTEM_OFFROADSEO_SCOPE_MENU_IDS_DESC" />
+                <field name="html_attrs" type="text" label="PLG_SYSTEM_OFFROADSEO_HTML_ATTRS" description="PLG_SYSTEM_OFFROADSEO_HTML_ATTRS_DESC" class="two-col-left" />
+                <field name="head_top_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_HEAD_TOP_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_HEAD_TOP_CUSTOM_CODE_DESC" filter="raw" rows="4" class="two-col-right" />
+                <field name="head_end_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_HEAD_END_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_HEAD_END_CUSTOM_CODE_DESC" filter="raw" rows="4" class="two-col-left" />
+                <field name="body_start_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_BODY_START_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_BODY_START_CUSTOM_CODE_DESC" filter="raw" rows="4" class="two-col-right" />
+                <field name="body_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_BODY_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_BODY_CUSTOM_CODE_DESC" filter="raw" rows="4" class="two-col-left" />
+                <field name="scope_components" type="text" label="PLG_SYSTEM_OFFROADSEO_SCOPE_COMPONENTS" description="PLG_SYSTEM_OFFROADSEO_SCOPE_COMPONENTS_DESC" class="two-col-right" />
+                <field name="scope_views" type="text" label="PLG_SYSTEM_OFFROADSEO_SCOPE_VIEWS" description="PLG_SYSTEM_OFFROADSEO_SCOPE_VIEWS_DESC" class="two-col-left" />
+                <field name="scope_menu_ids" type="text" label="PLG_SYSTEM_OFFROADSEO_SCOPE_MENU_IDS" description="PLG_SYSTEM_OFFROADSEO_SCOPE_MENU_IDS_DESC" class="two-col-right" />
             </fieldset>
 
             <!-- Schema and Structured Data -->
-            <fieldset name="schema" label="PLG_SYSTEM_OFFROADSEO_TAB_SCHEMA" class="offseo-grid offseo-two">
+            <fieldset name="schema" label="PLG_SYSTEM_OFFROADSEO_TAB_SCHEMA">
                 <field name="basic_spacer_schema" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_BASIC" />
-                <field name="enable_schema" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_SCHEMA" default="1">
+                <field name="enable_schema" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_SCHEMA" default="1" class="two-col-left">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="spacer_org" type="spacer" hr="true" label="PLG_SYSTEM_OFFROADSEO_TAB_ORG" />
-                <field name="org_name" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_NAME" default="Offroad Serbia" />
-                <field name="org_alt" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_ALT" default="4x4 Off-Road Srbija" />
-                <field name="org_desc" type="textarea" rows="3" label="PLG_SYSTEM_OFFROADSEO_ORG_DESC" description="PLG_SYSTEM_OFFROADSEO_ORG_DESC_DESC" />
-                <field name="org_url" type="url" label="PLG_SYSTEM_OFFROADSEO_ORG_URL" default="https://offroadserbia.com/" />
-                <field name="org_logo" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_LOGO" default="https://offroadserbia.com/images/logo/logo-offroad-serbia-4x4.webp" />
-                <field name="org_tel" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_TEL" default="+381-63-348-555" />
-                <field name="org_sameas" type="textarea" label="PLG_SYSTEM_OFFROADSEO_ORG_SAMEAS" description="PLG_SYSTEM_OFFROADSEO_ORG_SAMEAS_DESC" rows="3" />
+                <field name="spacer_org" type="spacer" hr="true" label="PLG_SYSTEM_OFFROADSEO_TAB_ORG" class="two-col-right" />
+                <field name="org_name" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_NAME" default="Offroad Serbia" class="two-col-left" />
+                <field name="org_alt" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_ALT" default="4x4 Off-Road Srbija" class="two-col-right" />
+                <field name="org_desc" type="textarea" rows="3" label="PLG_SYSTEM_OFFROADSEO_ORG_DESC" description="PLG_SYSTEM_OFFROADSEO_ORG_DESC_DESC" class="two-col-left" />
+                <field name="org_url" type="url" label="PLG_SYSTEM_OFFROADSEO_ORG_URL" default="https://offroadserbia.com/" class="two-col-right" />
+                <field name="org_logo" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_LOGO" default="https://offroadserbia.com/images/logo/logo-offroad-serbia-4x4.webp" class="two-col-left" />
+                <field name="org_tel" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_TEL" default="+381-63-348-555" class="two-col-right" />
+                <field name="org_sameas" type="textarea" label="PLG_SYSTEM_OFFROADSEO_ORG_SAMEAS" description="PLG_SYSTEM_OFFROADSEO_ORG_SAMEAS_DESC" rows="3" class="two-col-left" />
 
                 <field name="spacer_site" type="spacer" hr="true" label="PLG_SYSTEM_OFFROADSEO_TAB_WEBSITE" />
-                <field name="include_website" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_WEBSITE" default="1">
+                <field name="include_website" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_WEBSITE" default="1" class="two-col-right">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="search_url_template" type="text" label="PLG_SYSTEM_OFFROADSEO_SEARCH_URL_TEMPLATE" default="index.php?option=com_finder&amp;view=search&amp;q={search_term_string}" />
+                <field name="search_url_template" type="text" label="PLG_SYSTEM_OFFROADSEO_SEARCH_URL_TEMPLATE" default="index.php?option=com_finder&amp;view=search&amp;q={search_term_string}" class="two-col-left" />
 
                 <field name="spacer_article" type="spacer" hr="true" label="PLG_SYSTEM_OFFROADSEO_TAB_ARTICLE" />
-                <field name="include_webpage" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_WEBPAGE" default="1">
+                <field name="include_webpage" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_WEBPAGE" default="1" class="two-col-right">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="include_article" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_ARTICLE" default="1">
+                <field name="include_article" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_ARTICLE" default="1" class="two-col-left">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
                 <field name="advanced_spacer_schema" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_ADVANCED" />
-                <field name="article_type" type="list" label="PLG_SYSTEM_OFFROADSEO_ARTICLE_TYPE" default="BlogPosting">
+                <field name="article_type" type="list" label="PLG_SYSTEM_OFFROADSEO_ARTICLE_TYPE" default="BlogPosting" class="two-col-right">
                     <option value="Article">PLG_SYSTEM_OFFROADSEO_ARTICLE_TYPE_ARTICLE</option>
                     <option value="BlogPosting">PLG_SYSTEM_OFFROADSEO_ARTICLE_TYPE_BLOGPOSTING</option>
                 </field>
-                <field name="article_keywords" type="radio" label="PLG_SYSTEM_OFFROADSEO_ARTICLE_KEYWORDS" description="PLG_SYSTEM_OFFROADSEO_ARTICLE_KEYWORDS_DESC" default="1">
+                <field name="article_keywords" type="radio" label="PLG_SYSTEM_OFFROADSEO_ARTICLE_KEYWORDS" description="PLG_SYSTEM_OFFROADSEO_ARTICLE_KEYWORDS_DESC" default="1" class="two-col-left">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
 
                 <field name="spacer_breadcrumbs" type="spacer" hr="true" label="PLG_SYSTEM_OFFROADSEO_TAB_BREADCRUMBS" />
-                <field name="include_breadcrumbs" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_BREADCRUMBS" default="1">
+                <field name="include_breadcrumbs" type="radio" label="PLG_SYSTEM_OFFROADSEO_INCLUDE_BREADCRUMBS" default="1" class="two-col-right">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
             </fieldset>
 
             <!-- OpenGraph/Twitter -->
-            <fieldset name="opengraph" label="PLG_SYSTEM_OFFROADSEO_TAB_OG" class="offseo-grid offseo-two">
+            <fieldset name="opengraph" label="PLG_SYSTEM_OFFROADSEO_TAB_OG">
                 <field name="basic_spacer_og" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_BASIC" />
-                <field name="enable_opengraph" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_OPENGRAPH" default="1">
+                <field name="enable_opengraph" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_OPENGRAPH" default="1" class="two-col-left">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="og_enable" type="radio" label="PLG_SYSTEM_OFFROADSEO_OG_ENABLE" default="0">
+                <field name="og_enable" type="radio" label="PLG_SYSTEM_OFFROADSEO_OG_ENABLE" default="0" class="two-col-right">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
                 <field name="advanced_spacer_og" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_ADVANCED" />
-                <field name="og_override" type="radio" label="PLG_SYSTEM_OFFROADSEO_OG_OVERRIDE" default="0">
+                <field name="og_override" type="radio" label="PLG_SYSTEM_OFFROADSEO_OG_OVERRIDE" default="0" class="two-col-left">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="og_site_name" type="text" label="PLG_SYSTEM_OFFROADSEO_OG_SITENAME" />
-                <field name="og_image" type="text" label="PLG_SYSTEM_OFFROADSEO_OG_IMAGE" />
-                <field name="force_og_head" type="radio" label="PLG_SYSTEM_OFFROADSEO_FORCE_OG_HEAD" description="PLG_SYSTEM_OFFROADSEO_FORCE_OG_HEAD_DESC" default="1">
+                <field name="og_site_name" type="text" label="PLG_SYSTEM_OFFROADSEO_OG_SITENAME" class="two-col-right" />
+                <field name="og_image" type="text" label="PLG_SYSTEM_OFFROADSEO_OG_IMAGE" class="two-col-left" />
+                <field name="force_og_head" type="radio" label="PLG_SYSTEM_OFFROADSEO_FORCE_OG_HEAD" description="PLG_SYSTEM_OFFROADSEO_FORCE_OG_HEAD_DESC" default="1" class="two-col-right">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
             </fieldset>
 
             <!-- Analytics -->
-            <fieldset name="analytics" label="PLG_SYSTEM_OFFROADSEO_TAB_ANALYTICS" class="offseo-grid offseo-two">
+            <fieldset name="analytics" label="PLG_SYSTEM_OFFROADSEO_TAB_ANALYTICS">
                 <field name="basic_spacer_analytics" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_BASIC" />
-                <field name="enable_analytics" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_ANALYTICS" default="1">
+                <field name="enable_analytics" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_ANALYTICS" default="1" class="two-col-left">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="ga_measurement_id" type="text" label="PLG_SYSTEM_OFFROADSEO_GA_MEASUREMENT_ID" description="PLG_SYSTEM_OFFROADSEO_GA_MEASUREMENT_ID_DESC" />
-                <field name="ga_config_options" type="text" label="PLG_SYSTEM_OFFROADSEO_GA_CONFIG_OPTIONS" description="PLG_SYSTEM_OFFROADSEO_GA_CONFIG_OPTIONS_DESC" />
-                <field name="fb_pixel_id" type="text" label="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_ID" description="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_ID_DESC" />
-                <field name="fb_pixel_init_options" type="text" label="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_INIT_OPTIONS" description="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_INIT_OPTIONS_DESC" />
-                <field name="fb_pixel_track_pageview" type="radio" label="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_TRACK_PAGEVIEW" default="1">
+                <field name="ga_measurement_id" type="text" label="PLG_SYSTEM_OFFROADSEO_GA_MEASUREMENT_ID" description="PLG_SYSTEM_OFFROADSEO_GA_MEASUREMENT_ID_DESC" class="two-col-right" />
+                <field name="ga_config_options" type="text" label="PLG_SYSTEM_OFFROADSEO_GA_CONFIG_OPTIONS" description="PLG_SYSTEM_OFFROADSEO_GA_CONFIG_OPTIONS_DESC" class="two-col-left" />
+                <field name="fb_pixel_id" type="text" label="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_ID" description="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_ID_DESC" class="two-col-right" />
+                <field name="fb_pixel_init_options" type="text" label="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_INIT_OPTIONS" description="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_INIT_OPTIONS_DESC" class="two-col-left" />
+                <field name="fb_pixel_track_pageview" type="radio" label="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_TRACK_PAGEVIEW" default="1" class="two-col-right">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="note_analytics" type="note" label="PLG_SYSTEM_OFFROADSEO_ANALYTICS_NOTE" description="PLG_SYSTEM_OFFROADSEO_ANALYTICS_NOTE_DESC" />
+                <field name="note_analytics" type="note" label="PLG_SYSTEM_OFFROADSEO_ANALYTICS_NOTE" description="PLG_SYSTEM_OFFROADSEO_ANALYTICS_NOTE_DESC" class="two-col-left" />
                 <field name="advanced_spacer_analytics" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_ADVANCED" />
-                <field name="fb_pixel_events" type="checkboxes" label="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_EVENTS" description="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_EVENTS_DESC">
+                <field name="fb_pixel_events" type="checkboxes" label="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_EVENTS" description="PLG_SYSTEM_OFFROADSEO_FB_PIXEL_EVENTS_DESC" class="two-col-right">
                     <option value="Lead">Lead</option>
                     <option value="CompleteRegistration">CompleteRegistration</option>
                     <option value="Purchase">Purchase</option>
@@ -199,22 +199,22 @@
             </fieldset>
 
             <!-- Debug -->
-            <fieldset name="debug" label="PLG_SYSTEM_OFFROADSEO_TAB_DEBUG" class="offseo-grid offseo-two">
+            <fieldset name="debug" label="PLG_SYSTEM_OFFROADSEO_TAB_DEBUG">
                 <field name="basic_spacer_debug" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_BASIC" />
-                <field name="force_noindex" type="radio" label="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX" description="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX_DESC" default="0">
+                <field name="force_noindex" type="radio" label="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX" description="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX_DESC" default="0" class="two-col-left">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="debug_pretty_json" type="radio" label="PLG_SYSTEM_OFFROADSEO_DEBUG_PRETTY_JSON" description="PLG_SYSTEM_OFFROADSEO_DEBUG_PRETTY_JSON_DESC" default="0">
+                <field name="debug_pretty_json" type="radio" label="PLG_SYSTEM_OFFROADSEO_DEBUG_PRETTY_JSON" description="PLG_SYSTEM_OFFROADSEO_DEBUG_PRETTY_JSON_DESC" default="0" class="two-col-right">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="debug_wrap_markers" type="radio" label="PLG_SYSTEM_OFFROADSEO_DEBUG_WRAP_MARKERS" description="PLG_SYSTEM_OFFROADSEO_DEBUG_WRAP_MARKERS_DESC" default="0">
+                <field name="debug_wrap_markers" type="radio" label="PLG_SYSTEM_OFFROADSEO_DEBUG_WRAP_MARKERS" description="PLG_SYSTEM_OFFROADSEO_DEBUG_WRAPERS_DESC" default="0" class="two-col-left">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
                 <field name="advanced_spacer_debug" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_ADVANCED" />
-                <field name="show_staging_badge" type="radio" label="PLG_SYSTEM_OFFROADSEO_SHOW_STAGING_BADGE" description="PLG_SYSTEM_OFFROADSEO_SHOW_STAGING_BADGE_DESC" default="0">
+                <field name="show_staging_badge" type="radio" label="PLG_SYSTEM_OFFROADSEO_SHOW_STAGING_BADGE" description="PLG_SYSTEM_OFFROADSEO_SHOW_STAGING_BADGE_DESC" default="0" class="two-col-right">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>

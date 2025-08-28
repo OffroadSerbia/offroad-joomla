@@ -10,6 +10,7 @@
 
 use Joomla\CMS\Document\HtmlDocument;
 use Joomla\CMS\Factory;
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Router\Route;
@@ -22,7 +23,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.6.1';
+    private const VERSION = '1.6.3';
     // Environment flag (auto-detected): true on staging/dev, false on production
     private bool $isStaging = false;
     // Buffer for JSON-LD when injecting at body end
@@ -61,18 +62,8 @@ class PlgSystemOffroadseo extends CMSPlugin
             try {
                 $doc = Factory::getDocument();
                 if ($doc instanceof HtmlDocument) {
-                    // Load external CSS (installed via <media>)
-                    $doc->addStyleSheet(Uri::root() . 'media/plg_system_offroadseo/admin.css');
-                    // Fallback inline CSS to guarantee layout even if file path differs
-                    $doc->addStyleDeclaration(
-                        '/* OffroadSEO admin two-column layout */\n'
-                        . '.offseo-grid.offseo-two{display:flex;flex-wrap:wrap;gap:16px 2%;}\n'
-                        . '.offseo-grid.offseo-two .control-group{flex:1 1 49%;min-width:420px;}\n'
-                        . '.offseo-grid.offseo-two .control-label{max-width:100%;}\n'
-                        . '.offseo-grid.offseo-two .controls{max-width:100%;}\n'
-                        . '.offseo-section label{font-weight:600;}\n'
-                        . '@media (max-width:1024px){.offseo-grid.offseo-two .control-group{flex:1 1 100%;min-width:0;}}'
-                    );
+                    // Load external CSS (installed via <media>); Joomla columns attribute handles layout
+                    HTMLHelper::_('stylesheet', 'plg_system_offroadseo/admin.css', ['version' => 'auto', 'relative' => true]);
                 }
             } catch (\Throwable $e) {
                 // ignore
@@ -102,7 +93,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         if (!$this->app->isClient('site')) {
             return;
         }
-    $emitComment = false; // removed version HTML comment per simplified debug options
+        $emitComment = false; // removed version HTML comment per simplified debug options
         $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
         $forceOgHead = (bool) $this->params->get('force_og_head', 1);
         $forceNoindex = (bool) $this->params->get('force_noindex', 0);
@@ -116,16 +107,16 @@ class PlgSystemOffroadseo extends CMSPlugin
         if ($autoEnv && $this->isStaging && $showBadgeEnv) {
             $showBadge = true;
         }
-    $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
-    // Scope filters
-    $scopeAllowed = $this->isScopeAllowed();
-    // Master group switches
-    $enableSchema   = (bool) $this->params->get('enable_schema', 1);
-    $enableOg       = (bool) $this->params->get('enable_opengraph', 1);
-    $enableAnalytics= (bool) $this->params->get('enable_analytics', 1);
-    $enableHreflang = (bool) $this->params->get('enable_hreflang', 1);
-    $enableCustom   = (bool) $this->params->get('enable_custom_injections', 1);
-    $respectThird   = (bool) $this->params->get('respect_third_party', 1);
+        $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
+        // Scope filters
+        $scopeAllowed = $this->isScopeAllowed();
+        // Master group switches
+        $enableSchema   = (bool) $this->params->get('enable_schema', 1);
+        $enableOg       = (bool) $this->params->get('enable_opengraph', 1);
+        $enableAnalytics = (bool) $this->params->get('enable_analytics', 1);
+        $enableHreflang = (bool) $this->params->get('enable_hreflang', 1);
+        $enableCustom   = (bool) $this->params->get('enable_custom_injections', 1);
+        $respectThird   = (bool) $this->params->get('respect_third_party', 1);
         // Re-assert header as some stacks override headers late
         if ($forceNoindex) {
             $this->emitNoindexHeader();
@@ -197,11 +188,21 @@ class PlgSystemOffroadseo extends CMSPlugin
             $filtered = [];
             foreach ($this->offseoJsonLd as $script) {
                 $s = $script;
-                if ($hasOrg && stripos($s, '"@type"') !== false && preg_match('/"@type"\s*:\s*"Organization"/i', $s)) { continue; }
-                if ($hasWebSite && preg_match('/"@type"\s*:\s*"WebSite"/i', $s)) { continue; }
-                if ($hasWebPage && preg_match('/"@type"\s*:\s*"WebPage"/i', $s)) { continue; }
-                if ($hasArticle && preg_match('/"@type"\s*:\s*"(Article|BlogPosting)"/i', $s)) { continue; }
-                if ($hasBreadcrumb && preg_match('/"@type"\s*:\s*"BreadcrumbList"/i', $s)) { continue; }
+                if ($hasOrg && stripos($s, '"@type"') !== false && preg_match('/"@type"\s*:\s*"Organization"/i', $s)) {
+                    continue;
+                }
+                if ($hasWebSite && preg_match('/"@type"\s*:\s*"WebSite"/i', $s)) {
+                    continue;
+                }
+                if ($hasWebPage && preg_match('/"@type"\s*:\s*"WebPage"/i', $s)) {
+                    continue;
+                }
+                if ($hasArticle && preg_match('/"@type"\s*:\s*"(Article|BlogPosting)"/i', $s)) {
+                    continue;
+                }
+                if ($hasBreadcrumb && preg_match('/"@type"\s*:\s*"BreadcrumbList"/i', $s)) {
+                    continue;
+                }
                 $filtered[] = $script;
             }
             $this->offseoJsonLd = $filtered;
@@ -225,7 +226,7 @@ class PlgSystemOffroadseo extends CMSPlugin
                 : $bodyEndCustom;
         }
         // Visible badges: staging badge and debug badge (debug badge shows whenever debug_master is ON)
-    if ($showBadge) {
+        if ($showBadge) {
             $endPieces[] = '<div id="offseo-staging-badge" style="position:fixed;z-index:99999;right:12px;bottom:12px;background:#c00;color:#fff;font:600 12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:8px 10px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:.9;pointer-events:none;">STAGING • OffroadSEO v' . self::VERSION . '</div>';
         }
         if ($emitComment) {
@@ -237,7 +238,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 
         // Apply precise placements
         // 1) Head TOP: before first <script> in <head>, or immediately after <head> if none
-    if ($scopeAllowed && !empty($this->injectHeadTop)) {
+        if ($scopeAllowed && !empty($this->injectHeadTop)) {
             $headTop = "\n" . ($wrapMarkers ? "<!-- OffroadSEO: HEAD TOP start -->\n" : '') . implode("\n\n", $this->injectHeadTop) . ($wrapMarkers ? "\n<!-- OffroadSEO: HEAD TOP end -->" : '') . "\n";
             if (preg_match('/<head\b[^>]*>/i', $body, $m, PREG_OFFSET_CAPTURE)) {
                 $headOpenPos = $m[0][1];
@@ -258,7 +259,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // 2) Head END: before </head>
-    if ($scopeAllowed && !empty($this->injectHeadEnd)) {
+        if ($scopeAllowed && !empty($this->injectHeadEnd)) {
             $headEnd = "\n" . ($wrapMarkers ? "<!-- OffroadSEO: HEAD END start -->\n" : '') . implode("\n\n", $this->injectHeadEnd) . ($wrapMarkers ? "\n<!-- OffroadSEO: HEAD END end -->" : '') . "\n";
             if (stripos($body, '</head>') !== false) {
                 $body = preg_replace('/<\/head>/i', $headEnd . '</head>', $body, 1);
@@ -268,7 +269,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // 3) Body START: right after <body ...>
-    if ($scopeAllowed && !empty($this->injectBodyStart)) {
+        if ($scopeAllowed && !empty($this->injectBodyStart)) {
             $bodyStart = "\n" . ($wrapMarkers ? "<!-- OffroadSEO: BODY START start -->\n" : '') . implode("\n\n", $this->injectBodyStart) . ($wrapMarkers ? "\n<!-- OffroadSEO: BODY START end -->" : '') . "\n";
             if (preg_match('/<body\b[^>]*>/i', $body, $bm, PREG_OFFSET_CAPTURE)) {
                 $openEnd = $bm[0][1] + strlen($bm[0][0]);
@@ -279,7 +280,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // 4) Body END: before </body>
-    if ($scopeAllowed && !empty($this->injectBodyEnd)) {
+        if ($scopeAllowed && !empty($this->injectBodyEnd)) {
             $bodyEnd = "\n" . ($wrapMarkers ? "<!-- OffroadSEO: BODY END start -->\n" : '') . implode("\n\n", $this->injectBodyEnd) . ($wrapMarkers ? "\n<!-- OffroadSEO: BODY END end -->" : '') . "\n";
             if (stripos($body, '</body>') !== false) {
                 $body = preg_replace('/<\/body>/i', $bodyEnd . '</body>', $body, 1);
@@ -309,25 +310,25 @@ class PlgSystemOffroadseo extends CMSPlugin
             $this->emitNoindexHeader();
         }
 
-    // Scope and master toggles
-    $injectInBody = true; // simplified: always inject JSON-LD at end of body for compatibility
-    $prettyJson  = (bool) $this->params->get('debug_pretty_json', 0);
-    $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
-    $scopeAllowed = $this->isScopeAllowed();
-    $enableSchema   = (bool) $this->params->get('enable_schema', 1);
-    $enableOg       = (bool) $this->params->get('enable_opengraph', 1);
-    $enableAnalytics= (bool) $this->params->get('enable_analytics', 1);
-    $enableHreflang = (bool) $this->params->get('enable_hreflang', 1);
-    $enableCustom   = (bool) $this->params->get('enable_custom_injections', 1);
-    $respectThird   = (bool) $this->params->get('respect_third_party', 1);
-    // Env policy: disable analytics on staging if enabled
-    $autoEnv = (bool) $this->params->get('env_auto', 1);
-    $disableAnalyticsOnStaging = (bool) $this->params->get('env_disable_analytics_on_staging', 1);
-    if ($autoEnv && $this->isStaging && $disableAnalyticsOnStaging) {
-        $enableAnalytics = false;
-    }
+        // Scope and master toggles
+        $injectInBody = true; // simplified: always inject JSON-LD at end of body for compatibility
+        $prettyJson  = (bool) $this->params->get('debug_pretty_json', 0);
+        $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
+        $scopeAllowed = $this->isScopeAllowed();
+        $enableSchema   = (bool) $this->params->get('enable_schema', 1);
+        $enableOg       = (bool) $this->params->get('enable_opengraph', 1);
+        $enableAnalytics = (bool) $this->params->get('enable_analytics', 1);
+        $enableHreflang = (bool) $this->params->get('enable_hreflang', 1);
+        $enableCustom   = (bool) $this->params->get('enable_custom_injections', 1);
+        $respectThird   = (bool) $this->params->get('respect_third_party', 1);
+        // Env policy: disable analytics on staging if enabled
+        $autoEnv = (bool) $this->params->get('env_auto', 1);
+        $disableAnalyticsOnStaging = (bool) $this->params->get('env_disable_analytics_on_staging', 1);
+        if ($autoEnv && $this->isStaging && $disableAnalyticsOnStaging) {
+            $enableAnalytics = false;
+        }
 
-    $add = function (array $data) use ($doc, $injectInBody, $prettyJson, $wrapMarkers) {
+        $add = function (array $data) use ($doc, $injectInBody, $prettyJson, $wrapMarkers) {
             $flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
             if ($prettyJson) {
                 $flags |= JSON_PRETTY_PRINT;
@@ -347,7 +348,7 @@ class PlgSystemOffroadseo extends CMSPlugin
             }
         };
 
-    // Version meta marker removed by design
+        // Version meta marker removed by design
 
         // Optional: Google Analytics 4 (gtag.js) minimal snippet (GA4 only; requires ID starting with G-)
         $gaId = trim((string) $this->params->get('ga_measurement_id', ''));
@@ -357,10 +358,18 @@ class PlgSystemOffroadseo extends CMSPlugin
             $hd = $doc->getHeadData();
             $scripts = isset($hd['scripts']) ? array_keys($hd['scripts']) : [];
             foreach ($scripts as $src) {
-                if (stripos($src, 'googletagmanager.com/gtag/js') !== false) { $hasThirdGa = true; break; }
+                if (stripos($src, 'googletagmanager.com/gtag/js') !== false) {
+                    $hasThirdGa = true;
+                    break;
+                }
             }
             if (!$hasThirdGa && isset($hd['custom']) && is_array($hd['custom'])) {
-                foreach ($hd['custom'] as $c) { if (stripos($c, 'gtag(') !== false) { $hasThirdGa = true; break; } }
+                foreach ($hd['custom'] as $c) {
+                    if (stripos($c, 'gtag(') !== false) {
+                        $hasThirdGa = true;
+                        break;
+                    }
+                }
             }
         }
         if ($scopeAllowed && $enableAnalytics && !$hasThirdGa && $gaId !== '' && stripos($gaId, 'G-') === 0) {
@@ -388,10 +397,18 @@ class PlgSystemOffroadseo extends CMSPlugin
             $hd = $doc->getHeadData();
             $scripts = isset($hd['scripts']) ? array_keys($hd['scripts']) : [];
             foreach ($scripts as $src) {
-                if (stripos($src, 'connect.facebook.net') !== false) { $hasThirdPixel = true; break; }
+                if (stripos($src, 'connect.facebook.net') !== false) {
+                    $hasThirdPixel = true;
+                    break;
+                }
             }
             if (!$hasThirdPixel && isset($hd['custom']) && is_array($hd['custom'])) {
-                foreach ($hd['custom'] as $c) { if (stripos($c, 'fbq(') !== false) { $hasThirdPixel = true; break; } }
+                foreach ($hd['custom'] as $c) {
+                    if (stripos($c, 'fbq(') !== false) {
+                        $hasThirdPixel = true;
+                        break;
+                    }
+                }
             }
         }
         if ($scopeAllowed && $enableAnalytics && $fbIdsRaw !== '' && !$hasThirdPixel) {
@@ -449,17 +466,21 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // Raw custom code placement preferences
-    $headTopCustom = (string) $this->params->get('head_top_custom_code', '');
-    if ($scopeAllowed && $enableCustom && $headTopCustom !== '') {
-            if ($prettyJson && !str_ends_with($headTopCustom, "\n")) { $headTopCustom .= "\n"; }
+        $headTopCustom = (string) $this->params->get('head_top_custom_code', '');
+        if ($scopeAllowed && $enableCustom && $headTopCustom !== '') {
+            if ($prettyJson && !str_ends_with($headTopCustom, "\n")) {
+                $headTopCustom .= "\n";
+            }
             $this->injectHeadTop[] = $wrapMarkers ? ("<!-- OffroadSEO: Custom (head-top) start -->\n" . $headTopCustom . "<!-- OffroadSEO: Custom (head-top) end -->") : $headTopCustom;
         }
         $headEndCustom = (string) $this->params->get('head_end_custom_code', '');
-    if ($scopeAllowed && $enableCustom && $headEndCustom !== '') {
-            if ($prettyJson && !str_ends_with($headEndCustom, "\n")) { $headEndCustom .= "\n"; }
+        if ($scopeAllowed && $enableCustom && $headEndCustom !== '') {
+            if ($prettyJson && !str_ends_with($headEndCustom, "\n")) {
+                $headEndCustom .= "\n";
+            }
             $this->injectHeadEnd[] = $wrapMarkers ? ("<!-- OffroadSEO: Custom (head-end) start -->\n" . $headEndCustom . "<!-- OffroadSEO: Custom (head-end) end -->") : $headEndCustom;
         }
-    // Legacy custom head fields removed (migration-only)
+        // Legacy custom head fields removed (migration-only)
 
         // Build Organization JSON-LD from params
         $onlyHome = (bool) $this->params->get('only_home', 1);
@@ -503,7 +524,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // Hreflang (alternate languages) before JSON-LD to ensure links appear early
-    if ($scopeAllowed && $enableHreflang && (bool) $this->params->get('include_hreflang', 1)) {
+        if ($scopeAllowed && $enableHreflang && (bool) $this->params->get('include_hreflang', 1)) {
             try {
                 $app = $this->app;
                 $menu = $app->getMenu();
@@ -553,7 +574,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // WebSite + Sitelinks SearchBox (optional)
-    if ($scopeAllowed && $enableSchema && (bool) $this->params->get('include_website', 1) && ($isHome || !$onlyHome)) {
+        if ($scopeAllowed && $enableSchema && (bool) $this->params->get('include_website', 1) && ($isHome || !$onlyHome)) {
             $searchTemplate = (string) $this->params->get('search_url_template', 'index.php?option=com_finder&view=search&q={search_term_string}');
             $website = [
                 '@context' => 'https://schema.org',
@@ -581,7 +602,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         $title = $doc->getTitle();
         $currentUrl = (string) Uri::getInstance();
 
-    if ($scopeAllowed && $enableSchema && ($includeWebPage || $includeArticle) && $option === 'com_content' && $view === 'article') {
+        if ($scopeAllowed && $enableSchema && ($includeWebPage || $includeArticle) && $option === 'com_content' && $view === 'article') {
             $webPage = [
                 '@context' => 'https://schema.org',
                 '@type' => 'WebPage',
@@ -812,7 +833,7 @@ class PlgSystemOffroadseo extends CMSPlugin
             }
         }
 
-    if ($scopeAllowed && $enableSchema && $includeBreadcrumbs) {
+        if ($scopeAllowed && $enableSchema && $includeBreadcrumbs) {
             $pathway = $this->app->getPathway();
             $crumbs = method_exists($pathway, 'getPathway') ? (array) $pathway->getPathway() : [];
             if (!empty($crumbs)) {
@@ -861,7 +882,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // Optional OG/Twitter fallbacks
-    if ($scopeAllowed && $enableOg && (bool) $this->params->get('og_enable', 0)) {
+        if ($scopeAllowed && $enableOg && (bool) $this->params->get('og_enable', 0)) {
             $head = $doc->getHeadData();
             $hasOgImage = false;
             $hasTwitterImage = false;
@@ -1042,7 +1063,9 @@ class PlgSystemOffroadseo extends CMSPlugin
         $out = [];
         foreach ($parts as $p) {
             $p = trim($p);
-            if ($p !== '') { $out[] = $p; }
+            if ($p !== '') {
+                $out[] = $p;
+            }
         }
         return array_values(array_unique($out));
     }
@@ -1061,7 +1084,10 @@ class PlgSystemOffroadseo extends CMSPlugin
 
             $isStg = false;
             foreach ($patterns as $p) {
-                if ($this->hostMatches($host, $p)) { $isStg = true; break; }
+                if ($this->hostMatches($host, $p)) {
+                    $isStg = true;
+                    break;
+                }
             }
             if (!$isStg && $primary !== '' && $host !== '' && $host !== $primary) {
                 $isStg = true;

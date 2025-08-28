@@ -1,22 +1,12 @@
-/* Two-column layout for OffroadSEO plugin fields inside Joomla admin forms */
-.offseo-grid.offseo-two {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px 2%;
-}
-.offseo-grid.offseo-two .control-group {
-  flex: 1 1 49%; /* two columns */
-  min-width: 420px; /* prevent too-narrow columns on wide screens */
-}
-.offseo-grid.offseo-two .control-label { max-width: 100%; }
-.offseo-grid.offseo-two .controls { max-width: 100%; }
-
-/* Section spacers styling (optional subtle separation) */
+/* Minimal admin tweaks */
 .offseo-section label { font-weight: 600; }
 
-@media (max-width: 1024px) {
-  .offseo-grid.offseo-two .control-group {
-    flex: 1 1 100%;
-    min-width: 0;
-  }
+/* Two-column layout via per-field classes on inputs defined in XML */
+/* Target Joomla control-group that contains a field with class two-col-left/right */
+.control-group:has(.two-col-left),
+.control-group:has(.two-col-right) {
+	display: inline-block;
+	vertical-align: top;
 }
+.control-group:has(.two-col-left) { width: 48%; margin-right: 2%; }
+.control-group:has(.two-col-right) { width: 48%; margin-right: 0; }
