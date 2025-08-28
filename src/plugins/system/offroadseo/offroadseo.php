@@ -312,7 +312,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         // Debug master OFF: when ON, disable all options under Debug tab
         $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
         $emitComment = false; // removed version HTML comment per simplified debug options
-    $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
+        $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
         if ($debugMasterOff) {
             $showBadge = false;
         }
@@ -330,7 +330,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         if ($autoEnv && $this->isStaging && $forceNoindexOnStaging) {
             $forceNoindex = true;
         }
-    // Badge display is controlled only by 'show_staging_badge' now
+        // Badge display is controlled only by 'show_staging_badge' now
         $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
         if ($debugMasterOff) {
             $wrapMarkers = false;
@@ -345,7 +345,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         $enableCustom   = (bool) $this->params->get('enable_custom_injections', 1);
         $respectThird   = (bool) $this->params->get('respect_third_party', 1);
         // Re-assert header as some stacks override headers late
-    if ($forceNoindex) {
+        if ($forceNoindex) {
             $this->emitNoindexHeader();
         }
         $body = $this->app->getBody();
@@ -532,9 +532,9 @@ class PlgSystemOffroadseo extends CMSPlugin
         if (!$doc instanceof HtmlDocument) {
             return;
         }
-    // Re-assert X-Robots-Tag before head compile if needed
-    $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
-    if (!$debugMasterOff && (bool) $this->params->get('force_noindex', 0)) {
+        // Re-assert X-Robots-Tag before head compile if needed
+        $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
+        if (!$debugMasterOff && (bool) $this->params->get('force_noindex', 0)) {
             $this->emitNoindexHeader();
         }
 
@@ -1108,8 +1108,8 @@ class PlgSystemOffroadseo extends CMSPlugin
             }
         }
 
-    // Force noindex meta if enabled (applies to all pages on site client)
-    if (!$debugMasterOff && (bool) $this->params->get('force_noindex', 0)) {
+        // Force noindex meta if enabled (applies to all pages on site client)
+        if (!$debugMasterOff && (bool) $this->params->get('force_noindex', 0)) {
             $doc->setMetaData('robots', 'noindex, nofollow');
         }
 
