@@ -23,7 +23,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.7.4';
+    private const VERSION = '1.7.5';
     // Environment flag (auto-detected): true on staging/dev, false on production
     private bool $isStaging = false;
     // Buffer for JSON-LD when injecting at body end
@@ -520,6 +520,26 @@ class PlgSystemOffroadseo extends CMSPlugin
         $this->app->setBody($body);
     }
 
+    /**
+     * Ensure headers are in place right before the response is sent.
+     */
+    public function onBeforeRespond(): void
+    {
+        if (!$this->app->isClient('site')) {
+            return;
+        }
+        $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
+        if ($debugMasterOff) {
+            return;
+        }
+        $autoEnv = (bool) $this->params->get('env_auto', 1);
+        $envForce = (bool) $this->params->get('env_force_noindex_on_staging', 1);
+        $manual = (bool) $this->params->get('force_noindex', 0);
+        $eff = $manual || ($autoEnv && $this->isStaging && $envForce);
+        if ($eff) {
+            $this->emitNoindexHeader();
+        }
+    }
 
 
     public function onBeforeCompileHead(): void
