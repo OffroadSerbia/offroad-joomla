@@ -23,7 +23,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.7.0';
+    private const VERSION = '1.7.1';
     // Environment flag (auto-detected): true on staging/dev, false on production
     private bool $isStaging = false;
     // Buffer for JSON-LD when injecting at body end
@@ -105,7 +105,7 @@ class PlgSystemOffroadseo extends CMSPlugin
                     $urlsArticles = [];
 
                     // Helper: add URL into bucket
-                    $pushUrl = function(array &$bucket, array $u) {
+                    $pushUrl = function (array &$bucket, array $u) {
                         $bucket[] = $u;
                     };
 
@@ -145,7 +145,8 @@ class PlgSystemOffroadseo extends CMSPlugin
                                     $pushUrl($urlsPages, $u);
                                 }
                             }
-                        } catch (\Throwable $e) { /* ignore */ }
+                        } catch (\Throwable $e) { /* ignore */
+                        }
                     }
 
                     // Articles (published), newest first
@@ -177,7 +178,8 @@ class PlgSystemOffroadseo extends CMSPlugin
                                         $d = new Date($last, 'UTC');
                                         $d->setTimezone($tz);
                                         $lastDate = $d->format('Y-m-d');
-                                    } catch (\Throwable $e) { /* ignore */ }
+                                    } catch (\Throwable $e) { /* ignore */
+                                    }
                                 }
 
                                 $u = [
@@ -208,7 +210,8 @@ class PlgSystemOffroadseo extends CMSPlugin
                                 }
                                 $pushUrl($urlsArticles, $u);
                             }
-                        } catch (\Throwable $e) { /* ignore */ }
+                        } catch (\Throwable $e) { /* ignore */
+                        }
                     }
 
                     // Map path to output type
@@ -224,9 +227,17 @@ class PlgSystemOffroadseo extends CMSPlugin
                     if ($which === 'index' && $useIndex) {
                         // Compute lastmod per child
                         $lmPages = $today;
-                        foreach ($urlsPages as $u) { if (!empty($u['lastmod']) && $u['lastmod'] > $lmPages) { $lmPages = $u['lastmod']; } }
+                        foreach ($urlsPages as $u) {
+                            if (!empty($u['lastmod']) && $u['lastmod'] > $lmPages) {
+                                $lmPages = $u['lastmod'];
+                            }
+                        }
                         $lmArts = $today;
-                        foreach ($urlsArticles as $u) { if (!empty($u['lastmod']) && $u['lastmod'] > $lmArts) { $lmArts = $u['lastmod']; } }
+                        foreach ($urlsArticles as $u) {
+                            if (!empty($u['lastmod']) && $u['lastmod'] > $lmArts) {
+                                $lmArts = $u['lastmod'];
+                            }
+                        }
                         $lastModIndex = max($lmPages, $lmArts);
                         $emit = $this->renderSitemapIndex([
                             ['loc' => $base . '/sitemap-pages.xml', 'lastmod' => $lmPages],
@@ -234,10 +245,18 @@ class PlgSystemOffroadseo extends CMSPlugin
                         ]);
                     } elseif ($which === 'pages') {
                         $emit = $this->renderUrlset($urlsPages, $includeAlt, $includeImages);
-                        foreach ($urlsPages as $u) { if (!empty($u['lastmod']) && $u['lastmod'] > $lastModIndex) { $lastModIndex = $u['lastmod']; } }
+                        foreach ($urlsPages as $u) {
+                            if (!empty($u['lastmod']) && $u['lastmod'] > $lastModIndex) {
+                                $lastModIndex = $u['lastmod'];
+                            }
+                        }
                     } else { // articles
                         $emit = $this->renderUrlset($urlsArticles, $includeAlt, $includeImages);
-                        foreach ($urlsArticles as $u) { if (!empty($u['lastmod']) && $u['lastmod'] > $lastModIndex) { $lastModIndex = $u['lastmod']; } }
+                        foreach ($urlsArticles as $u) {
+                            if (!empty($u['lastmod']) && $u['lastmod'] > $lastModIndex) {
+                                $lastModIndex = $u['lastmod'];
+                            }
+                        }
                     }
 
                     // Caching headers: ETag and Last-Modified, support 304
@@ -1319,7 +1338,8 @@ class PlgSystemOffroadseo extends CMSPlugin
                     $links[strtolower($code)] = $url;
                 }
             }
-        } catch (\Throwable $e) { /* ignore */ }
+        } catch (\Throwable $e) { /* ignore */
+        }
         return $links;
     }
 
@@ -1345,7 +1365,8 @@ class PlgSystemOffroadseo extends CMSPlugin
                     }
                 }
             }
-        } catch (\Throwable $e) { /* ignore */ }
+        } catch (\Throwable $e) { /* ignore */
+        }
         return $links;
     }
 
@@ -1371,7 +1392,8 @@ class PlgSystemOffroadseo extends CMSPlugin
                     }
                 }
             }
-        } catch (\Throwable $e) { /* ignore */ }
+        } catch (\Throwable $e) { /* ignore */
+        }
         return $links;
     }
 
@@ -1427,13 +1449,17 @@ class PlgSystemOffroadseo extends CMSPlugin
 
     private function hasAnyAlternates(array $urls): bool
     {
-        foreach ($urls as $u) { if (!empty($u['alternates'])) return true; }
+        foreach ($urls as $u) {
+            if (!empty($u['alternates'])) return true;
+        }
         return false;
     }
 
     private function hasAnyImages(array $urls): bool
     {
-        foreach ($urls as $u) { if (!empty($u['image'])) return true; }
+        foreach ($urls as $u) {
+            if (!empty($u['image'])) return true;
+        }
         return false;
     }
 }
