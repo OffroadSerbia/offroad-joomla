@@ -534,7 +534,14 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
         // Re-assert X-Robots-Tag before head compile if needed
         $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
-        if (!$debugMasterOff && (bool) $this->params->get('force_noindex', 0)) {
+        $autoEnv = (bool) $this->params->get('env_auto', 1);
+        $envForceNoindex = (bool) $this->params->get('env_force_noindex_on_staging', 1);
+        $manualNoindex = (bool) $this->params->get('force_noindex', 0);
+        $effForceNoindex = false;
+        if (!$debugMasterOff) {
+            $effForceNoindex = $manualNoindex || ($autoEnv && $this->isStaging && $envForceNoindex);
+        }
+        if ($effForceNoindex) {
             $this->emitNoindexHeader();
         }
 
@@ -1108,8 +1115,8 @@ class PlgSystemOffroadseo extends CMSPlugin
             }
         }
 
-        // Force noindex meta if enabled (applies to all pages on site client)
-        if (!$debugMasterOff && (bool) $this->params->get('force_noindex', 0)) {
+        // Force noindex meta if enabled (manual or env-driven)
+        if ($effForceNoindex) {
             $doc->setMetaData('robots', 'noindex, nofollow');
         }
 

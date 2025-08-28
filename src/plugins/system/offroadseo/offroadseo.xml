@@ -274,7 +274,7 @@
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="env_force_noindex_on_staging" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_FORCE_NOINDEX" default="1" containerclass="two-col-right" showon="debug_master_off:0">
+                <field name="env_force_noindex_on_staging" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_FORCE_NOINDEX" description="PLG_SYSTEM_OFFROADSEO_ENV_FORCE_NOINDEX_DESC" default="1" containerclass="two-col-right" showon="debug_master_off:0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
