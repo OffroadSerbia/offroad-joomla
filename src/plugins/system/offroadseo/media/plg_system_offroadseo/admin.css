@@ -1,12 +1,11 @@
 /* Minimal admin tweaks */
 .offseo-section label { font-weight: 600; }
 
-/* Two-column layout via per-field classes on inputs defined in XML */
-/* Target Joomla control-group that contains a field with class two-col-left/right */
-.control-group:has(.two-col-left),
-.control-group:has(.two-col-right) {
+/* Two-column layout via containerclass on fields (Joomla wraps in .control-group) */
+.control-group.two-col-left,
+.control-group.two-col-right {
 	display: inline-block;
 	vertical-align: top;
 }
-.control-group:has(.two-col-left) { width: 48%; margin-right: 2%; }
-.control-group:has(.two-col-right) { width: 48%; margin-right: 0; }
+.control-group.two-col-left { width: 48%; margin-right: 2%; }
+.control-group.two-col-right { width: 48%; margin-right: 0; }
