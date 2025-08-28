@@ -23,7 +23,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.7.2';
+    private const VERSION = '1.7.3';
     // Environment flag (auto-detected): true on staging/dev, false on production
     private bool $isStaging = false;
     // Buffer for JSON-LD when injecting at body end
@@ -304,19 +304,16 @@ class PlgSystemOffroadseo extends CMSPlugin
             return;
         }
         $emitComment = false; // removed version HTML comment per simplified debug options
-        $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
+    $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
         $forceOgHead = (bool) $this->params->get('force_og_head', 1);
         $forceNoindex = (bool) $this->params->get('force_noindex', 0);
         // Env-driven overrides
         $autoEnv = (bool) $this->params->get('env_auto', 1);
         $forceNoindexOnStaging = (bool) $this->params->get('env_force_noindex_on_staging', 1);
-        $showBadgeEnv = (bool) $this->params->get('env_show_staging_badge', 1);
         if ($autoEnv && $this->isStaging && $forceNoindexOnStaging) {
             $forceNoindex = true;
         }
-        if ($autoEnv && $this->isStaging && $showBadgeEnv) {
-            $showBadge = true;
-        }
+    // Badge display is controlled only by 'show_staging_badge' now
         $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
         // Scope filters
         $scopeAllowed = $this->isScopeAllowed();
