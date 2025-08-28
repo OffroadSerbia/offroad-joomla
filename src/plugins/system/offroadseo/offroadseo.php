@@ -125,10 +125,16 @@ class PlgSystemOffroadseo extends CMSPlugin
                             if ($menus) {
                                 $items = $menus->getMenu();
                                 foreach ($items as $item) {
-                                    if (!$item || empty($item->published)) continue;
-                                    if (!empty($excludeMenuIds) && in_array((string) $item->id, $excludeMenuIds, true)) continue;
+                                    if (!$item || empty($item->published)) {
+                                        continue;
+                                    }
+                                    if (!empty($excludeMenuIds) && in_array((string) $item->id, $excludeMenuIds, true)) {
+                                        continue;
+                                    }
                                     $link = (string) ($item->link ?? '');
-                                    if ($link === '' || stripos($link, 'http://') === 0 || stripos($link, 'https://') === 0) continue;
+                                    if ($link === '' || stripos($link, 'http://') === 0 || stripos($link, 'https://') === 0) {
+                                        continue;
+                                    }
                                     $url = \Joomla\CMS\Router\Route::_('index.php?Itemid=' . (int) $item->id);
                                     if (!preg_match('#^https?://#i', $url)) {
                                         $url = $base . '/' . ltrim($url, '/');
@@ -1363,7 +1369,9 @@ class PlgSystemOffroadseo extends CMSPlugin
     private function hostMatches(string $host, string $pattern): bool
     {
         $pattern = strtolower(trim($pattern));
-        if ($pattern === '') return false;
+        if ($pattern === '') {
+            return false;
+        }
         // Support simple wildcard '*'
         $regex = '/^' . str_replace(['\\*'], ['.*'], preg_quote($pattern, '/')) . '$/i';
         return (bool) preg_match($regex, $host);
@@ -1399,7 +1407,9 @@ class PlgSystemOffroadseo extends CMSPlugin
     {
         $links = [];
         try {
-            if (!$menuItem) return [];
+            if (!$menuItem) {
+                return [];
+            }
             $menu = $this->app->getMenu('site');
             $defaultLang = $menu && $menu->getDefault() ? ($menu->getDefault()->language ?? '*') : '*';
             if (class_exists('JLanguageAssociations') && \JLanguageAssociations::isEnabled()) {
@@ -1479,9 +1489,15 @@ class PlgSystemOffroadseo extends CMSPlugin
         foreach ($urls as $u) {
             $xml .= '  <url>' . "\n";
             $xml .= '    <loc>' . htmlspecialchars($u['loc'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</loc>' . "\n";
-            if (!empty($u['lastmod'])) $xml .= '    <lastmod>' . htmlspecialchars($u['lastmod'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</lastmod>' . "\n";
-            if (!empty($u['changefreq'])) $xml .= '    <changefreq>' . htmlspecialchars($u['changefreq'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</changefreq>' . "\n";
-            if (!empty($u['priority'])) $xml .= '    <priority>' . htmlspecialchars($u['priority'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</priority>' . "\n";
+            if (!empty($u['lastmod'])) {
+                $xml .= '    <lastmod>' . htmlspecialchars($u['lastmod'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</lastmod>' . "\n";
+            }
+            if (!empty($u['changefreq'])) {
+                $xml .= '    <changefreq>' . htmlspecialchars($u['changefreq'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</changefreq>' . "\n";
+            }
+            if (!empty($u['priority'])) {
+                $xml .= '    <priority>' . htmlspecialchars($u['priority'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</priority>' . "\n";
+            }
             if ($hasAlt && !empty($u['alternates']) && is_array($u['alternates'])) {
                 foreach ($u['alternates'] as $code => $href) {
                     $xml .= '    <xhtml:link rel="alternate" hreflang="' . htmlspecialchars(strtolower($code), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '" href="' . htmlspecialchars($href, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '" />' . "\n";
@@ -1499,7 +1515,9 @@ class PlgSystemOffroadseo extends CMSPlugin
     private function hasAnyAlternates(array $urls): bool
     {
         foreach ($urls as $u) {
-            if (!empty($u['alternates'])) return true;
+            if (!empty($u['alternates'])) {
+                return true;
+            }
         }
         return false;
     }
@@ -1507,7 +1525,9 @@ class PlgSystemOffroadseo extends CMSPlugin
     private function hasAnyImages(array $urls): bool
     {
         foreach ($urls as $u) {
-            if (!empty($u['image'])) return true;
+            if (!empty($u['image'])) {
+                return true;
+            }
         }
         return false;
     }

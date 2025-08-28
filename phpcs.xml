@@ -2,7 +2,10 @@
 <ruleset name="OffRoad Joomla">
   <description>PSR-12 i osnovna pravila za Joomla/PHP.</description>
   <file>src</file>
-  <rule ref="PSR12"/>
+  <rule ref="PSR12">
+    <!-- Joomla pluginovi često nemaju namespace; isključi ovo pravilo -->
+    <exclude name="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+  </rule>
   <arg name="basepath" value="."/>
   <!-- Keep output simple for CI runners; colors not supported on some images -->
   <exclude-pattern>vendor/*</exclude-pattern>
