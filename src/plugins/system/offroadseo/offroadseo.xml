@@ -8,7 +8,7 @@
     <authorUrl>https://offroadserbia.com</authorUrl>
     <license>GPL-2.0-or-later</license>
     <creationDate>2025-08-28</creationDate>
-    <version>1.7.3</version>
+    <version>1.7.4</version>
     <description>PLG_SYSTEM_OFFROADSEO_DESC</description>
     
     <files>
@@ -266,24 +266,28 @@
             <fieldset name="debug" label="PLG_SYSTEM_OFFROADSEO_TAB_DEBUG">
                 <field name="help_debug" type="note" label="PLG_SYSTEM_OFFROADSEO_HELP_DEBUG" showon="show_inline_help:1" />
                 <field name="basic_spacer_debug" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_BASIC" />
-                <field name="force_noindex" type="radio" label="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX" description="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX_DESC" default="0" containerclass="two-col-left">
+                <field name="debug_master_off" type="radio" label="PLG_SYSTEM_OFFROADSEO_DEBUG_MASTER_OFF" description="PLG_SYSTEM_OFFROADSEO_DEBUG_MASTER_OFF_DESC" default="0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="env_force_noindex_on_staging" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_FORCE_NOINDEX" default="1" containerclass="two-col-right">
+                <field name="force_noindex" type="radio" label="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX" description="PLG_SYSTEM_OFFROADSEO_FORCE_NOINDEX_DESC" default="0" containerclass="two-col-left" showon="debug_master_off:0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="debug_pretty_json" type="radio" label="PLG_SYSTEM_OFFROADSEO_DEBUG_PRETTY_JSON" description="PLG_SYSTEM_OFFROADSEO_DEBUG_PRETTY_JSON_DESC" default="0" containerclass="two-col-right">
+                <field name="env_force_noindex_on_staging" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_FORCE_NOINDEX" default="1" containerclass="two-col-right" showon="debug_master_off:0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="debug_wrap_markers" type="radio" label="PLG_SYSTEM_OFFROADSEO_DEBUG_WRAP_MARKERS" description="PLG_SYSTEM_OFFROADSEO_DEBUG_WRAP_MARKERS_DESC" default="0" containerclass="two-col-left">
+                <field name="debug_pretty_json" type="radio" label="PLG_SYSTEM_OFFROADSEO_DEBUG_PRETTY_JSON" description="PLG_SYSTEM_OFFROADSEO_DEBUG_PRETTY_JSON_DESC" default="0" containerclass="two-col-right" showon="debug_master_off:0">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="debug_wrap_markers" type="radio" label="PLG_SYSTEM_OFFROADSEO_DEBUG_WRAP_MARKERS" description="PLG_SYSTEM_OFFROADSEO_DEBUG_WRAP_MARKERS_DESC" default="0" containerclass="two-col-left" showon="debug_master_off:0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
                 <field name="advanced_spacer_debug" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_ADVANCED" />
-                <field name="show_staging_badge" type="radio" label="PLG_SYSTEM_OFFROADSEO_SHOW_STAGING_BADGE" description="PLG_SYSTEM_OFFROADSEO_SHOW_STAGING_BADGE_DESC" default="0" containerclass="two-col-right">
+                <field name="show_staging_badge" type="radio" label="PLG_SYSTEM_OFFROADSEO_SHOW_STAGING_BADGE" description="PLG_SYSTEM_OFFROADSEO_SHOW_STAGING_BADGE_DESC" default="0" containerclass="two-col-right" showon="debug_master_off:0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>

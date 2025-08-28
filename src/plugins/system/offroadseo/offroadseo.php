@@ -23,7 +23,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.7.3';
+    private const VERSION = '1.7.4';
     // Environment flag (auto-detected): true on staging/dev, false on production
     private bool $isStaging = false;
     // Buffer for JSON-LD when injecting at body end
@@ -287,13 +287,19 @@ class PlgSystemOffroadseo extends CMSPlugin
         // Environment detection (staging/production) and policies
         $this->detectEnvironment();
 
+        // Debug master OFF: when ON, disable all options under Debug tab
+        $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
+
         $autoEnv = (bool) $this->params->get('env_auto', 1);
         $forceNoindexOnStaging = (bool) $this->params->get('env_force_noindex_on_staging', 1);
+        if ($debugMasterOff) {
+            $forceNoindexOnStaging = false;
+        }
         if ($autoEnv && $this->isStaging && $forceNoindexOnStaging) {
             $this->emitNoindexHeader();
         }
         // Manual noindex still supported
-        if ((bool) $this->params->get('force_noindex', 0)) {
+        if (!$debugMasterOff && (bool) $this->params->get('force_noindex', 0)) {
             $this->emitNoindexHeader();
         }
     }
@@ -303,18 +309,32 @@ class PlgSystemOffroadseo extends CMSPlugin
         if (!$this->app->isClient('site')) {
             return;
         }
+        // Debug master OFF: when ON, disable all options under Debug tab
+        $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
         $emitComment = false; // removed version HTML comment per simplified debug options
     $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
+        if ($debugMasterOff) {
+            $showBadge = false;
+        }
         $forceOgHead = (bool) $this->params->get('force_og_head', 1);
         $forceNoindex = (bool) $this->params->get('force_noindex', 0);
+        if ($debugMasterOff) {
+            $forceNoindex = false;
+        }
         // Env-driven overrides
         $autoEnv = (bool) $this->params->get('env_auto', 1);
         $forceNoindexOnStaging = (bool) $this->params->get('env_force_noindex_on_staging', 1);
+        if ($debugMasterOff) {
+            $forceNoindexOnStaging = false;
+        }
         if ($autoEnv && $this->isStaging && $forceNoindexOnStaging) {
             $forceNoindex = true;
         }
     // Badge display is controlled only by 'show_staging_badge' now
         $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
+        if ($debugMasterOff) {
+            $wrapMarkers = false;
+        }
         // Scope filters
         $scopeAllowed = $this->isScopeAllowed();
         // Master group switches
@@ -325,7 +345,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         $enableCustom   = (bool) $this->params->get('enable_custom_injections', 1);
         $respectThird   = (bool) $this->params->get('respect_third_party', 1);
         // Re-assert header as some stacks override headers late
-        if ($forceNoindex) {
+    if ($forceNoindex) {
             $this->emitNoindexHeader();
         }
         $body = $this->app->getBody();
@@ -512,8 +532,9 @@ class PlgSystemOffroadseo extends CMSPlugin
         if (!$doc instanceof HtmlDocument) {
             return;
         }
-        // Re-assert X-Robots-Tag before head compile if needed
-        if ((bool) $this->params->get('force_noindex', 0)) {
+    // Re-assert X-Robots-Tag before head compile if needed
+    $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
+    if (!$debugMasterOff && (bool) $this->params->get('force_noindex', 0)) {
             $this->emitNoindexHeader();
         }
 
@@ -521,6 +542,10 @@ class PlgSystemOffroadseo extends CMSPlugin
         $injectInBody = true; // simplified: always inject JSON-LD at end of body for compatibility
         $prettyJson  = (bool) $this->params->get('debug_pretty_json', 0);
         $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
+        if ($debugMasterOff) {
+            $prettyJson = false;
+            $wrapMarkers = false;
+        }
         $scopeAllowed = $this->isScopeAllowed();
         $enableSchema   = (bool) $this->params->get('enable_schema', 1);
         $enableOg       = (bool) $this->params->get('enable_opengraph', 1);
@@ -1083,8 +1108,8 @@ class PlgSystemOffroadseo extends CMSPlugin
             }
         }
 
-        // Force noindex meta if enabled (applies to all pages on site client)
-        if ((bool) $this->params->get('force_noindex', 0)) {
+    // Force noindex meta if enabled (applies to all pages on site client)
+    if (!$debugMasterOff && (bool) $this->params->get('force_noindex', 0)) {
             $doc->setMetaData('robots', 'noindex, nofollow');
         }
 
