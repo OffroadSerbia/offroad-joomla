@@ -8,7 +8,7 @@
     <authorUrl>https://offroadserbia.com</authorUrl>
     <license>GPL-2.0-or-later</license>
     <creationDate>2025-08-27</creationDate>
-    <version>1.6.3</version>
+    <version>1.6.4</version>
     <description>PLG_SYSTEM_OFFROADSEO_DESC</description>
     
     <files>
@@ -195,6 +195,10 @@
 
             <!-- SiteMap (informational for now) -->
             <fieldset name="sitemap" label="PLG_SYSTEM_OFFROADSEO_TAB_SITEMAP">
+                <field name="enable_sitemap" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_SITEMAP" default="1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
                 <field name="sitemap_note" type="note" label="PLG_SYSTEM_OFFROADSEO_SITEMAP_NOTE" description="PLG_SYSTEM_OFFROADSEO_SITEMAP_NOTE_DESC" />
             </fieldset>
 

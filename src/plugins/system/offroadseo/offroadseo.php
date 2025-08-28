@@ -23,7 +23,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.6.3';
+    private const VERSION = '1.6.4';
     // Environment flag (auto-detected): true on staging/dev, false on production
     private bool $isStaging = false;
     // Buffer for JSON-LD when injecting at body end
@@ -72,6 +72,31 @@ class PlgSystemOffroadseo extends CMSPlugin
 
         if (!$this->app->isClient('site')) {
             return;
+        }
+
+        // Simple sitemap.xml endpoint (MVP): always include homepage
+        try {
+            $enableSitemap = (bool) $this->params->get('enable_sitemap', 1);
+            if ($enableSitemap) {
+                $path = \Joomla\CMS\Uri\Uri::getInstance()->getPath();
+                $p = trim($path, '/');
+                if (strcasecmp($p, 'sitemap.xml') === 0) {
+                    $base = rtrim(\Joomla\CMS\Uri\Uri::root(), '/');
+                    $lastmod = (new Date('now', new \DateTimeZone('UTC')))->format('Y-m-d');
+                    $xml = '<?xml version="1.0" encoding="UTF-8"?>'
+                        . "\n" . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+                        . "\n  <url>\n    <loc>" . htmlspecialchars($base . '/', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</loc>\n    <lastmod>" . $lastmod . "</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>1.0</priority>\n  </url>\n"
+                        . "</urlset>\n";
+                    $this->app->setHeader('Content-Type', 'application/xml; charset=UTF-8', true);
+                    $this->app->setBody($xml);
+                    // Flush immediately and stop further processing
+                    $this->app->respond();
+                    $this->app->close();
+                    return;
+                }
+            }
+        } catch (\Throwable $e) {
+            // Ignore sitemap errors and continue normal flow
         }
 
         // Environment detection (staging/production) and policies
