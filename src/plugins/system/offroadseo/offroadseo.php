@@ -23,7 +23,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.6.5';
+    private const VERSION = '1.6.6';
     // Environment flag (auto-detected): true on staging/dev, false on production
     private bool $isStaging = false;
     // Buffer for JSON-LD when injecting at body end
@@ -74,7 +74,7 @@ class PlgSystemOffroadseo extends CMSPlugin
             return;
         }
 
-        // Simple sitemap.xml endpoint (MVP): always include homepage
+        // Sitemap.xml endpoint: generate minimal sitemap with optional menus and articles
         try {
             $enableSitemap = (bool) $this->params->get('enable_sitemap', 1);
             if ($enableSitemap) {
@@ -82,11 +82,107 @@ class PlgSystemOffroadseo extends CMSPlugin
                 $p = trim($path, '/');
                 if (strcasecmp($p, 'sitemap.xml') === 0) {
                     $base = rtrim(\Joomla\CMS\Uri\Uri::root(), '/');
-                    $lastmod = (new Date('now', new \DateTimeZone('UTC')))->format('Y-m-d');
-                    $xml = '<?xml version="1.0" encoding="UTF-8"?>'
-                        . "\n" . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-                        . "\n  <url>\n    <loc>" . htmlspecialchars($base . '/', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</loc>\n    <lastmod>" . $lastmod . "</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>1.0</priority>\n  </url>\n"
-                        . "</urlset>\n";
+                    $tz = new \DateTimeZone('UTC');
+                    $today = (new Date('now', $tz))->format('Y-m-d');
+
+                    $cfHome = (string) $this->params->get('sitemap_changefreq_home', 'weekly');
+                    $cfMenu = (string) $this->params->get('sitemap_changefreq_menu', 'weekly');
+                    $cfArt  = (string) $this->params->get('sitemap_changefreq_article', 'weekly');
+                    $prHome = (string) $this->params->get('sitemap_priority_home', '1.0');
+                    $prMenu = (string) $this->params->get('sitemap_priority_menu', '0.7');
+                    $prArt  = (string) $this->params->get('sitemap_priority_article', '0.8');
+                    $incMenu = (bool) $this->params->get('sitemap_include_menu', 1);
+                    $incArt  = (bool) $this->params->get('sitemap_include_articles', 1);
+                    $maxArt  = (int) $this->params->get('sitemap_max_articles', 1000);
+
+                    $urls = [];
+
+                    // Home
+                    $urls[] = [
+                        'loc' => $base . '/',
+                        'lastmod' => $today,
+                        'changefreq' => $cfHome,
+                        'priority' => $prHome,
+                    ];
+
+                    // Menu items (site menus only, published, non-external)
+                    if ($incMenu) {
+                        try {
+                            $app = $this->app;
+                            $menus = $app->getMenu('site');
+                            if ($menus) {
+                                $items = $menus->getMenu();
+                                foreach ($items as $item) {
+                                    if (!$item || empty($item->published)) continue;
+                                    // Skip external links
+                                    $link = (string) ($item->link ?? '');
+                                    if ($link === '' || stripos($link, 'http://') === 0 || stripos($link, 'https://') === 0) continue;
+                                    // Build SEF URL
+                                    $url = \Joomla\CMS\Router\Route::_('index.php?Itemid=' . (int) $item->id);
+                                    if (!preg_match('#^https?://#i', $url)) {
+                                        $url = $base . '/' . ltrim($url, '/');
+                                    }
+                                    $urls[] = [
+                                        'loc' => $url,
+                                        'lastmod' => $today,
+                                        'changefreq' => $cfMenu,
+                                        'priority' => $prMenu,
+                                    ];
+                                }
+                            }
+                        } catch (\Throwable $e) { /* ignore */ }
+                    }
+
+                    // Articles (published, access public or current user access), newest first
+                    if ($incArt) {
+                        try {
+                            $db = Factory::getDbo();
+                            $query = $db->getQuery(true)
+                                ->select($db->quoteName(['id','catid','modified','publish_up','created']))
+                                ->from($db->quoteName('#__content'))
+                                ->where($db->quoteName('state') . ' = 1')
+                                ->order($db->quoteName('modified') . ' DESC');
+                            if ($maxArt > 0) {
+                                $query->setLimit($maxArt);
+                            }
+                            $db->setQuery($query);
+                            $rows = (array) $db->loadObjectList();
+                            foreach ($rows as $row) {
+                                $sef = \Joomla\CMS\Router\Route::_('index.php?option=com_content&view=article&id=' . (int) $row->id . '&catid=' . (int) $row->catid);
+                                if (!preg_match('#^https?://#i', $sef)) {
+                                    $sef = $base . '/' . ltrim($sef, '/');
+                                }
+                                $last = $row->modified ?: ($row->publish_up ?: $row->created);
+                                $lastDate = $today;
+                                if (!empty($last)) {
+                                    try {
+                                        $d = new Date($last, 'UTC');
+                                        $d->setTimezone($tz);
+                                        $lastDate = $d->format('Y-m-d');
+                                    } catch (\Throwable $e) { /* ignore */ }
+                                }
+                                $urls[] = [
+                                    'loc' => $sef,
+                                    'lastmod' => $lastDate,
+                                    'changefreq' => $cfArt,
+                                    'priority' => $prArt,
+                                ];
+                            }
+                        } catch (\Throwable $e) { /* ignore */ }
+                    }
+
+                    // Build XML
+                    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+                    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+                    foreach ($urls as $u) {
+                        $xml .= '  <url>' . "\n";
+                        $xml .= '    <loc>' . htmlspecialchars($u['loc'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</loc>' . "\n";
+                        if (!empty($u['lastmod'])) $xml .= '    <lastmod>' . $u['lastmod'] . '</lastmod>' . "\n";
+                        if (!empty($u['changefreq'])) $xml .= '    <changefreq>' . htmlspecialchars($u['changefreq'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</changefreq>' . "\n";
+                        if (!empty($u['priority'])) $xml .= '    <priority>' . htmlspecialchars($u['priority'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</priority>' . "\n";
+                        $xml .= '  </url>' . "\n";
+                    }
+                    $xml .= '</urlset>' . "\n";
                     $this->app->setHeader('Content-Type', 'application/xml; charset=UTF-8', true);
                     $this->app->setBody($xml);
                     // Flush immediately and stop further processing
