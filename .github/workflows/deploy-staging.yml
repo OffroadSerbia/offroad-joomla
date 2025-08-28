@@ -3,11 +3,13 @@ name: Deploy to Staging (FTP/FTPS)
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
-      - "src/plugins/system/offroadseo/**"
-      - "src/templates/yootheme_offroad/**"
-      - ".github/workflows/deploy-staging.yml"
+      - src/plugins/system/offroadseo/**
+      - src/plugins/system/offroadstage/**
+      - src/templates/yootheme_offroad/**
+      - .github/workflows/deploy-staging.yml
 
 jobs:
   deploy:
@@ -32,6 +34,21 @@ jobs:
           security: loose
           local-dir: src/plugins/system/offroadseo/
           server-dir: ${{ secrets.STAGING_DOCROOT_RELATIVE }}/plugins/system/offroadseo/
+          dangerous-clean-slate: true
+          log-level: verbose
+          timeout: 120000
+
+      - name: Upload offroadstage via FTP
+        if: ${{ hashFiles('src/plugins/system/offroadstage/**') != '' }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.STAGING_FTP_HOST }}
+          username: ${{ secrets.STAGING_FTP_USER }}
+          password: ${{ secrets.STAGING_FTP_PASS }}
+          protocol: ftp
+          security: loose
+          local-dir: src/plugins/system/offroadstage/
+          server-dir: ${{ secrets.STAGING_DOCROOT_RELATIVE }}/plugins/system/offroadstage/
           dangerous-clean-slate: true
           log-level: verbose
           timeout: 120000

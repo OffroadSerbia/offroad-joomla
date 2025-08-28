@@ -10,3 +10,8 @@ Thumbs.db
 
 # Docs: prevent accidental secrets
 docs/Untitled-1.txt
+
+# Build artifacts
+tools/*.zip
+tools/__build/
+tools/__inspect_*/
