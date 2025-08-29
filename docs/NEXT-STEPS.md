@@ -1,4 +1,4 @@
-# NEXT STEPS — To‑Do lista
+# NEXT STEPS — To–Do lista
 
 Uputstvo (kratko):
 
@@ -17,8 +17,8 @@ Uputstvo (kratko):
 - [x] Only for compoments (option) - izbaci (ne znam šta je to)
 - [x] Only for views - izbaci (ne znam šta je to)
 - [x] Only for menu item IDs - izbaci (ne znam štaje to)
-- [ ] Debug tab - "Promeniti debug OFF (disable all Debug features)" u label "Debug" i primeniti prvu tačku iz Glavne liste
-- [ ] Debug switch da bude odvojen iznad prve sekcije - razmaka
+- [x] Debug tab - promenjen label i switch postavljen ("Debug OFF" ostaje funkcionalni naziv polja; label ažuriran). Primena: premešten iznad prve sekcije sa razmakom.
+- [x] Debug switch da bude odvojen iznad prve sekcije - dodat spacer odmah nakon prekidača
 - [ ]
 - [ ]
 - [ ]
@@ -28,7 +28,7 @@ Uputstvo (kratko):
 
 ## Glavna lista
 
-- [ ] Toggle Switch SVUDA - Umesto radio buttons postaviti swith za on/off. Zelena boja on, siva boja off.
+- [x] Toggle Switch SVUDA - postavljen switcher stil na sve yes/no opcije (zelena=ON, siva=OFF) kroz class="switcher" + admin.css
 - [ ]
 - [ ]
 

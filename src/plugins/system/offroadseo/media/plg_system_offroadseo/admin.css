@@ -19,3 +19,11 @@
 		display: block !important;
 	}
 }
+
+/* Colorize Joomla yes/no toggle groups when we add class offseo-switch */
+[id^="attrib-"] .control-group .offseo-switch.btn-group-yesno .btn { transition: background .15s ease, color .15s ease; }
+[id^="attrib-"] .control-group .offseo-switch.btn-group-yesno .btn.active[data-value="1"] { background: #22c55e; color: #fff; }
+[id^="attrib-"] .control-group .offseo-switch.btn-group-yesno .btn.active[data-value="0"] { background: #94a3b8; color: #fff; }
+
+/* Spacer after Debug master switch */
+[id^="attrib-"] .control-group[name="jform_params_debug_master_spacer"] { margin-top: 6px; }
