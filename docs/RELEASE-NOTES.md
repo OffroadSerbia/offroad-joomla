@@ -8,6 +8,15 @@
 - Simplified noindex logic to manual only; kept robust X-Robots-Tag header assertion across phases.
 - Bumped internal version and synced language strings (sr/en).
 
+## 1.7.8 — 2025-08-29
+
+- Removed global Debug master switch (no master ON/OFF)
+- Removed "Disable analytics in Debug" option
+- Removed UI mode (Simple/Advanced) and "Show inline help" (and all help notes)
+- Cleaned all `showon` gates referencing removed fields; advanced options always visible
+- Synced manifest and language files; plugin version bumped to 1.7.8
+- Note: Production sitemap endpoints currently return 404; follow-up in NEXT-STEPS
+
 ## 1.7.6 — 2025-08-28
 
 - Expanded sitemap endpoints (hyphen/underscore + query fallback) and caching headers.

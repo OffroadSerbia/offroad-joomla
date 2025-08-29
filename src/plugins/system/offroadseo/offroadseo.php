@@ -23,7 +23,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.7.7';
+    private const VERSION = '1.8.1';
     // Buffer for JSON-LD when injecting at body end
     /** @var array<int,string> JSON-LD script tags buffered for body-end */
     private array $offseoJsonLd = [];
@@ -74,9 +74,71 @@ class PlgSystemOffroadseo extends CMSPlugin
             return;
         }
 
+        // Lightweight diagnostics: /index.php?offseo_diag=1
+        // Always executable (does not require active domain match), reports state & exits
+        try {
+            if (isset($_GET['offseo_diag'])) {
+                $host = (string) (method_exists(Uri::getInstance(), 'getHost') ? Uri::getInstance()->getHost() : ($_SERVER['HTTP_HOST'] ?? ''));
+                $activeCfg = trim((string) $this->params->get('active_domain', ''));
+                $activeMatch = $this->isActiveDomain() ? '1' : '0';
+                $path = trim((string) Uri::getInstance()->getPath(), '/');
+                $qp = isset($_GET['offseo_sitemap']) ? (string) $_GET['offseo_sitemap'] : '';
+                $enableRobots = (bool) $this->params->get('enable_robots', 1);
+                $enableSitemap = (bool) $this->params->get('enable_sitemap', 1);
+                $useIndex = (bool) $this->params->get('sitemap_use_index', 0);
+                $lines = [];
+                $lines[] = 'OffroadSEO diag v' . self::VERSION;
+                $lines[] = 'host=' . $host;
+                $lines[] = 'active_cfg=' . $activeCfg;
+                $lines[] = 'active_match=' . $activeMatch;
+                $lines[] = 'enable_robots=' . ($enableRobots ? '1' : '0');
+                $lines[] = 'enable_sitemap=' . ($enableSitemap ? '1' : '0');
+                $lines[] = 'sitemap_use_index=' . ($useIndex ? '1' : '0');
+                $lines[] = 'path=' . $path;
+                $lines[] = 'qp_offseo_sitemap=' . $qp;
+                $out = implode("\n", $lines) . "\n";
+                $this->app->setHeader('Content-Type', 'text/plain; charset=UTF-8', true);
+                $this->app->setHeader('Cache-Control', 'no-cache, no-store, must-revalidate', true);
+                $this->app->setHeader('Pragma', 'no-cache', true);
+                $this->app->setHeader('Expires', '0', true);
+                $this->app->setBody($out);
+                $this->app->respond();
+                $this->app->close();
+                return;
+            }
+        } catch (\Throwable $e) { /* ignore */ }
+
         // Activate plugin only on configured domain (empty means all)
         if (!$this->isActiveDomain()) {
             return;
+        }
+
+        // robots.txt endpoint: serve dynamic robots when enabled
+        try {
+            $enableRobots = (bool) $this->params->get('enable_robots', 1);
+            if ($enableRobots) {
+                $path = \Joomla\CMS\Uri\Uri::getInstance()->getPath();
+                $p = trim(strtolower($path), '/');
+                if ($p === 'robots.txt') {
+                    $txt = $this->renderRobotsTxt();
+                    $etag = 'W/"' . md5($txt) . '"';
+                    $this->app->setHeader('Content-Type', 'text/plain; charset=UTF-8', true);
+                    $this->app->setHeader('ETag', $etag, true);
+                    $inm = $_SERVER['HTTP_IF_NONE_MATCH'] ?? '';
+                    if ($inm === $etag) {
+                        http_response_code(304);
+                        $this->app->setHeader('Status', '304 Not Modified', true);
+                        $this->app->setBody('');
+                    } else {
+                        $this->app->setBody($txt);
+                    }
+                    $this->app->respond();
+                    $this->app->close();
+                    return;
+                }
+            }
+        } catch (\Throwable $e) {
+            // ignore robots errors and continue
         }
 
         // Sitemap.xml endpoint: generate sitemap (index or urlset) with menus/articles, images, alternates, caching
@@ -311,10 +373,8 @@ class PlgSystemOffroadseo extends CMSPlugin
             // Ignore sitemap errors and continue normal flow
         }
 
-        // Debug master OFF: when ON, disable all options under Debug tab
-        $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
-        // Manual noindex only
-        if (!$debugMasterOff && (bool) $this->params->get('force_noindex', 0)) {
+        // Manual noindex
+        if ((bool) $this->params->get('force_noindex', 0)) {
             $this->emitNoindexHeader();
         }
     }
@@ -324,20 +384,12 @@ class PlgSystemOffroadseo extends CMSPlugin
         if (!$this->app->isClient('site')) {
             return;
         }
-        // Debug master OFF: when ON, disable all options under Debug tab
-        $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
         $emitComment = false; // removed version HTML comment per simplified debug options
         $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
-        if ($debugMasterOff) {
-            $showBadge = false;
-        }
         $forceOgHead = (bool) $this->params->get('force_og_head', 1);
-        $forceNoindex = !$debugMasterOff && (bool) $this->params->get('force_noindex', 0);
+        $forceNoindex = (bool) $this->params->get('force_noindex', 0);
         // Badge display is controlled only by 'show_staging_badge' now
         $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
-        if ($debugMasterOff) {
-            $wrapMarkers = false;
-        }
         // Scope filters removed — always allowed
         $scopeAllowed = true;
         // Master group switches
@@ -524,8 +576,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         if (!$this->app->isClient('site')) {
             return;
         }
-        $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
-        if (!$debugMasterOff && (bool) $this->params->get('force_noindex', 0)) {
+        if ((bool) $this->params->get('force_noindex', 0)) {
             $this->emitNoindexHeader();
         }
     }
@@ -547,10 +598,8 @@ class PlgSystemOffroadseo extends CMSPlugin
             return;
         }
         // Re-assert X-Robots-Tag before head compile if needed
-        $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
         $manualNoindex = (bool) $this->params->get('force_noindex', 0);
-        $effForceNoindex = !$debugMasterOff && $manualNoindex;
-        if ($effForceNoindex) {
+        if ($manualNoindex) {
             $this->emitNoindexHeader();
         }
 
@@ -558,10 +607,6 @@ class PlgSystemOffroadseo extends CMSPlugin
         $injectInBody = true; // simplified: always inject JSON-LD at end of body for compatibility
         $prettyJson  = (bool) $this->params->get('debug_pretty_json', 0);
         $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
-        if ($debugMasterOff) {
-            $prettyJson = false;
-            $wrapMarkers = false;
-        }
         $scopeAllowed = true;
         $enableSchema   = (bool) $this->params->get('enable_schema', 1);
         $enableOg       = (bool) $this->params->get('enable_opengraph', 1);
@@ -569,11 +614,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         $enableHreflang = (bool) $this->params->get('enable_hreflang', 1);
         $enableCustom   = (bool) $this->params->get('enable_custom_injections', 1);
         $respectThird   = (bool) $this->params->get('respect_third_party', 1);
-        // Debug policy: disable analytics when debug flag is set
-        $disableAnalyticsDebug = (bool) $this->params->get('debug_disable_analytics', 0);
-        if (!$debugMasterOff && $disableAnalyticsDebug) {
-            $enableAnalytics = false;
-        }
+        // debug_disable_analytics removed
 
         $add = function (array $data) use ($doc, $injectInBody, $prettyJson, $wrapMarkers) {
             $flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
@@ -1119,7 +1160,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // Force noindex meta if enabled (manual or env-driven)
-        if ($effForceNoindex) {
+        if ($manualNoindex) {
             $doc->setMetaData('robots', 'noindex, nofollow');
         }
 
@@ -1283,7 +1324,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 
     // Environment auto-detect removed
 
-    // Active domain guard: if active_domain is set, only run on that host
+    // Active domain guard: if active_domain is set, only run on that host (and its subdomains)
     private function isActiveDomain(): bool
     {
         try {
@@ -1300,7 +1341,13 @@ class PlgSystemOffroadseo extends CMSPlugin
             $norm = function ($h) {
                 return preg_replace('/^www\./i', '', (string) $h);
             };
-            return $norm($h1) === $norm($h2);
+            $h = $norm($h1);
+            $a = $norm($h2);
+            if ($h === $a) {
+                return true; // exact match
+            }
+            // Allow any subdomain of the active domain (e.g. staging.example.com when active_domain=example.com)
+            return (bool) preg_match('/(^|\.)' . preg_quote($a, '/') . '$/i', $h);
         } catch (\Throwable $e) {
             return true;
         }
@@ -1402,81 +1449,133 @@ class PlgSystemOffroadseo extends CMSPlugin
     private function renderSitemapIndex(array $entries): string
     {
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-        foreach ($entries as $e) {
-            $xml .= '  <sitemap>' . "\n";
-            $xml .= '    <loc>' . htmlspecialchars($e['loc'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</loc>' . "\n";
-            if (!empty($e['lastmod'])) {
-                $xml .= '    <lastmod>' . htmlspecialchars($e['lastmod'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</lastmod>' . "\n";
-            }
-            $xml .= '  </sitemap>' . "\n";
+$xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    foreach ($entries as $e) {
+    $xml .= ' <sitemap>' . "\n";
+        $xml .= ' <loc>' . htmlspecialchars($e['loc'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</loc>' . "\n";
+        if (!empty($e['lastmod'])) {
+        $xml .= ' <lastmod>' . htmlspecialchars($e['lastmod'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</lastmod>' .
+        "\n";
         }
-        $xml .= '</sitemapindex>' . "\n";
-        return $xml;
+        $xml .= ' </sitemap>' . "\n";
     }
+    $xml .= '</sitemapindex>' . "\n";
+return $xml;
+}
 
-    /**
-     * Render a urlset XML string with optional alternates and images.
-     * Input items: loc, lastmod, changefreq, priority, alternates(map), image(url)
-     */
-    /**
-     * @param array<int,array{loc:string,lastmod?:string,changefreq?:string,priority?:string,alternates?:array<string,string>,image?:string}> $urls
-     */
+/**
+* Render a urlset XML string with optional alternates and images.
+* Input items: loc, lastmod, changefreq, priority, alternates(map), image(url)
+*/
+/**
+* @param array<int,array{loc:string,lastmod?:string,changefreq?:string,priority?:string,alternates?:array<string,string>
+    ,image?:string}> $urls
+    */
     private function renderUrlset(array $urls, bool $withAlt, bool $withImg): string
     {
-        $hasAlt = $withAlt && $this->hasAnyAlternates($urls);
-        $hasImg = $withImg && $this->hasAnyImages($urls);
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' . ($hasAlt ? ' xmlns:xhtml="http://www.w3.org/1999/xhtml"' : '') . ($hasImg ? ' xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"' : '') . '>' . "\n";
+    $hasAlt = $withAlt && $this->hasAnyAlternates($urls);
+    $hasImg = $withImg && $this->hasAnyImages($urls);
+    $xml = '
+    <?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' . ($hasAlt ? '
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"' : '') . ($hasImg ? '
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"' : '') . '>' . "\n";
         foreach ($urls as $u) {
-            $xml .= '  <url>' . "\n";
-            $xml .= '    <loc>' . htmlspecialchars($u['loc'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</loc>' . "\n";
+        $xml .= ' <url>' . "\n";
+            $xml .= ' <loc>' . htmlspecialchars($u['loc'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</loc>' . "\n";
             if (!empty($u['lastmod'])) {
-                $xml .= '    <lastmod>' . htmlspecialchars($u['lastmod'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</lastmod>' . "\n";
+            $xml .= ' <lastmod>' . htmlspecialchars($u['lastmod'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</lastmod>'
+            . "\n";
             }
             if (!empty($u['changefreq'])) {
-                $xml .= '    <changefreq>' . htmlspecialchars($u['changefreq'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</changefreq>' . "\n";
+            $xml .= ' <changefreq>' . htmlspecialchars($u['changefreq'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '
+            </changefreq>' . "\n";
             }
             if (!empty($u['priority'])) {
-                $xml .= '    <priority>' . htmlspecialchars($u['priority'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</priority>' . "\n";
+            $xml .= ' <priority>' . htmlspecialchars($u['priority'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '
+            </priority>' . "\n";
             }
             if ($hasAlt && !empty($u['alternates']) && is_array($u['alternates'])) {
-                foreach ($u['alternates'] as $code => $href) {
-                    $xml .= '    <xhtml:link rel="alternate" hreflang="' . htmlspecialchars(strtolower($code), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '" href="' . htmlspecialchars($href, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '" />' . "\n";
-                }
+            foreach ($u['alternates'] as $code => $href) {
+            $xml .= '
+            <xhtml:link rel="alternate"
+                hreflang="' . htmlspecialchars(strtolower($code), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"
+                href="' . htmlspecialchars($href, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '" />' . "\n";
+            }
             }
             if ($hasImg && !empty($u['image'])) {
-                $xml .= '    <image:image><image:loc>' . htmlspecialchars($u['image'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</image:loc></image:image>' . "\n";
+            $xml .= ' <image:image>
+                <image:loc>' . htmlspecialchars($u['image'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</image:loc>
+            </image:image>' . "\n";
             }
-            $xml .= '  </url>' . "\n";
+            $xml .= '
+        </url>' . "\n";
         }
         $xml .= '</urlset>' . "\n";
-        return $xml;
+    return $xml;
     }
 
     /**
-     * @param array<int,array{alternates?:array<string,string>}> $urls
-     */
-    private function hasAnyAlternates(array $urls): bool
-    {
+    * @param array<int,array{alternates?:array<string,string>}> $urls
+        */
+        private function hasAnyAlternates(array $urls): bool
+        {
         foreach ($urls as $u) {
-            if (!empty($u['alternates'])) {
-                return true;
-            }
+        if (!empty($u['alternates'])) {
+        return true;
+        }
         }
         return false;
-    }
+        }
 
-    /**
-     * @param array<int,array{image?:string}> $urls
-     */
-    private function hasAnyImages(array $urls): bool
-    {
-        foreach ($urls as $u) {
+        /**
+        * @param array<int,array{image?:string}> $urls
+            */
+            private function hasAnyImages(array $urls): bool
+            {
+            foreach ($urls as $u) {
             if (!empty($u['image'])) {
-                return true;
+            return true;
             }
-        }
-        return false;
-    }
-}
+            }
+            return false;
+            }
+
+            /**
+            * Build robots.txt content.
+            */
+            private function renderRobotsTxt(): string
+            {
+            $root = rtrim(\Joomla\CMS\Uri\Uri::root(), '/');
+            $lines = [];
+            // Always include sitemap reference
+            $lines[] = 'Sitemap: ' . $root . '/sitemap.xml';
+            $lines[] = '';
+            $lines[] = 'User-agent: *';
+            // Conservative defaults (Joomla core directories)
+            $defaults = [
+            '/administrator/', '/bin/', '/cache/', '/cli/', '/components/', '/includes/', '/installation/',
+            '/language/', '/layouts/', '/libraries/', '/logs/', '/modules/', '/plugins/', '/tmp/',
+            ];
+            foreach ($defaults as $d) {
+            $lines[] = 'Disallow: ' . $d;
+            }
+            // Extra lines from params (one per line)
+            $extra = trim((string) $this->params->get('robots_extra', ''));
+            if ($extra !== '') {
+            $lines[] = '';
+            foreach (preg_split('/\r?\n/', $extra) ?: [] as $ln) {
+            $ln = trim($ln);
+            if ($ln !== '') {
+            $lines[] = $ln;
+            }
+            }
+            }
+            // Ensure trailing newline
+            $out = implode("\n", $lines);
+            if (!str_ends_with($out, "\n")) {
+            $out .= "\n";
+            }
+            return $out;
+            }
+            }
