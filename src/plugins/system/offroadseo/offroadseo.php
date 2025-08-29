@@ -15,6 +15,7 @@ use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Date\Date;
+use Offroad\Plugin\System\Offroadseo\Routing\Router;
 
 /**
  * @property \Joomla\Registry\Registry $params Inherited plugin parameters
@@ -57,6 +58,16 @@ class PlgSystemOffroadseo extends CMSPlugin
 
     public function onAfterInitialise(): void
     {
+        // Handle sitemap and robots.txt routing via our custom router
+        if ($this->app->isClient('site')) {
+            try {
+                $router = new Router($this->app, $this->params);
+                $router->handle();
+            } catch (\Throwable $e) {
+                // Ignore router errors
+            }
+        }
+
         // Load admin CSS for better layout when editing plugin (2-column grid)
         if ($this->app->isClient('administrator')) {
             try {
@@ -69,61 +80,22 @@ class PlgSystemOffroadseo extends CMSPlugin
                 // ignore
             }
         }
+    }
 
-        if (!$this->app->isClient('site')) {
+    public function onAjaxOffroadseo()
+    {
+        if (!$this->app->isClient('site') || !$this->isActiveDomain()) {
             return;
         }
 
-        // Lightweight diagnostics
-        // Supports both query and path:
-        //  - /index.php?offseo_diag=1
-        //  - /offseo-diag (path-based fallback when query params are stripped)
-        // Always executable (does not require active domain match), reports state & exits
-        try {
-            $pathForDiag = trim(strtolower(\Joomla\CMS\Uri\Uri::getInstance()->getPath()), '/');
-            if (isset($_GET['offseo_diag']) || $pathForDiag === 'offseo-diag') {
-                $host = (string) (method_exists(\Joomla\CMS\Uri\Uri::getInstance(), 'getHost') ? \Joomla\CMS\Uri\Uri::getInstance()->getHost() : ($_SERVER['HTTP_HOST'] ?? ''));
-                $activeCfg = trim((string) $this->params->get('active_domain', ''));
-                $activeMatch = $this->isActiveDomain() ? '1' : '0';
-                $path = trim((string) \Joomla\CMS\Uri\Uri::getInstance()->getPath(), '/');
-                $qp = isset($_GET['offseo_sitemap']) ? (string) $_GET['offseo_sitemap'] : '';
+        $input = $this->app->getInput();
+        $resource = $input->getString('resource');
+
+        // robots.txt endpoint
+        if ($resource === 'robots') {
+            try {
                 $enableRobots = (bool) $this->params->get('enable_robots', 1);
-                $enableSitemap = (bool) $this->params->get('enable_sitemap', 1);
-                $useIndex = (bool) $this->params->get('sitemap_use_index', 0);
-                $lines = [];
-                $lines[] = 'OffroadSEO diag v' . self::VERSION;
-                $lines[] = 'host=' . $host;
-                $lines[] = 'active_cfg=' . $activeCfg;
-                $lines[] = 'active_match=' . $activeMatch;
-                $lines[] = 'enable_robots=' . ($enableRobots ? '1' : '0');
-                $lines[] = 'enable_sitemap=' . ($enableSitemap ? '1' : '0');
-                $lines[] = 'sitemap_use_index=' . ($useIndex ? '1' : '0');
-                $lines[] = 'path=' . $path;
-                $lines[] = 'qp_offseo_sitemap=' . $qp;
-                $out = implode("\n", $lines) . "\n";
-                $this->app->setHeader('Content-Type', 'text/plain; charset=UTF-8', true);
-                $this->app->setHeader('Cache-Control', 'no-cache, no-store, must-revalidate', true);
-                $this->app->setHeader('Pragma', 'no-cache', true);
-                $this->app->setHeader('Expires', '0', true);
-                $this->app->setBody($out);
-                $this->app->respond();
-                $this->app->close();
-                return;
-            }
-        } catch (\Throwable $e) { /* ignore */ }
-
-        // Activate plugin only on configured domain (empty means all)
-        if (!$this->isActiveDomain()) {
-            return;
-        }
-
-        // robots.txt endpoint: serve dynamic robots when enabled
-        try {
-            $enableRobots = (bool) $this->params->get('enable_robots', 1);
-            if ($enableRobots) {
-                $path = \Joomla\CMS\Uri\Uri::getInstance()->getPath();
-                $p = trim(strtolower($path), '/');
-                if ($p === 'robots.txt') {
+                if ($enableRobots) {
                     $txt = $this->renderRobotsTxt();
                     $etag = 'W/"' . md5($txt) . '"';
                     $this->app->setHeader('Content-Type', 'text/plain; charset=UTF-8', true);
@@ -136,49 +108,29 @@ class PlgSystemOffroadseo extends CMSPlugin
                     } else {
                         $this->app->setBody($txt);
                     }
-                    $this->app->respond();
-                    $this->app->close();
                     return;
                 }
+            } catch (\Throwable $e) {
+                // ignore robots errors
             }
-        } catch (\Throwable $e) {
-            // ignore robots errors and continue
         }
 
-        // Sitemap.xml endpoint: generate sitemap (index or urlset) with menus/articles, images, alternates, caching
-        try {
-            $enableSitemap = (bool) $this->params->get('enable_sitemap', 1);
-            if ($enableSitemap) {
-                $path = \Joomla\CMS\Uri\Uri::getInstance()->getPath();
-                $p = trim($path, '/');
-                $pLower = strtolower($p);
-                $useIndex = (bool) $this->params->get('sitemap_use_index', 0);
+        // Sitemap.xml endpoint
+        if (in_array($resource, ['sitemap', 'sitemap-pages', 'sitemap-articles'])) {
+            try {
+                $enableSitemap = (bool) $this->params->get('enable_sitemap', 1);
+                if ($enableSitemap) {
+                    $useIndex = (bool) $this->params->get('sitemap_use_index', 0);
 
-                // Accept multiple patterns (hyphen and underscore) and a query param fallback
-                // Example fallback: /?offseo_sitemap=index|pages|articles
-                $requested = false;
-                $which = 'index';
-                if (in_array($pLower, ['sitemap.xml', 'sitemap-pages.xml', 'sitemap-articles.xml', 'sitemap_pages.xml', 'sitemap_articles.xml', 'sitemap_index.xml'], true)) {
-                    $requested = true;
-                    if ($pLower === 'sitemap-pages.xml' || $pLower === 'sitemap_pages.xml') {
+                    $which = 'index';
+                    if ($resource === 'sitemap-pages') {
                         $which = 'pages';
-                    } elseif ($pLower === 'sitemap-articles.xml' || $pLower === 'sitemap_articles.xml') {
+                    } elseif ($resource === 'sitemap-articles') {
                         $which = 'articles';
-                    } elseif ($pLower === 'sitemap_index.xml') {
-                        $which = 'index';
-                    } else { // sitemap.xml
+                    } elseif ($resource === 'sitemap') {
                         $which = $useIndex ? 'index' : 'pages';
                     }
-                } else {
-                    $qp = isset($_GET['offseo_sitemap']) ? strtolower((string) $_GET['offseo_sitemap']) : '';
-                    if (in_array($qp, ['index', 'pages', 'articles'], true)) {
-                        $requested = true;
-                        // If index requested but index is disabled, serve pages
-                        $which = ($qp === 'index' && !$useIndex) ? 'pages' : $qp;
-                    }
-                }
 
-                if ($requested) {
                     $base = rtrim(\Joomla\CMS\Uri\Uri::root(), '/');
                     $tz = new \DateTimeZone('UTC');
                     $today = (new Date('now', $tz))->format('Y-m-d');
@@ -201,12 +153,10 @@ class PlgSystemOffroadseo extends CMSPlugin
                     $urlsPages = [];
                     $urlsArticles = [];
 
-                    // Helper: add URL into bucket
                     $pushUrl = function (array &$bucket, array $u) {
                         $bucket[] = $u;
                     };
 
-                    // Home (always in pages)
                     $urlsPages[] = [
                         'loc' => $base . '/',
                         'lastmod' => $today,
@@ -215,7 +165,6 @@ class PlgSystemOffroadseo extends CMSPlugin
                         'alternates' => $includeAlt ? $this->buildHomeAlternates() : [],
                     ];
 
-                    // Menu items (site menus only, published, non-external)
                     if ($incMenu) {
                         try {
                             $menus = $this->app->getMenu('site');
@@ -252,7 +201,6 @@ class PlgSystemOffroadseo extends CMSPlugin
                         }
                     }
 
-                    // Articles (published), newest first
                     if ($incArt) {
                         try {
                             $db = Factory::getDbo();
@@ -291,7 +239,6 @@ class PlgSystemOffroadseo extends CMSPlugin
                                     'changefreq' => $cfArt,
                                     'priority' => $prArt,
                                 ];
-                                // Primary image
                                 $imgUrl = '';
                                 if ($includeImages && !empty($row->images)) {
                                     $imgs = json_decode($row->images, true) ?: [];
@@ -320,7 +267,6 @@ class PlgSystemOffroadseo extends CMSPlugin
                     $emit = '';
                     $lastModIndex = $today;
                     if ($which === 'index' && $useIndex) {
-                        // Compute lastmod per child
                         $lmPages = $today;
                         foreach ($urlsPages as $u) {
                             if (!empty($u['lastmod']) && $u['lastmod'] > $lmPages) {
@@ -354,7 +300,6 @@ class PlgSystemOffroadseo extends CMSPlugin
                         }
                     }
 
-                    // Caching headers: ETag and Last-Modified, support 304
                     $etag = 'W/"' . md5($emit) . '"';
                     $lastModHttp = gmdate('D, d M Y 00:00:00', strtotime($lastModIndex)) . ' GMT';
                     $this->app->setHeader('Content-Type', 'application/xml; charset=UTF-8', true);
@@ -363,25 +308,17 @@ class PlgSystemOffroadseo extends CMSPlugin
                     $inm = $_SERVER['HTTP_IF_NONE_MATCH'] ?? '';
                     $ims = $_SERVER['HTTP_IF_MODIFIED_SINCE'] ?? '';
                     if ($inm === $etag || ($ims !== '' && strtotime($ims) >= strtotime($lastModHttp))) {
-                        // 304 Not Modified
                         http_response_code(304);
                         $this->app->setHeader('Status', '304 Not Modified', true);
                         $this->app->setBody('');
                     } else {
                         $this->app->setBody($emit);
                     }
-                    $this->app->respond();
-                    $this->app->close();
                     return;
                 }
+            } catch (\Throwable $e) {
+                // Ignore sitemap errors
             }
-        } catch (\Throwable $e) {
-            // Ignore sitemap errors and continue normal flow
-        }
-
-        // Manual noindex
-        if ((bool) $this->params->get('force_noindex', 0)) {
-            $this->emitNoindexHeader();
         }
     }
 
@@ -586,226 +523,6 @@ class PlgSystemOffroadseo extends CMSPlugin
             $this->emitNoindexHeader();
         }
     }
-
-    /**
-     * Fallback endpoint handling after routing (in case early hook was bypassed by other plugins/router).
-     */
-    public function onAfterRoute(): void
-    {
-        if (!$this->app->isClient('site')) {
-            return;
-        }
-        // Diagnostics (path or query) — does not require active domain
-        try {
-            $pathForDiag = trim(strtolower(\Joomla\CMS\Uri\Uri::getInstance()->getPath()), '/');
-            if (isset($_GET['offseo_diag']) || $pathForDiag === 'offseo-diag') {
-                $host = (string) (method_exists(Uri::getInstance(), 'getHost') ? Uri::getInstance()->getHost() : ($_SERVER['HTTP_HOST'] ?? ''));
-                $activeCfg = trim((string) $this->params->get('active_domain', ''));
-                $activeMatch = $this->isActiveDomain() ? '1' : '0';
-                $path = trim((string) Uri::getInstance()->getPath(), '/');
-                $qp = isset($_GET['offseo_sitemap']) ? (string) $_GET['offseo_sitemap'] : '';
-                $enableRobots = (bool) $this->params->get('enable_robots', 1);
-                $enableSitemap = (bool) $this->params->get('enable_sitemap', 1);
-                $useIndex = (bool) $this->params->get('sitemap_use_index', 0);
-                $lines = [];
-                $lines[] = 'OffroadSEO diag v' . self::VERSION;
-                $lines[] = 'host=' . $host;
-                $lines[] = 'active_cfg=' . $activeCfg;
-                $lines[] = 'active_match=' . $activeMatch;
-                $lines[] = 'enable_robots=' . ($enableRobots ? '1' : '0');
-                $lines[] = 'enable_sitemap=' . ($enableSitemap ? '1' : '0');
-                $lines[] = 'sitemap_use_index=' . ($useIndex ? '1' : '0');
-                $lines[] = 'path=' . $path;
-                $lines[] = 'qp_offseo_sitemap=' . $qp;
-                $out = implode("\n", $lines) . "\n";
-                $this->app->setHeader('Content-Type', 'text/plain; charset=UTF-8', true);
-                $this->app->setHeader('Cache-Control', 'no-cache, no-store, must-revalidate', true);
-                $this->app->setHeader('Pragma', 'no-cache', true);
-                $this->app->setHeader('Expires', '0', true);
-                $this->app->setBody($out);
-                $this->app->respond();
-                $this->app->close();
-                return;
-            }
-        } catch (\Throwable $e) { /* ignore */ }
-
-        // Respect active domain for endpoints
-        if (!$this->isActiveDomain()) {
-            return;
-        }
-
-        // robots.txt
-        try {
-            $enableRobots = (bool) $this->params->get('enable_robots', 1);
-            if ($enableRobots) {
-                $path = \Joomla\CMS\Uri\Uri::getInstance()->getPath();
-                $p = trim(strtolower($path), '/');
-                if ($p === 'robots.txt') {
-                    $txt = $this->renderRobotsTxt();
-                    $etag = 'W/"' . md5($txt) . '"';
-                    $this->app->setHeader('Content-Type', 'text/plain; charset=UTF-8', true);
-                    $this->app->setHeader('ETag', $etag, true);
-                    $inm = $_SERVER['HTTP_IF_NONE_MATCH'] ?? '';
-                    if ($inm === $etag) {
-                        http_response_code(304);
-                        $this->app->setHeader('Status', '304 Not Modified', true);
-                        $this->app->setBody('');
-                    } else {
-                        $this->app->setBody($txt);
-                    }
-                    $this->app->respond();
-                    $this->app->close();
-                    return;
-                }
-            }
-        } catch (\Throwable $e) { /* ignore */ }
-
-        // sitemap endpoints
-        try {
-            $enableSitemap = (bool) $this->params->get('enable_sitemap', 1);
-            if ($enableSitemap) {
-                $path = \Joomla\CMS\Uri\Uri::getInstance()->getPath();
-                $p = trim($path, '/');
-                $pLower = strtolower($p);
-                $useIndex = (bool) $this->params->get('sitemap_use_index', 0);
-                $requested = false;
-                $which = 'index';
-                if (in_array($pLower, ['sitemap.xml', 'sitemap-pages.xml', 'sitemap-articles.xml', 'sitemap_pages.xml', 'sitemap_articles.xml', 'sitemap_index.xml'], true)) {
-                    $requested = true;
-                    if ($pLower === 'sitemap-pages.xml' || $pLower === 'sitemap_pages.xml') {
-                        $which = 'pages';
-                    } elseif ($pLower === 'sitemap-articles.xml' || $pLower === 'sitemap_articles.xml') {
-                        $which = 'articles';
-                    } elseif ($pLower === 'sitemap_index.xml') {
-                        $which = 'index';
-                    } else {
-                        $which = $useIndex ? 'index' : 'pages';
-                    }
-                } else {
-                    $qp = isset($_GET['offseo_sitemap']) ? strtolower((string) $_GET['offseo_sitemap']) : '';
-                    if (in_array($qp, ['index', 'pages', 'articles'], true)) {
-                        $requested = true;
-                        $which = ($qp === 'index' && !$useIndex) ? 'pages' : $qp;
-                    }
-                }
-                if ($requested) {
-                    // Reuse existing generation path by delegating to onAfterInitialise block equivalent: duplicate minimal code
-                    // To avoid duplication, simplest approach: call the same logic by including a small inline block here
-                    $base = rtrim(\Joomla\CMS\Uri\Uri::root(), '/');
-                    $tz = new \DateTimeZone('UTC');
-                    $today = (new Date('now', $tz))->format('Y-m-d');
-                    $incMenu = (bool) $this->params->get('sitemap_include_menu', 1);
-                    $incArt  = (bool) $this->params->get('sitemap_include_articles', 1);
-                    $maxArt  = (int) $this->params->get('sitemap_max_articles', 1000);
-                    $includeImages = (bool) $this->params->get('sitemap_include_images', 1);
-                    $includeAlt    = (bool) $this->params->get('sitemap_include_alternates', 1);
-                    $excludeMenuIds = $this->parseList((string) $this->params->get('sitemap_exclude_menu_ids', ''));
-                    $excludeCatIds  = array_map('intval', $this->parseList((string) $this->params->get('sitemap_exclude_category_ids', '')));
-                    $cfHome = (string) $this->params->get('sitemap_changefreq_home', 'weekly');
-                    $cfMenu = (string) $this->params->get('sitemap_changefreq_menu', 'weekly');
-                    $cfArt  = (string) $this->params->get('sitemap_changefreq_article', 'weekly');
-                    $prHome = (string) $this->params->get('sitemap_priority_home', '1.0');
-                    $prMenu = (string) $this->params->get('sitemap_priority_menu', '0.7');
-                    $prArt  = (string) $this->params->get('sitemap_priority_article', '0.8');
-                    $urlsPages = [];
-                    $urlsArticles = [];
-                    $pushUrl = function (array &$bucket, array $u) { $bucket[] = $u; };
-                    $urlsPages[] = [
-                        'loc' => $base . '/',
-                        'lastmod' => $today,
-                        'changefreq' => $cfHome,
-                        'priority' => $prHome,
-                        'alternates' => $includeAlt ? $this->buildHomeAlternates() : [],
-                    ];
-                    if ($incMenu) {
-                        try {
-                            $menus = $this->app->getMenu('site');
-                            if ($menus) {
-                                $items = $menus->getMenu();
-                                foreach ($items as $item) {
-                                    if (!$item || empty($item->published)) { continue; }
-                                    if (!empty($excludeMenuIds) && in_array((string) $item->id, $excludeMenuIds, true)) { continue; }
-                                    $link = (string) ($item->link ?? '');
-                                    if ($link === '' || stripos($link, 'http://') === 0 || stripos($link, 'https://') === 0) { continue; }
-                                    $url = \Joomla\CMS\Router\Route::_('index.php?Itemid=' . (int) $item->id);
-                                    if (!preg_match('#^https?://#i', $url)) { $url = $base . '/' . ltrim($url, '/'); }
-                                    $u = ['loc' => $url, 'lastmod' => $today, 'changefreq' => $cfMenu, 'priority' => $prMenu];
-                                    if ($includeAlt) { $u['alternates'] = $this->buildMenuAlternates($item); }
-                                    $pushUrl($urlsPages, $u);
-                                }
-                            }
-                        } catch (\Throwable $e) { /* ignore */ }
-                    }
-                    if ($incArt) {
-                        try {
-                            $db = Factory::getDbo();
-                            $query = $db->getQuery(true)
-                                ->select($db->quoteName(['id', 'catid', 'modified', 'publish_up', 'created', 'images', 'language']))
-                                ->from($db->quoteName('#__content'))
-                                ->where($db->quoteName('state') . ' = 1')
-                                ->order($db->quoteName('modified') . ' DESC');
-                            if (!empty($excludeCatIds)) { $query->where($db->quoteName('catid') . ' NOT IN (' . implode(',', array_map('intval', $excludeCatIds)) . ')'); }
-                            if ($maxArt > 0) { $query->setLimit($maxArt); }
-                            $db->setQuery($query);
-                            $rows = (array) $db->loadObjectList();
-                            foreach ($rows as $row) {
-                                $sef = \Joomla\CMS\Router\Route::_('index.php?option=com_content&view=article&id=' . (int) $row->id . '&catid=' . (int) $row->catid);
-                                if (!preg_match('#^https?://#i', $sef)) { $sef = $base . '/' . ltrim($sef, '/'); }
-                                $last = $row->modified ?: ($row->publish_up ?: $row->created);
-                                $lastDate = $today;
-                                if (!empty($last)) { try { $d = new Date($last, 'UTC'); $d->setTimezone($tz); $lastDate = $d->format('Y-m-d'); } catch (\Throwable $e) { /* ignore */ } }
-                                $u = ['loc' => $sef, 'lastmod' => $lastDate, 'changefreq' => $cfArt, 'priority' => $prArt];
-                                $imgUrl = '';
-                                if ($includeImages && !empty($row->images)) {
-                                    $imgs = json_decode($row->images, true) ?: [];
-                                    $img = $imgs['image_fulltext'] ?? ($imgs['image_intro'] ?? '');
-                                    if ($img !== '') { $img = explode('#', $img, 2)[0]; $img = trim($img); if (!preg_match('#^https?://#i', $img)) { $img = $base . '/' . ltrim($img, '/'); } $imgUrl = $img; }
-                                }
-                                if ($imgUrl !== '') { $u['image'] = $imgUrl; }
-                                if ($includeAlt) { $u['alternates'] = $this->buildArticleAlternates((int) $row->id, (int) $row->catid, (string) ($row->language ?? '')); }
-                                $pushUrl($urlsArticles, $u);
-                            }
-                        } catch (\Throwable $e) { /* ignore */ }
-                    }
-                    $emit = '';
-                    $lastModIndex = $today;
-                    if ($which === 'index' && $useIndex) {
-                        $lmPages = $today; foreach ($urlsPages as $u) { if (!empty($u['lastmod']) && $u['lastmod'] > $lmPages) { $lmPages = $u['lastmod']; } }
-                        $lmArts = $today; foreach ($urlsArticles as $u) { if (!empty($u['lastmod']) && $u['lastmod'] > $lmArts) { $lmArts = $u['lastmod']; } }
-                        $lastModIndex = max($lmPages, $lmArts);
-                        $emit = $this->renderSitemapIndex([
-                            ['loc' => $base . '/sitemap-pages.xml', 'lastmod' => $lmPages],
-                            ['loc' => $base . '/sitemap-articles.xml', 'lastmod' => $lmArts],
-                        ]);
-                    } elseif ($which === 'pages') {
-                        $emit = $this->renderUrlset($urlsPages, $includeAlt, $includeImages);
-                        foreach ($urlsPages as $u) { if (!empty($u['lastmod']) && $u['lastmod'] > $lastModIndex) { $lastModIndex = $u['lastmod']; } }
-                    } else {
-                        $emit = $this->renderUrlset($urlsArticles, $includeAlt, $includeImages);
-                        foreach ($urlsArticles as $u) { if (!empty($u['lastmod']) && $u['lastmod'] > $lastModIndex) { $lastModIndex = $u['lastmod']; } }
-                    }
-                    $etag = 'W/"' . md5($emit) . '"';
-                    $lastModHttp = gmdate('D, d M Y 00:00:00', strtotime($lastModIndex)) . ' GMT';
-                    $this->app->setHeader('Content-Type', 'application/xml; charset=UTF-8', true);
-                    $this->app->setHeader('ETag', $etag, true);
-                    $this->app->setHeader('Last-Modified', $lastModHttp, true);
-                    $inm = $_SERVER['HTTP_IF_NONE_MATCH'] ?? '';
-                    $ims = $_SERVER['HTTP_IF_MODIFIED_SINCE'] ?? '';
-                    if ($inm === $etag || ($ims !== '' && strtotime($ims) >= strtotime($lastModHttp))) {
-                        http_response_code(304);
-                        $this->app->setHeader('Status', '304 Not Modified', true);
-                        $this->app->setBody('');
-                    } else {
-                        $this->app->setBody($emit);
-                    }
-                    $this->app->respond();
-                    $this->app->close();
-                    return;
-                }
-            }
-        } catch (\Throwable $e) { /* ignore */ }
-    }
-
 
     public function onBeforeCompileHead(): void
     {
@@ -1673,63 +1390,63 @@ class PlgSystemOffroadseo extends CMSPlugin
      */
     private function renderSitemapIndex(array $entries): string
     {
-    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-$xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-    foreach ($entries as $e) {
-    $xml .= ' <sitemap>' . "\n";
-        $xml .= ' <loc>' . htmlspecialchars($e['loc'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</loc>' . "\n";
-        if (!empty($e['lastmod'])) {
-        $xml .= ' <lastmod>' . htmlspecialchars($e['lastmod'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</lastmod>' .
-        "\n";
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        foreach ($entries as $e) {
+            $xml .= ' <sitemap>' . "\n";
+            $xml .= ' <loc>' . htmlspecialchars($e['loc'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</loc>' . "\n";
+            if (!empty($e['lastmod'])) {
+                $xml .= ' <lastmod>' . htmlspecialchars($e['lastmod'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</lastmod>' .
+                    "\n";
+            }
+            $xml .= ' </sitemap>' . "\n";
         }
-        $xml .= ' </sitemap>' . "\n";
+        $xml .= '</sitemapindex>' . "\n";
+        return $xml;
     }
-    $xml .= '</sitemapindex>' . "\n";
-return $xml;
-}
 
-/**
-* Render a urlset XML string with optional alternates and images.
-* Input items: loc, lastmod, changefreq, priority, alternates(map), image(url)
-*/
-/**
-* @param array<int,array{loc:string,lastmod?:string,changefreq?:string,priority?:string,alternates?:array<string,string>
+    /**
+     * Render a urlset XML string with optional alternates and images.
+     * Input items: loc, lastmod, changefreq, priority, alternates(map), image(url)
+     */
+    /**
+     * @param array<int,array{loc:string,lastmod?:string,changefreq?:string,priority?:string,alternates?:array<string,string>
     ,image?:string}> $urls
-    */
+     */
     private function renderUrlset(array $urls, bool $withAlt, bool $withImg): string
     {
-    $hasAlt = $withAlt && $this->hasAnyAlternates($urls);
-    $hasImg = $withImg && $this->hasAnyImages($urls);
-    $xml = '
+        $hasAlt = $withAlt && $this->hasAnyAlternates($urls);
+        $hasImg = $withImg && $this->hasAnyImages($urls);
+        $xml = '
     <?xml version="1.0" encoding="UTF-8"?>' . "\n";
-    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' . ($hasAlt ? '
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' . ($hasAlt ? '
         xmlns:xhtml="http://www.w3.org/1999/xhtml"' : '') . ($hasImg ? '
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"' : '') . '>' . "\n";
         foreach ($urls as $u) {
-        $xml .= ' <url>' . "\n";
+            $xml .= ' <url>' . "\n";
             $xml .= ' <loc>' . htmlspecialchars($u['loc'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</loc>' . "\n";
             if (!empty($u['lastmod'])) {
-            $xml .= ' <lastmod>' . htmlspecialchars($u['lastmod'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</lastmod>'
-            . "\n";
+                $xml .= ' <lastmod>' . htmlspecialchars($u['lastmod'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</lastmod>'
+                    . "\n";
             }
             if (!empty($u['changefreq'])) {
-            $xml .= ' <changefreq>' . htmlspecialchars($u['changefreq'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '
+                $xml .= ' <changefreq>' . htmlspecialchars($u['changefreq'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '
             </changefreq>' . "\n";
             }
             if (!empty($u['priority'])) {
-            $xml .= ' <priority>' . htmlspecialchars($u['priority'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '
+                $xml .= ' <priority>' . htmlspecialchars($u['priority'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '
             </priority>' . "\n";
             }
             if ($hasAlt && !empty($u['alternates']) && is_array($u['alternates'])) {
-            foreach ($u['alternates'] as $code => $href) {
-            $xml .= '
+                foreach ($u['alternates'] as $code => $href) {
+                    $xml .= '
             <xhtml:link rel="alternate"
                 hreflang="' . htmlspecialchars(strtolower($code), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"
                 href="' . htmlspecialchars($href, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '" />' . "\n";
-            }
+                }
             }
             if ($hasImg && !empty($u['image'])) {
-            $xml .= ' <image:image>
+                $xml .= ' <image:image>
                 <image:loc>' . htmlspecialchars($u['image'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</image:loc>
             </image:image>' . "\n";
             }
@@ -1737,70 +1454,82 @@ return $xml;
         </url>' . "\n";
         }
         $xml .= '</urlset>' . "\n";
-    return $xml;
+        return $xml;
     }
 
     /**
-    * @param array<int,array{alternates?:array<string,string>}> $urls
-        */
-        private function hasAnyAlternates(array $urls): bool
-        {
+     * @param array<int,array{alternates?:array<string,string>}> $urls
+     */
+    private function hasAnyAlternates(array $urls): bool
+    {
         foreach ($urls as $u) {
-        if (!empty($u['alternates'])) {
-        return true;
-        }
+            if (!empty($u['alternates'])) {
+                return true;
+            }
         }
         return false;
-        }
+    }
 
-        /**
-        * @param array<int,array{image?:string}> $urls
-            */
-            private function hasAnyImages(array $urls): bool
-            {
-            foreach ($urls as $u) {
+    /**
+     * @param array<int,array{image?:string}> $urls
+     */
+    private function hasAnyImages(array $urls): bool
+    {
+        foreach ($urls as $u) {
             if (!empty($u['image'])) {
-            return true;
+                return true;
             }
-            }
-            return false;
-            }
+        }
+        return false;
+    }
 
-            /**
-            * Build robots.txt content.
-            */
-            private function renderRobotsTxt(): string
-            {
-            $root = rtrim(\Joomla\CMS\Uri\Uri::root(), '/');
-            $lines = [];
-            // Always include sitemap reference
-            $lines[] = 'Sitemap: ' . $root . '/sitemap.xml';
-            $lines[] = '';
-            $lines[] = 'User-agent: *';
-            // Conservative defaults (Joomla core directories)
-            $defaults = [
-            '/administrator/', '/bin/', '/cache/', '/cli/', '/components/', '/includes/', '/installation/',
-            '/language/', '/layouts/', '/libraries/', '/logs/', '/modules/', '/plugins/', '/tmp/',
-            ];
-            foreach ($defaults as $d) {
+    /**
+     * Build robots.txt content.
+     */
+    private function renderRobotsTxt(): string
+    {
+        $root = rtrim(\Joomla\CMS\Uri\Uri::root(), '/');
+        $lines = [];
+        // Always include sitemap reference
+        $lines[] = 'Sitemap: ' . $root . '/sitemap.xml';
+        $lines[] = '';
+        $lines[] = 'User-agent: *';
+        // Conservative defaults (Joomla core directories)
+        $defaults = [
+            '/administrator/',
+            '/bin/',
+            '/cache/',
+            '/cli/',
+            '/components/',
+            '/includes/',
+            '/installation/',
+            '/language/',
+            '/layouts/',
+            '/libraries/',
+            '/logs/',
+            '/modules/',
+            '/plugins/',
+            '/tmp/',
+        ];
+        foreach ($defaults as $d) {
             $lines[] = 'Disallow: ' . $d;
-            }
-            // Extra lines from params (one per line)
-            $extra = trim((string) $this->params->get('robots_extra', ''));
-            if ($extra !== '') {
+        }
+        // Extra lines from params (one per line)
+        $extra = trim((string) $this->params->get('robots_extra', ''));
+        if ($extra !== '') {
             $lines[] = '';
             foreach (preg_split('/\r?\n/', $extra) ?: [] as $ln) {
-            $ln = trim($ln);
-            if ($ln !== '') {
-            $lines[] = $ln;
+                $ln = trim($ln);
+                if ($ln !== '') {
+                    $lines[] = $ln;
+                }
             }
-            }
-            }
-            // Ensure trailing newline
-            $out = implode("\n", $lines);
-            if (!str_ends_with($out, "\n")) {
+        }
+        // Ensure trailing newline
+        $out = implode("\n", $lines);
+        if (!str_ends_with($out, "\n")) {
             $out .= "\n";
-            }
-            return $out;
-            }
-            }
+        }
+        return $out;
+    }
+}
