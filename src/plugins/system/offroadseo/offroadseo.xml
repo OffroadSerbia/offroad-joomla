@@ -7,8 +7,8 @@
     <authorEmail>admin@offroadserbia.com</authorEmail>
     <authorUrl>https://offroadserbia.com</authorUrl>
     <license>GPL-2.0-or-later</license>
-    <creationDate>2025-08-28</creationDate>
-    <version>1.7.5</version>
+    <creationDate>2025-08-29</creationDate>
+    <version>1.7.7</version>
     <description>PLG_SYSTEM_OFFROADSEO_DESC</description>
     
     <files>
@@ -39,17 +39,7 @@
                 <field name="help_basic" type="note" label="PLG_SYSTEM_OFFROADSEO_HELP_BASIC" showon="show_inline_help:1" />
                 <field name="basic_spacer_global" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_BASIC" />
                 <field name="env_spacer" type="spacer" label="PLG_SYSTEM_OFFROADSEO_ENV_FIELDSET" />
-                <field name="env_auto" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_AUTO" default="1" containerclass="two-col-left">
-                    <option value="1">JYES</option>
-                    <option value="0">JNO</option>
-                </field>
-                <field name="primary_domain" type="text" label="PLG_SYSTEM_OFFROADSEO_PRIMARY_DOMAIN" description="PLG_SYSTEM_OFFROADSEO_PRIMARY_DOMAIN_DESC" containerclass="two-col-right" />
-                <field name="staging_domains" type="textarea" rows="3" label="PLG_SYSTEM_OFFROADSEO_STAGING_DOMAINS" description="PLG_SYSTEM_OFFROADSEO_STAGING_DOMAINS_DESC" containerclass="two-col-left" />
-                
-                <field name="env_disable_analytics_on_staging" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_DISABLE_ANALYTICS" default="1" containerclass="two-col-left">
-                    <option value="1">JYES</option>
-                    <option value="0">JNO</option>
-                </field>
+                <field name="active_domain" type="text" label="PLG_SYSTEM_OFFROADSEO_ACTIVE_DOMAIN" description="PLG_SYSTEM_OFFROADSEO_ACTIVE_DOMAIN_DESC" containerclass="two-col-left" />
                 
                 <field name="enable_hreflang" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENABLE_HREFLANG" default="1" containerclass="two-col-left">
                     <option value="1">JYES</option>
@@ -76,14 +66,11 @@
                     <option value="0">JNO</option>
                 </field>
                 <field name="advanced_spacer_global" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_ADVANCED" />
-                <field name="html_attrs" type="text" label="PLG_SYSTEM_OFFROADSEO_HTML_ATTRS" description="PLG_SYSTEM_OFFROADSEO_HTML_ATTRS_DESC" containerclass="two-col-left" showon="ui_mode:advanced" />
-                <field name="head_top_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_HEAD_TOP_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_HEAD_TOP_CUSTOM_CODE_DESC" filter="raw" rows="4" containerclass="two-col-right" showon="ui_mode:advanced" />
+                
                 <field name="head_end_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_HEAD_END_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_HEAD_END_CUSTOM_CODE_DESC" filter="raw" rows="4" containerclass="two-col-left" showon="ui_mode:advanced" />
                 <field name="body_start_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_BODY_START_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_BODY_START_CUSTOM_CODE_DESC" filter="raw" rows="4" containerclass="two-col-right" showon="ui_mode:advanced" />
                 <field name="body_custom_code" type="textarea" label="PLG_SYSTEM_OFFROADSEO_BODY_CUSTOM_CODE" description="PLG_SYSTEM_OFFROADSEO_BODY_CUSTOM_CODE_DESC" filter="raw" rows="4" containerclass="two-col-left" showon="ui_mode:advanced" />
-                <field name="scope_components" type="text" label="PLG_SYSTEM_OFFROADSEO_SCOPE_COMPONENTS" description="PLG_SYSTEM_OFFROADSEO_SCOPE_COMPONENTS_DESC" containerclass="two-col-right" showon="ui_mode:advanced" />
-                <field name="scope_views" type="text" label="PLG_SYSTEM_OFFROADSEO_SCOPE_VIEWS" description="PLG_SYSTEM_OFFROADSEO_SCOPE_VIEWS_DESC" containerclass="two-col-left" showon="ui_mode:advanced" />
-                <field name="scope_menu_ids" type="text" label="PLG_SYSTEM_OFFROADSEO_SCOPE_MENU_IDS" description="PLG_SYSTEM_OFFROADSEO_SCOPE_MENU_IDS_DESC" containerclass="two-col-right" showon="ui_mode:advanced" />
+                
             </fieldset>
 
             <!-- Schema and Structured Data -->
@@ -274,10 +261,7 @@
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="env_force_noindex_on_staging" type="radio" label="PLG_SYSTEM_OFFROADSEO_ENV_FORCE_NOINDEX" description="PLG_SYSTEM_OFFROADSEO_ENV_FORCE_NOINDEX_DESC" default="1" containerclass="two-col-right" showon="debug_master_off:0">
-                    <option value="1">JYES</option>
-                    <option value="0">JNO</option>
-                </field>
+                <!-- removed: env_force_noindex_on_staging -->
                 <field name="debug_pretty_json" type="radio" label="PLG_SYSTEM_OFFROADSEO_DEBUG_PRETTY_JSON" description="PLG_SYSTEM_OFFROADSEO_DEBUG_PRETTY_JSON_DESC" default="0" containerclass="two-col-right" showon="debug_master_off:0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
@@ -287,6 +271,10 @@
                     <option value="0">JNO</option>
                 </field>
                 <field name="advanced_spacer_debug" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_ADVANCED" />
+                <field name="debug_disable_analytics" type="radio" label="PLG_SYSTEM_OFFROADSEO_DEBUG_DISABLE_ANALYTICS" description="PLG_SYSTEM_OFFROADSEO_DEBUG_DISABLE_ANALYTICS_DESC" default="0" containerclass="two-col-left" showon="debug_master_off:0">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
                 <field name="show_staging_badge" type="radio" label="PLG_SYSTEM_OFFROADSEO_SHOW_STAGING_BADGE" description="PLG_SYSTEM_OFFROADSEO_SHOW_STAGING_BADGE_DESC" default="0" containerclass="two-col-right" showon="debug_master_off:0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>

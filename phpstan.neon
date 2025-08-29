@@ -1,8 +1,9 @@
 parameters:
   paths:
     - src
-  level: 6
+  level: 7
   ignoreErrors: []
   excludePaths:
-  - src/plugins/**
-  - src/templates/**
+    - src/templates/**
+  bootstrapFiles:
+    - stubs/bootstrap.php

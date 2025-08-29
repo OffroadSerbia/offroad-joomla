@@ -23,18 +23,18 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.7.5';
-    // Environment flag (auto-detected): true on staging/dev, false on production
-    private bool $isStaging = false;
+    private const VERSION = '1.7.7';
     // Buffer for JSON-LD when injecting at body end
+    /** @var array<int,string> JSON-LD script tags buffered for body-end */
     private array $offseoJsonLd = [];
     // Buffer for OG/Twitter tags to repair head at onAfterRender if needed
+    /** @var array<int,array{attr:string,name:string,content:string}> Collected OG/Twitter tags for repair */
     private array $offseoOgMeta = [];
     // Precise injection buffers
-    private array $injectHeadTop = [];
-    private array $injectHeadEnd = [];
-    private array $injectBodyStart = [];
-    private array $injectBodyEnd = [];
+    /** @var array<int,string> */ private array $injectHeadTop = [];
+    /** @var array<int,string> */ private array $injectHeadEnd = [];
+    /** @var array<int,string> */ private array $injectBodyStart = [];
+    /** @var array<int,string> */ private array $injectBodyEnd = [];
     /** @var \Joomla\CMS\Application\CMSApplication */
     protected $app;
 
@@ -74,14 +74,43 @@ class PlgSystemOffroadseo extends CMSPlugin
             return;
         }
 
+        // Activate plugin only on configured domain (empty means all)
+        if (!$this->isActiveDomain()) {
+            return;
+        }
+
         // Sitemap.xml endpoint: generate sitemap (index or urlset) with menus/articles, images, alternates, caching
         try {
             $enableSitemap = (bool) $this->params->get('enable_sitemap', 1);
             if ($enableSitemap) {
                 $path = \Joomla\CMS\Uri\Uri::getInstance()->getPath();
                 $p = trim($path, '/');
+                $pLower = strtolower($p);
                 $useIndex = (bool) $this->params->get('sitemap_use_index', 0);
-                if (in_array(strtolower($p), ['sitemap.xml', 'sitemap-pages.xml', 'sitemap-articles.xml'], true)) {
+
+                // Accept multiple patterns (hyphen and underscore) and a query param fallback
+                // Example fallback: /?offseo_sitemap=index|pages|articles
+                $requested = false;
+                $which = 'index';
+                if (in_array($pLower, ['sitemap.xml', 'sitemap-pages.xml', 'sitemap-articles.xml', 'sitemap_pages.xml', 'sitemap_articles.xml'], true)) {
+                    $requested = true;
+                    if ($pLower === 'sitemap-pages.xml' || $pLower === 'sitemap_pages.xml') {
+                        $which = 'pages';
+                    } elseif ($pLower === 'sitemap-articles.xml' || $pLower === 'sitemap_articles.xml') {
+                        $which = 'articles';
+                    } else { // sitemap.xml
+                        $which = $useIndex ? 'index' : 'pages';
+                    }
+                } else {
+                    $qp = isset($_GET['offseo_sitemap']) ? strtolower((string) $_GET['offseo_sitemap']) : '';
+                    if (in_array($qp, ['index', 'pages', 'articles'], true)) {
+                        $requested = true;
+                        // If index requested but index is disabled, serve pages
+                        $which = ($qp === 'index' && !$useIndex) ? 'pages' : $qp;
+                    }
+                }
+
+                if ($requested) {
                     $base = rtrim(\Joomla\CMS\Uri\Uri::root(), '/');
                     $tz = new \DateTimeZone('UTC');
                     $today = (new Date('now', $tz))->format('Y-m-d');
@@ -220,14 +249,6 @@ class PlgSystemOffroadseo extends CMSPlugin
                         }
                     }
 
-                    // Map path to output type
-                    $which = 'index';
-                    if (!$useIndex || strtolower($p) === 'sitemap-pages.xml') {
-                        $which = 'pages';
-                    } elseif (strtolower($p) === 'sitemap-articles.xml') {
-                        $which = 'articles';
-                    }
-
                     $emit = '';
                     $lastModIndex = $today;
                     if ($which === 'index' && $useIndex) {
@@ -290,21 +311,9 @@ class PlgSystemOffroadseo extends CMSPlugin
             // Ignore sitemap errors and continue normal flow
         }
 
-        // Environment detection (staging/production) and policies
-        $this->detectEnvironment();
-
         // Debug master OFF: when ON, disable all options under Debug tab
         $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
-
-        $autoEnv = (bool) $this->params->get('env_auto', 1);
-        $forceNoindexOnStaging = (bool) $this->params->get('env_force_noindex_on_staging', 1);
-        if ($debugMasterOff) {
-            $forceNoindexOnStaging = false;
-        }
-        if ($autoEnv && $this->isStaging && $forceNoindexOnStaging) {
-            $this->emitNoindexHeader();
-        }
-        // Manual noindex still supported
+        // Manual noindex only
         if (!$debugMasterOff && (bool) $this->params->get('force_noindex', 0)) {
             $this->emitNoindexHeader();
         }
@@ -323,26 +332,14 @@ class PlgSystemOffroadseo extends CMSPlugin
             $showBadge = false;
         }
         $forceOgHead = (bool) $this->params->get('force_og_head', 1);
-        $forceNoindex = (bool) $this->params->get('force_noindex', 0);
-        if ($debugMasterOff) {
-            $forceNoindex = false;
-        }
-        // Env-driven overrides
-        $autoEnv = (bool) $this->params->get('env_auto', 1);
-        $forceNoindexOnStaging = (bool) $this->params->get('env_force_noindex_on_staging', 1);
-        if ($debugMasterOff) {
-            $forceNoindexOnStaging = false;
-        }
-        if ($autoEnv && $this->isStaging && $forceNoindexOnStaging) {
-            $forceNoindex = true;
-        }
+        $forceNoindex = !$debugMasterOff && (bool) $this->params->get('force_noindex', 0);
         // Badge display is controlled only by 'show_staging_badge' now
         $wrapMarkers = (bool) $this->params->get('debug_wrap_markers', 0);
         if ($debugMasterOff) {
             $wrapMarkers = false;
         }
-        // Scope filters
-        $scopeAllowed = $this->isScopeAllowed();
+        // Scope filters removed — always allowed
+        $scopeAllowed = true;
         // Master group switches
         $enableSchema   = (bool) $this->params->get('enable_schema', 1);
         $enableOg       = (bool) $this->params->get('enable_opengraph', 1);
@@ -359,14 +356,7 @@ class PlgSystemOffroadseo extends CMSPlugin
             return;
         }
 
-        // Inject custom HTML attributes into <html ...> if configured
-        if ($scopeAllowed && $enableCustom) {
-            $htmlAttrs = trim((string) $this->params->get('html_attrs', ''));
-            if ($htmlAttrs !== '' && stripos($body, '<html ') !== false) {
-                $attrs = preg_replace('/\s+/', ' ', strip_tags($htmlAttrs));
-                $body = preg_replace('/<html\s+/i', '<html ' . $attrs . ' ', $body, 1);
-            }
-        }
+        // Extra <html> attributes — removed
         // Optionally repair OG/Twitter meta in <head> if some minifier/theme stripped them
         if ($forceOgHead && !empty($this->offseoOgMeta)) {
             $missing = [];
@@ -535,14 +525,7 @@ class PlgSystemOffroadseo extends CMSPlugin
             return;
         }
         $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
-        if ($debugMasterOff) {
-            return;
-        }
-        $autoEnv = (bool) $this->params->get('env_auto', 1);
-        $envForce = (bool) $this->params->get('env_force_noindex_on_staging', 1);
-        $manual = (bool) $this->params->get('force_noindex', 0);
-        $eff = $manual || ($autoEnv && $this->isStaging && $envForce);
-        if ($eff) {
+        if (!$debugMasterOff && (bool) $this->params->get('force_noindex', 0)) {
             $this->emitNoindexHeader();
         }
     }
@@ -554,19 +537,19 @@ class PlgSystemOffroadseo extends CMSPlugin
             return;
         }
 
+        // Activate plugin only on configured domain (empty means all)
+        if (!$this->isActiveDomain()) {
+            return;
+        }
+
         $doc = Factory::getDocument();
         if (!$doc instanceof HtmlDocument) {
             return;
         }
         // Re-assert X-Robots-Tag before head compile if needed
         $debugMasterOff = (bool) $this->params->get('debug_master_off', 0);
-        $autoEnv = (bool) $this->params->get('env_auto', 1);
-        $envForceNoindex = (bool) $this->params->get('env_force_noindex_on_staging', 1);
         $manualNoindex = (bool) $this->params->get('force_noindex', 0);
-        $effForceNoindex = false;
-        if (!$debugMasterOff) {
-            $effForceNoindex = $manualNoindex || ($autoEnv && $this->isStaging && $envForceNoindex);
-        }
+        $effForceNoindex = !$debugMasterOff && $manualNoindex;
         if ($effForceNoindex) {
             $this->emitNoindexHeader();
         }
@@ -579,17 +562,16 @@ class PlgSystemOffroadseo extends CMSPlugin
             $prettyJson = false;
             $wrapMarkers = false;
         }
-        $scopeAllowed = $this->isScopeAllowed();
+        $scopeAllowed = true;
         $enableSchema   = (bool) $this->params->get('enable_schema', 1);
         $enableOg       = (bool) $this->params->get('enable_opengraph', 1);
         $enableAnalytics = (bool) $this->params->get('enable_analytics', 1);
         $enableHreflang = (bool) $this->params->get('enable_hreflang', 1);
         $enableCustom   = (bool) $this->params->get('enable_custom_injections', 1);
         $respectThird   = (bool) $this->params->get('respect_third_party', 1);
-        // Env policy: disable analytics on staging if enabled
-        $autoEnv = (bool) $this->params->get('env_auto', 1);
-        $disableAnalyticsOnStaging = (bool) $this->params->get('env_disable_analytics_on_staging', 1);
-        if ($autoEnv && $this->isStaging && $disableAnalyticsOnStaging) {
+        // Debug policy: disable analytics when debug flag is set
+        $disableAnalyticsDebug = (bool) $this->params->get('debug_disable_analytics', 0);
+        if (!$debugMasterOff && $disableAnalyticsDebug) {
             $enableAnalytics = false;
         }
 
@@ -598,8 +580,9 @@ class PlgSystemOffroadseo extends CMSPlugin
             if ($prettyJson) {
                 $flags |= JSON_PRETTY_PRINT;
             }
-            $json = json_encode($data, $flags);
-            if ($prettyJson && !str_ends_with($json, "\n")) {
+            $jsonRaw = json_encode($data, $flags);
+            $json = is_string($jsonRaw) ? $jsonRaw : '';
+            if ($prettyJson && $json !== '' && !str_ends_with($json, "\n")) {
                 $json .= "\n";
             }
             $script = '<script type="application/ld+json">' . $json . '</script>';
@@ -621,7 +604,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         $hasThirdGa = false;
         if ($respectThird) {
             $hd = $doc->getHeadData();
-            $scripts = isset($hd['scripts']) ? array_keys($hd['scripts']) : [];
+            $scripts = isset($hd['scripts']) ? array_map('strval', array_keys((array) $hd['scripts'])) : [];
             foreach ($scripts as $src) {
                 if (stripos($src, 'googletagmanager.com/gtag/js') !== false) {
                     $hasThirdGa = true;
@@ -660,7 +643,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         $hasThirdPixel = false;
         if ($respectThird) {
             $hd = $doc->getHeadData();
-            $scripts = isset($hd['scripts']) ? array_keys($hd['scripts']) : [];
+            $scripts = isset($hd['scripts']) ? array_map('strval', array_keys((array) $hd['scripts'])) : [];
             foreach ($scripts as $src) {
                 if (stripos($src, 'connect.facebook.net') !== false) {
                     $hasThirdPixel = true;
@@ -678,7 +661,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
         if ($scopeAllowed && $enableAnalytics && $fbIdsRaw !== '' && !$hasThirdPixel) {
             // Allow comma/newline separated IDs
-            $ids = array_values(array_filter(array_map('trim', preg_split('/\s*[\n,]+\s*/', $fbIdsRaw))));
+            $ids = array_values(array_filter(array_map('trim', (array) preg_split('/\s*[\n,]+\s*/', $fbIdsRaw))));
             if (!empty($ids)) {
                 $initOpts = trim((string) $this->params->get('fb_pixel_init_options', ''));
                 $trackPv = (bool) $this->params->get('fb_pixel_track_pageview', 1);
@@ -731,13 +714,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
 
         // Raw custom code placement preferences
-        $headTopCustom = (string) $this->params->get('head_top_custom_code', '');
-        if ($scopeAllowed && $enableCustom && $headTopCustom !== '') {
-            if ($prettyJson && !str_ends_with($headTopCustom, "\n")) {
-                $headTopCustom .= "\n";
-            }
-            $this->injectHeadTop[] = $wrapMarkers ? ("<!-- OffroadSEO: Custom (head-top) start -->\n" . $headTopCustom . "<!-- OffroadSEO: Custom (head-top) end -->") : $headTopCustom;
-        }
+        // Custom code in <head> (at start) — removed
         $headEndCustom = (string) $this->params->get('head_end_custom_code', '');
         if ($scopeAllowed && $enableCustom && $headEndCustom !== '') {
             if ($prettyJson && !str_ends_with($headEndCustom, "\n")) {
@@ -779,7 +756,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 
             $sameAs = trim((string) $this->params->get('org_sameas', ''));
             if ($sameAs !== '') {
-                $links = array_filter(array_map('trim', preg_split('/\s*[\n,]\s*/', $sameAs)));
+                $links = array_filter(array_map('trim', (array) preg_split('/\s*[\n,]\s*/', $sameAs)));
                 if ($links) {
                     $org['sameAs'] = array_values($links);
                 }
@@ -1282,46 +1259,15 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
     }
 
-    /**
-     * Determine if current request matches configured scope filters.
-     */
+    // Scope filters removed — always allowed
     private function isScopeAllowed(): bool
     {
-        try {
-            $input = $this->app->getInput();
-            $option = $input->getCmd('option');
-            $view = $input->getCmd('view');
-            $menu = $this->app->getMenu();
-            $active = $menu ? $menu->getActive() : null;
-            $activeId = $active ? (int) $active->id : 0;
-
-            $cmp = trim((string) $this->params->get('scope_components', ''));
-            if ($cmp !== '') {
-                $list = $this->parseList($cmp);
-                if (!empty($list) && !in_array($option, $list, true)) {
-                    return false;
-                }
-            }
-            $vw = trim((string) $this->params->get('scope_views', ''));
-            if ($vw !== '') {
-                $list = $this->parseList($vw);
-                if (!empty($list) && !in_array($view, $list, true)) {
-                    return false;
-                }
-            }
-            $menuIds = trim((string) $this->params->get('scope_menu_ids', ''));
-            if ($menuIds !== '') {
-                $list = array_values(array_filter(array_map('intval', $this->parseList($menuIds))));
-                if (!empty($list) && !in_array($activeId, $list, true)) {
-                    return false;
-                }
-            }
-        } catch (\Throwable $e) {
-            // If something goes wrong, allow by default
-        }
         return true;
     }
 
+    /**
+     * @return array<int,string>
+     */
     private function parseList(string $raw): array
     {
         $parts = preg_split('/\s*[\n,]+\s*/', $raw) ?: [];
@@ -1335,51 +1281,37 @@ class PlgSystemOffroadseo extends CMSPlugin
         return array_values(array_unique($out));
     }
 
-    /**
-     * Detect environment as staging/production based on configured domains and heuristics.
-     */
-    private function detectEnvironment(): void
+    // Environment auto-detect removed
+
+    // Active domain guard: if active_domain is set, only run on that host
+    private function isActiveDomain(): bool
     {
         try {
-            $uri = Uri::getInstance();
-            $host = method_exists($uri, 'getHost') ? strtolower((string) $uri->getHost()) : strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
-            $primary = strtolower(trim((string) $this->params->get('primary_domain', '')));
-            $stagingListRaw = trim((string) $this->params->get('staging_domains', ''));
-            $patterns = $this->parseList($stagingListRaw);
-
-            $isStg = false;
-            foreach ($patterns as $p) {
-                if ($this->hostMatches($host, $p)) {
-                    $isStg = true;
-                    break;
-                }
+            $active = trim((string) $this->params->get('active_domain', ''));
+            if ($active === '') {
+                return true; // not restricted
             }
-            if (!$isStg && $primary !== '' && $host !== '' && $host !== $primary) {
-                $isStg = true;
-            }
-            if (!$isStg && preg_match('/\b(staging|dev|test|preprod)\b/i', $host)) {
-                $isStg = true;
-            }
-            $this->isStaging = $isStg;
+            $active = strtolower(preg_replace('#^https?://#i', '', $active));
+            $active = preg_replace('#/.*$#', '', $active); // strip path if any
+            $host = strtolower((string) (method_exists(Uri::getInstance(), 'getHost') ? Uri::getInstance()->getHost() : ($_SERVER['HTTP_HOST'] ?? '')));
+            // Normalize leading www.
+            $h1 = ltrim($host, ' ');
+            $h2 = ltrim($active, ' ');
+            $norm = function ($h) {
+                return preg_replace('/^www\./i', '', (string) $h);
+            };
+            return $norm($h1) === $norm($h2);
         } catch (\Throwable $e) {
-            $this->isStaging = false;
+            return true;
         }
-    }
-
-    private function hostMatches(string $host, string $pattern): bool
-    {
-        $pattern = strtolower(trim($pattern));
-        if ($pattern === '') {
-            return false;
-        }
-        // Support simple wildcard '*'
-        $regex = '/^' . str_replace(['\\*'], ['.*'], preg_quote($pattern, '/')) . '$/i';
-        return (bool) preg_match($regex, $host);
     }
 
     /**
      * Build alternates for homepage using language homes.
      * @return array<string,string> map lang=>url
+     */
+    /**
+     * @return array<string,string>
      */
     private function buildHomeAlternates(): array
     {
@@ -1402,6 +1334,10 @@ class PlgSystemOffroadseo extends CMSPlugin
 
     /**
      * Build alternates for a menu item via associations.
+     */
+    /**
+     * @param object|null $menuItem
+     * @return array<string,string>
      */
     private function buildMenuAlternates($menuItem): array
     {
@@ -1431,6 +1367,9 @@ class PlgSystemOffroadseo extends CMSPlugin
 
     /**
      * Build alternates for an article using associations.
+     */
+    /**
+     * @return array<string,string>
      */
     private function buildArticleAlternates(int $id, int $catid, string $langCode): array
     {
@@ -1480,6 +1419,9 @@ class PlgSystemOffroadseo extends CMSPlugin
      * Render a urlset XML string with optional alternates and images.
      * Input items: loc, lastmod, changefreq, priority, alternates(map), image(url)
      */
+    /**
+     * @param array<int,array{loc:string,lastmod?:string,changefreq?:string,priority?:string,alternates?:array<string,string>,image?:string}> $urls
+     */
     private function renderUrlset(array $urls, bool $withAlt, bool $withImg): string
     {
         $hasAlt = $withAlt && $this->hasAnyAlternates($urls);
@@ -1512,6 +1454,9 @@ class PlgSystemOffroadseo extends CMSPlugin
         return $xml;
     }
 
+    /**
+     * @param array<int,array{alternates?:array<string,string>}> $urls
+     */
     private function hasAnyAlternates(array $urls): bool
     {
         foreach ($urls as $u) {
@@ -1522,6 +1467,9 @@ class PlgSystemOffroadseo extends CMSPlugin
         return false;
     }
 
+    /**
+     * @param array<int,array{image?:string}> $urls
+     */
     private function hasAnyImages(array $urls): bool
     {
         foreach ($urls as $u) {

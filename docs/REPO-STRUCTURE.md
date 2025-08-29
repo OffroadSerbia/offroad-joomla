@@ -12,6 +12,7 @@
    - CI (lint + phpstan) i deploy na staging
 
 Standardi:
+
 - Kod: PSR-12 (PHPCS)
 - Analiza: PHPStan (level 6)
 - Komunikacija: Issue/PR template

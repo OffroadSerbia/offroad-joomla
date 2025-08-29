@@ -82,3 +82,11 @@ Napomena:
 
 - Workflow briše suvišne fajlove u target putanjama (sync sa `--delete`), tako da staging ostaje čist i usklađen sa repoom samo za ta tri direktorijuma.
 - `.cpanel.yml` je namerno deaktiviran da se izbegne automatski cPanel Git Deploy u docroot.
+
+## Promene (kratko)
+
+- 1.7.7 (plugin offroadseo)
+  - Uklonjena auto‑detekcija okruženja i scope filteri; dodat opciono `active_domain` ograničenje.
+  - Premešteno isključivanje analitike u Debug (`debug_disable_analytics`).
+  - Uklonjeni „extra HTML attributes” i „head-top custom code”.
+  - Pojednostavljena noindex logika (samo ručno), uz kasnu X‑Robots‑Tag potvrdu.
