@@ -85,8 +85,4 @@ Napomena:
 
 ## Promene (kratko)
 
-- 1.7.7 (plugin offroadseo)
-  - Uklonjena auto‑detekcija okruženja i scope filteri; dodat opciono `active_domain` ograničenje.
-  - Premešteno isključivanje analitike u Debug (`debug_disable_analytics`).
-  - Uklonjeni „extra HTML attributes” i „head-top custom code”.
-  - Pojednostavljena noindex logika (samo ručno), uz kasnu X‑Robots‑Tag potvrdu.
+- Vidi detaljno: `docs/RELEASE-NOTES.md`
