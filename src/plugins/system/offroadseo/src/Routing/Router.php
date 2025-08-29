@@ -5,63 +5,83 @@ namespace Offroad\Plugin\System\Offroadseo\Routing;
 \defined('_JEXEC') or die;
 
 use Joomla\CMS\Application\SiteApplication;
-use Joomla\CMS\Component\Router\RouterInterface;
-use Joomla\CMS\Component\Router\RouterView;
-use Joomla\CMS\Component\Router\RouterViewConfiguration;
-use Joomla\CMS\Factory;
-use Joomla\CMS\Menu\AbstractMenu;
-use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\Database\DatabaseInterface;
+use Joomla\CMS\Uri\Uri;
 use Joomla\Registry\Registry;
 
-class Router extends RouterView
+/**
+ * Minimal path router for OffroadSEO system plugin.
+ * Matches well-known endpoints and rewrites request to com_ajax plugin handler.
+ */
+class Router
 {
+    /** @var SiteApplication */
     protected $app;
+    /** @var Registry */
     protected $params;
+
+    /** @var array<string,string> map path=>resource */
+    private array $map = [
+        '/robots.txt' => 'robots',
+        '/sitemap.xml' => 'sitemap',
+        '/sitemap_index.xml' => 'sitemap',
+        '/sitemap-pages.xml' => 'sitemap-pages',
+        '/sitemap-articles.xml' => 'sitemap-articles',
+    ];
 
     public function __construct(SiteApplication $app, Registry $params)
     {
         $this->app = $app;
         $this->params = $params;
-
-        // Define the routes
-        $this->addMap('/robots.txt', 'robots');
-        $this->addMap('/sitemap.xml', 'sitemap');
-        $this->addMap('/sitemap_index.xml', 'sitemap');
-        $this->addMap('/sitemap-pages.xml', 'sitemap-pages');
-        $this->addMap('/sitemap-articles.xml', 'sitemap-articles');
     }
 
-    public function addMap($path, $resource)
+    /**
+     * If current request path matches one of our endpoints, rewrite to com_ajax
+     * and set required variables to trigger PlgSystemOffroadseo::onAjaxOffroadseo.
+     */
+    public function handle(): void
     {
-        $config = new RouterViewConfiguration($path);
-        $config->setKey('resource', $resource);
-        $this->registerView($config);
-    }
+        // Only process on site application
+        if (!$this->app->isClient('site')) {
+            return;
+        }
 
-    public function handle()
-    {
-        $requestUri = $this->app->getInput()->server->get('REQUEST_URI', '', 'string');
-        $path = \parse_url($requestUri, PHP_URL_PATH);
+        $uri = Uri::getInstance();
+        $rawPath = '/' . ltrim((string) $uri->getPath(), '/');
+        $rawPath = strtolower($rawPath);
 
-        foreach ($this->getViews() as $view) {
-            if ($view->getConfig()->getPath() === $path) {
-                $this->app->input->set('option', 'com_ajax');
-                $this->app->input->set('plugin', 'offroadseo');
-                $this->app->input->set('format', 'raw');
-                $this->app->input->set('resource', $view->getConfig()->getKey('resource'));
-                return;
+        // Remove base path if site is installed in a subdirectory (e.g., /sub/site)
+        $base = rtrim((string) Uri::base(true), '/'); // returns subdir path or ''
+        if ($base !== '') {
+            $base = strtolower($base);
+            if (str_starts_with($rawPath, $base . '/')) {
+                $rawPath = substr($rawPath, strlen($base));
+                if ($rawPath === '') {
+                    $rawPath = '/';
+                }
             }
         }
-    }
 
-    public function build(string &$query, array &$segments): void
-    {
-        // Not used for this router
-    }
+        // Exact match against our endpoints
+        if (isset($this->map[$rawPath])) {
+            $resource = $this->map[$rawPath];
+            $in = $this->app->getInput();
+            $in->set('option', 'com_ajax');
+            $in->set('plugin', 'offroadseo');
+            $in->set('group', 'system'); // required so com_ajax loads system plugins
+            $in->set('format', 'raw');
+            $in->set('resource', $resource);
 
-    public function parse(array &$segments, array &$vars): void
-    {
-        // Not used for this router
+            // Light debug header on staging to verify router is hit
+            try {
+                $host = isset($_SERVER['HTTP_HOST']) ? strtolower((string) $_SERVER['HTTP_HOST']) : '';
+                if ($host !== '' && (str_contains($host, 'staging.') || str_contains($host, 'stage.'))) {
+                    if (method_exists($this->app, 'setHeader')) {
+                        $this->app->setHeader('X-OffroadSEO-Router', 'hit:' . $resource, true);
+                    }
+                }
+            } catch (\Throwable $e) {
+                // ignore
+            }
+        }
     }
 }
