@@ -23,7 +23,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.8.1';
+    private const VERSION = '1.8.2';
     // Buffer for JSON-LD when injecting at body end
     /** @var array<int,string> JSON-LD script tags buffered for body-end */
     private array $offseoJsonLd = [];
@@ -74,10 +74,14 @@ class PlgSystemOffroadseo extends CMSPlugin
             return;
         }
 
-        // Lightweight diagnostics: /index.php?offseo_diag=1
+        // Lightweight diagnostics
+        // Supports both query and path:
+        //  - /index.php?offseo_diag=1
+        //  - /offseo-diag (path-based fallback when query params are stripped)
         // Always executable (does not require active domain match), reports state & exits
         try {
-            if (isset($_GET['offseo_diag'])) {
+            $pathForDiag = trim(strtolower(\Joomla\CMS\Uri\Uri::getInstance()->getPath()), '/');
+            if (isset($_GET['offseo_diag']) || $pathForDiag === 'offseo-diag') {
                 $host = (string) (method_exists(Uri::getInstance(), 'getHost') ? Uri::getInstance()->getHost() : ($_SERVER['HTTP_HOST'] ?? ''));
                 $activeCfg = trim((string) $this->params->get('active_domain', ''));
                 $activeMatch = $this->isActiveDomain() ? '1' : '0';
@@ -154,12 +158,14 @@ class PlgSystemOffroadseo extends CMSPlugin
                 // Example fallback: /?offseo_sitemap=index|pages|articles
                 $requested = false;
                 $which = 'index';
-                if (in_array($pLower, ['sitemap.xml', 'sitemap-pages.xml', 'sitemap-articles.xml', 'sitemap_pages.xml', 'sitemap_articles.xml'], true)) {
+                if (in_array($pLower, ['sitemap.xml', 'sitemap-pages.xml', 'sitemap-articles.xml', 'sitemap_pages.xml', 'sitemap_articles.xml', 'sitemap_index.xml'], true)) {
                     $requested = true;
                     if ($pLower === 'sitemap-pages.xml' || $pLower === 'sitemap_pages.xml') {
                         $which = 'pages';
                     } elseif ($pLower === 'sitemap-articles.xml' || $pLower === 'sitemap_articles.xml') {
                         $which = 'articles';
+                    } elseif ($pLower === 'sitemap_index.xml') {
+                        $which = 'index';
                     } else { // sitemap.xml
                         $which = $useIndex ? 'index' : 'pages';
                     }
@@ -1448,7 +1454,7 @@ class PlgSystemOffroadseo extends CMSPlugin
      */
     private function renderSitemapIndex(array $entries): string
     {
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 $xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
     foreach ($entries as $e) {
     $xml .= ' <sitemap>' . "\n";
@@ -1475,8 +1481,7 @@ return $xml;
     {
     $hasAlt = $withAlt && $this->hasAnyAlternates($urls);
     $hasImg = $withImg && $this->hasAnyImages($urls);
-    $xml = '
-    <?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' . ($hasAlt ? '
         xmlns:xhtml="http://www.w3.org/1999/xhtml"' : '') . ($hasImg ? '
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"' : '') . '>' . "\n";
