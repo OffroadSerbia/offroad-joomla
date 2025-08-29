@@ -1,6 +1,12 @@
 {
   "models": [
     {
+      "title": "GPT-5 Mini (Preview)",
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "apiKey": "${OPENAI_API_KEY}"
+    },
+    {
       "title": "GPT-4o Mini",
       "provider": "openai",
       "model": "gpt-4o-mini",

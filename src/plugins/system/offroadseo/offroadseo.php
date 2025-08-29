@@ -63,6 +63,23 @@ class PlgSystemOffroadseo extends CMSPlugin
             try {
                 $router = new Router($this->app, $this->params);
                 $router->handle();
+
+                // If router mapped to our com_ajax call, serve immediately to avoid later overrides
+                $in = $this->app->getInput();
+                if (
+                    $in->getCmd('option') === 'com_ajax'
+                    && $in->getCmd('plugin') === 'offroadseo'
+                    && $in->getCmd('group') === 'system'
+                ) {
+                    // Execute and terminate early
+                    $this->onAjaxOffroadseo();
+                    // If body was set, respond now
+                    if (method_exists($this->app, 'respond')) {
+                        $this->app->respond();
+                    }
+                    $this->app->close();
+                    return;
+                }
             } catch (\Throwable $e) {
                 // Ignore router errors
             }
