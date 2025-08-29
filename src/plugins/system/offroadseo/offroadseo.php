@@ -587,6 +587,225 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
     }
 
+    /**
+     * Fallback endpoint handling after routing (in case early hook was bypassed by other plugins/router).
+     */
+    public function onAfterRoute(): void
+    {
+        if (!$this->app->isClient('site')) {
+            return;
+        }
+        // Diagnostics (path or query) — does not require active domain
+        try {
+            $pathForDiag = trim(strtolower(\Joomla\CMS\Uri\Uri::getInstance()->getPath()), '/');
+            if (isset($_GET['offseo_diag']) || $pathForDiag === 'offseo-diag') {
+                $host = (string) (method_exists(Uri::getInstance(), 'getHost') ? Uri::getInstance()->getHost() : ($_SERVER['HTTP_HOST'] ?? ''));
+                $activeCfg = trim((string) $this->params->get('active_domain', ''));
+                $activeMatch = $this->isActiveDomain() ? '1' : '0';
+                $path = trim((string) Uri::getInstance()->getPath(), '/');
+                $qp = isset($_GET['offseo_sitemap']) ? (string) $_GET['offseo_sitemap'] : '';
+                $enableRobots = (bool) $this->params->get('enable_robots', 1);
+                $enableSitemap = (bool) $this->params->get('enable_sitemap', 1);
+                $useIndex = (bool) $this->params->get('sitemap_use_index', 0);
+                $lines = [];
+                $lines[] = 'OffroadSEO diag v' . self::VERSION;
+                $lines[] = 'host=' . $host;
+                $lines[] = 'active_cfg=' . $activeCfg;
+                $lines[] = 'active_match=' . $activeMatch;
+                $lines[] = 'enable_robots=' . ($enableRobots ? '1' : '0');
+                $lines[] = 'enable_sitemap=' . ($enableSitemap ? '1' : '0');
+                $lines[] = 'sitemap_use_index=' . ($useIndex ? '1' : '0');
+                $lines[] = 'path=' . $path;
+                $lines[] = 'qp_offseo_sitemap=' . $qp;
+                $out = implode("\n", $lines) . "\n";
+                $this->app->setHeader('Content-Type', 'text/plain; charset=UTF-8', true);
+                $this->app->setHeader('Cache-Control', 'no-cache, no-store, must-revalidate', true);
+                $this->app->setHeader('Pragma', 'no-cache', true);
+                $this->app->setHeader('Expires', '0', true);
+                $this->app->setBody($out);
+                $this->app->respond();
+                $this->app->close();
+                return;
+            }
+        } catch (\Throwable $e) { /* ignore */ }
+
+        // Respect active domain for endpoints
+        if (!$this->isActiveDomain()) {
+            return;
+        }
+
+        // robots.txt
+        try {
+            $enableRobots = (bool) $this->params->get('enable_robots', 1);
+            if ($enableRobots) {
+                $path = \Joomla\CMS\Uri\Uri::getInstance()->getPath();
+                $p = trim(strtolower($path), '/');
+                if ($p === 'robots.txt') {
+                    $txt = $this->renderRobotsTxt();
+                    $etag = 'W/"' . md5($txt) . '"';
+                    $this->app->setHeader('Content-Type', 'text/plain; charset=UTF-8', true);
+                    $this->app->setHeader('ETag', $etag, true);
+                    $inm = $_SERVER['HTTP_IF_NONE_MATCH'] ?? '';
+                    if ($inm === $etag) {
+                        http_response_code(304);
+                        $this->app->setHeader('Status', '304 Not Modified', true);
+                        $this->app->setBody('');
+                    } else {
+                        $this->app->setBody($txt);
+                    }
+                    $this->app->respond();
+                    $this->app->close();
+                    return;
+                }
+            }
+        } catch (\Throwable $e) { /* ignore */ }
+
+        // sitemap endpoints
+        try {
+            $enableSitemap = (bool) $this->params->get('enable_sitemap', 1);
+            if ($enableSitemap) {
+                $path = \Joomla\CMS\Uri\Uri::getInstance()->getPath();
+                $p = trim($path, '/');
+                $pLower = strtolower($p);
+                $useIndex = (bool) $this->params->get('sitemap_use_index', 0);
+                $requested = false;
+                $which = 'index';
+                if (in_array($pLower, ['sitemap.xml', 'sitemap-pages.xml', 'sitemap-articles.xml', 'sitemap_pages.xml', 'sitemap_articles.xml', 'sitemap_index.xml'], true)) {
+                    $requested = true;
+                    if ($pLower === 'sitemap-pages.xml' || $pLower === 'sitemap_pages.xml') {
+                        $which = 'pages';
+                    } elseif ($pLower === 'sitemap-articles.xml' || $pLower === 'sitemap_articles.xml') {
+                        $which = 'articles';
+                    } elseif ($pLower === 'sitemap_index.xml') {
+                        $which = 'index';
+                    } else {
+                        $which = $useIndex ? 'index' : 'pages';
+                    }
+                } else {
+                    $qp = isset($_GET['offseo_sitemap']) ? strtolower((string) $_GET['offseo_sitemap']) : '';
+                    if (in_array($qp, ['index', 'pages', 'articles'], true)) {
+                        $requested = true;
+                        $which = ($qp === 'index' && !$useIndex) ? 'pages' : $qp;
+                    }
+                }
+                if ($requested) {
+                    // Reuse existing generation path by delegating to onAfterInitialise block equivalent: duplicate minimal code
+                    // To avoid duplication, simplest approach: call the same logic by including a small inline block here
+                    $base = rtrim(\Joomla\CMS\Uri\Uri::root(), '/');
+                    $tz = new \DateTimeZone('UTC');
+                    $today = (new Date('now', $tz))->format('Y-m-d');
+                    $incMenu = (bool) $this->params->get('sitemap_include_menu', 1);
+                    $incArt  = (bool) $this->params->get('sitemap_include_articles', 1);
+                    $maxArt  = (int) $this->params->get('sitemap_max_articles', 1000);
+                    $includeImages = (bool) $this->params->get('sitemap_include_images', 1);
+                    $includeAlt    = (bool) $this->params->get('sitemap_include_alternates', 1);
+                    $excludeMenuIds = $this->parseList((string) $this->params->get('sitemap_exclude_menu_ids', ''));
+                    $excludeCatIds  = array_map('intval', $this->parseList((string) $this->params->get('sitemap_exclude_category_ids', '')));
+                    $cfHome = (string) $this->params->get('sitemap_changefreq_home', 'weekly');
+                    $cfMenu = (string) $this->params->get('sitemap_changefreq_menu', 'weekly');
+                    $cfArt  = (string) $this->params->get('sitemap_changefreq_article', 'weekly');
+                    $prHome = (string) $this->params->get('sitemap_priority_home', '1.0');
+                    $prMenu = (string) $this->params->get('sitemap_priority_menu', '0.7');
+                    $prArt  = (string) $this->params->get('sitemap_priority_article', '0.8');
+                    $urlsPages = [];
+                    $urlsArticles = [];
+                    $pushUrl = function (array &$bucket, array $u) { $bucket[] = $u; };
+                    $urlsPages[] = [
+                        'loc' => $base . '/',
+                        'lastmod' => $today,
+                        'changefreq' => $cfHome,
+                        'priority' => $prHome,
+                        'alternates' => $includeAlt ? $this->buildHomeAlternates() : [],
+                    ];
+                    if ($incMenu) {
+                        try {
+                            $menus = $this->app->getMenu('site');
+                            if ($menus) {
+                                $items = $menus->getMenu();
+                                foreach ($items as $item) {
+                                    if (!$item || empty($item->published)) { continue; }
+                                    if (!empty($excludeMenuIds) && in_array((string) $item->id, $excludeMenuIds, true)) { continue; }
+                                    $link = (string) ($item->link ?? '');
+                                    if ($link === '' || stripos($link, 'http://') === 0 || stripos($link, 'https://') === 0) { continue; }
+                                    $url = \Joomla\CMS\Router\Route::_('index.php?Itemid=' . (int) $item->id);
+                                    if (!preg_match('#^https?://#i', $url)) { $url = $base . '/' . ltrim($url, '/'); }
+                                    $u = ['loc' => $url, 'lastmod' => $today, 'changefreq' => $cfMenu, 'priority' => $prMenu];
+                                    if ($includeAlt) { $u['alternates'] = $this->buildMenuAlternates($item); }
+                                    $pushUrl($urlsPages, $u);
+                                }
+                            }
+                        } catch (\Throwable $e) { /* ignore */ }
+                    }
+                    if ($incArt) {
+                        try {
+                            $db = Factory::getDbo();
+                            $query = $db->getQuery(true)
+                                ->select($db->quoteName(['id', 'catid', 'modified', 'publish_up', 'created', 'images', 'language']))
+                                ->from($db->quoteName('#__content'))
+                                ->where($db->quoteName('state') . ' = 1')
+                                ->order($db->quoteName('modified') . ' DESC');
+                            if (!empty($excludeCatIds)) { $query->where($db->quoteName('catid') . ' NOT IN (' . implode(',', array_map('intval', $excludeCatIds)) . ')'); }
+                            if ($maxArt > 0) { $query->setLimit($maxArt); }
+                            $db->setQuery($query);
+                            $rows = (array) $db->loadObjectList();
+                            foreach ($rows as $row) {
+                                $sef = \Joomla\CMS\Router\Route::_('index.php?option=com_content&view=article&id=' . (int) $row->id . '&catid=' . (int) $row->catid);
+                                if (!preg_match('#^https?://#i', $sef)) { $sef = $base . '/' . ltrim($sef, '/'); }
+                                $last = $row->modified ?: ($row->publish_up ?: $row->created);
+                                $lastDate = $today;
+                                if (!empty($last)) { try { $d = new Date($last, 'UTC'); $d->setTimezone($tz); $lastDate = $d->format('Y-m-d'); } catch (\Throwable $e) { /* ignore */ } }
+                                $u = ['loc' => $sef, 'lastmod' => $lastDate, 'changefreq' => $cfArt, 'priority' => $prArt];
+                                $imgUrl = '';
+                                if ($includeImages && !empty($row->images)) {
+                                    $imgs = json_decode($row->images, true) ?: [];
+                                    $img = $imgs['image_fulltext'] ?? ($imgs['image_intro'] ?? '');
+                                    if ($img !== '') { $img = explode('#', $img, 2)[0]; $img = trim($img); if (!preg_match('#^https?://#i', $img)) { $img = $base . '/' . ltrim($img, '/'); } $imgUrl = $img; }
+                                }
+                                if ($imgUrl !== '') { $u['image'] = $imgUrl; }
+                                if ($includeAlt) { $u['alternates'] = $this->buildArticleAlternates((int) $row->id, (int) $row->catid, (string) ($row->language ?? '')); }
+                                $pushUrl($urlsArticles, $u);
+                            }
+                        } catch (\Throwable $e) { /* ignore */ }
+                    }
+                    $emit = '';
+                    $lastModIndex = $today;
+                    if ($which === 'index' && $useIndex) {
+                        $lmPages = $today; foreach ($urlsPages as $u) { if (!empty($u['lastmod']) && $u['lastmod'] > $lmPages) { $lmPages = $u['lastmod']; } }
+                        $lmArts = $today; foreach ($urlsArticles as $u) { if (!empty($u['lastmod']) && $u['lastmod'] > $lmArts) { $lmArts = $u['lastmod']; } }
+                        $lastModIndex = max($lmPages, $lmArts);
+                        $emit = $this->renderSitemapIndex([
+                            ['loc' => $base . '/sitemap-pages.xml', 'lastmod' => $lmPages],
+                            ['loc' => $base . '/sitemap-articles.xml', 'lastmod' => $lmArts],
+                        ]);
+                    } elseif ($which === 'pages') {
+                        $emit = $this->renderUrlset($urlsPages, $includeAlt, $includeImages);
+                        foreach ($urlsPages as $u) { if (!empty($u['lastmod']) && $u['lastmod'] > $lastModIndex) { $lastModIndex = $u['lastmod']; } }
+                    } else {
+                        $emit = $this->renderUrlset($urlsArticles, $includeAlt, $includeImages);
+                        foreach ($urlsArticles as $u) { if (!empty($u['lastmod']) && $u['lastmod'] > $lastModIndex) { $lastModIndex = $u['lastmod']; } }
+                    }
+                    $etag = 'W/"' . md5($emit) . '"';
+                    $lastModHttp = gmdate('D, d M Y 00:00:00', strtotime($lastModIndex)) . ' GMT';
+                    $this->app->setHeader('Content-Type', 'application/xml; charset=UTF-8', true);
+                    $this->app->setHeader('ETag', $etag, true);
+                    $this->app->setHeader('Last-Modified', $lastModHttp, true);
+                    $inm = $_SERVER['HTTP_IF_NONE_MATCH'] ?? '';
+                    $ims = $_SERVER['HTTP_IF_MODIFIED_SINCE'] ?? '';
+                    if ($inm === $etag || ($ims !== '' && strtotime($ims) >= strtotime($lastModHttp))) {
+                        http_response_code(304);
+                        $this->app->setHeader('Status', '304 Not Modified', true);
+                        $this->app->setBody('');
+                    } else {
+                        $this->app->setBody($emit);
+                    }
+                    $this->app->respond();
+                    $this->app->close();
+                    return;
+                }
+            }
+        } catch (\Throwable $e) { /* ignore */ }
+    }
+
 
     public function onBeforeCompileHead(): void
     {
