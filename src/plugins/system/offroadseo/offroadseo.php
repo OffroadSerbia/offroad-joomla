@@ -82,10 +82,10 @@ class PlgSystemOffroadseo extends CMSPlugin
         try {
             $pathForDiag = trim(strtolower(\Joomla\CMS\Uri\Uri::getInstance()->getPath()), '/');
             if (isset($_GET['offseo_diag']) || $pathForDiag === 'offseo-diag') {
-                $host = (string) (method_exists(Uri::getInstance(), 'getHost') ? Uri::getInstance()->getHost() : ($_SERVER['HTTP_HOST'] ?? ''));
+                $host = (string) (method_exists(\Joomla\CMS\Uri\Uri::getInstance(), 'getHost') ? \Joomla\CMS\Uri\Uri::getInstance()->getHost() : ($_SERVER['HTTP_HOST'] ?? ''));
                 $activeCfg = trim((string) $this->params->get('active_domain', ''));
                 $activeMatch = $this->isActiveDomain() ? '1' : '0';
-                $path = trim((string) Uri::getInstance()->getPath(), '/');
+                $path = trim((string) \Joomla\CMS\Uri\Uri::getInstance()->getPath(), '/');
                 $qp = isset($_GET['offseo_sitemap']) ? (string) $_GET['offseo_sitemap'] : '';
                 $enableRobots = (bool) $this->params->get('enable_robots', 1);
                 $enableSitemap = (bool) $this->params->get('enable_sitemap', 1);
