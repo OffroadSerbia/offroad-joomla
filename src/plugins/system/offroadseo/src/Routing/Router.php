@@ -4,7 +4,7 @@ namespace Offroad\Plugin\System\Offroadseo\Routing;
 
 \defined('_JEXEC') or die;
 
-use Joomla\CMS\Application\SiteApplication;
+use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Registry\Registry;
 
@@ -14,7 +14,7 @@ use Joomla\Registry\Registry;
  */
 class Router
 {
-    /** @var SiteApplication */
+    /** @var CMSApplication */
     protected $app;
     /** @var Registry */
     protected $params;
@@ -28,7 +28,7 @@ class Router
         '/sitemap-articles.xml' => 'sitemap-articles',
     ];
 
-    public function __construct(SiteApplication $app, Registry $params)
+    public function __construct(CMSApplication $app, Registry $params)
     {
         $this->app = $app;
         $this->params = $params;

@@ -13,8 +13,12 @@
     
     <files>
         <filename plugin="offroadseo">offroadseo.php</filename>
+        <folder>src</folder>
         <folder>language</folder>
     </files>
+    <namespaces>
+        <namespace path="src">Offroad\Plugin\System\Offroadseo</namespace>
+    </namespaces>
     <media destination="plg_system_offroadseo" folder="media/plg_system_offroadseo">
         <filename>admin.css</filename>
     </media>

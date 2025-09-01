@@ -15,3 +15,7 @@ docs/Untitled-1.txt
 tools/*.zip
 tools/__build/
 tools/__inspect_*/
+
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md
