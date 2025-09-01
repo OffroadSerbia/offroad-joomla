@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension version="4.0" type="plugin" group="content" method="upgrade">
+    <name>PLG_CONTENT_OFFROADMETA</name>
+    <author>OffRoad Serbia</author>
+    <creationDate>2025-01-25</creationDate>
+    <copyright>Copyright (C) 2025 OffRoad Serbia. All rights reserved.</copyright>
+    <license>MIT</license>
+    <authorEmail>info@offroadserbia.com</authorEmail>
+    <authorUrl>https://offroadserbia.com</authorUrl>
+    <version>1.0.0</version>
+    <description>PLG_CONTENT_OFFROADMETA_DESCRIPTION</description>
+    
+    <files>
+        <filename plugin="offroadmeta">offroadmeta.php</filename>
+        <folder>src</folder>
+        <folder>language</folder>
+    </files>
+    
+    <languages>
+        <language tag="sr-RS">language/sr-RS/plg_content_offroadmeta.ini</language>
+        <language tag="sr-RS">language/sr-RS/plg_content_offroadmeta.sys.ini</language>
+        <language tag="en-GB">language/en-GB/plg_content_offroadmeta.ini</language>
+        <language tag="en-GB">language/en-GB/plg_content_offroadmeta.sys.ini</language>
+    </languages>
+    
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field
+                    name="auto_og"
+                    type="radio"
+                    label="PLG_CONTENT_OFFROADMETA_AUTO_OG_LABEL"
+                    description="PLG_CONTENT_OFFROADMETA_AUTO_OG_DESC"
+                    default="1"
+                    class="btn-group btn-group-yesno"
+                    >
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field
+                    name="auto_schema"
+                    type="radio"
+                    label="PLG_CONTENT_OFFROADMETA_AUTO_SCHEMA_LABEL"
+                    description="PLG_CONTENT_OFFROADMETA_AUTO_SCHEMA_DESC"
+                    default="1"
+                    class="btn-group btn-group-yesno"
+                    >
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+            </fieldset>
+        </fields>
+    </config>
+</extension>

@@ -7,3 +7,5 @@ parameters:
     - src/templates/**
   bootstrapFiles:
     - stubs/bootstrap.php
+  # Also exclude generated or non-analyzable plugin dirs if needed
+  # - src/plugins/**

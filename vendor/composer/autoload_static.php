@@ -10,6 +10,20 @@ class ComposerStaticInitbcf473d45147a533fdbc821a4a9f2745
         '9b38cf48e83f5d8f60375221cd213eee' => __DIR__ . '/..' . '/phpstan/phpstan/bootstrap.php',
     );
 
+    public static $prefixLengthsPsr4 = array (
+        'O' => 
+        array (
+            'OffroadSerbia\\' => 14,
+        ),
+    );
+
+    public static $prefixDirsPsr4 = array (
+        'OffroadSerbia\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src',
+        ),
+    );
+
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
     );
@@ -17,6 +31,8 @@ class ComposerStaticInitbcf473d45147a533fdbc821a4a9f2745
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
+            $loader->prefixLengthsPsr4 = ComposerStaticInitbcf473d45147a533fdbc821a4a9f2745::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitbcf473d45147a533fdbc821a4a9f2745::$prefixDirsPsr4;
             $loader->classMap = ComposerStaticInitbcf473d45147a533fdbc821a4a9f2745::$classMap;
 
         }, null, ClassLoader::class);

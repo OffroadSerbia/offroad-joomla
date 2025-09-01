@@ -34,14 +34,29 @@ Repozitorijum za razvoj, testiranje i automatizaciju unapređenja Joomla sajtova
 ## Struktura
 
 - `src/` – izvorni kod ekstenzija (pluginovi/moduli/template overrides).
-- `tools/` – skripte za build/deploy.
+- `joomla/` – gotovi Joomla pluginovi, moduli i template override-i.
+- `tools/` – skripte za build/deploy i search indexer.
 - `docs/` – dokumentacija (SEO, AI pretraga, arhitektura).
 - `.github/workflows/` – CI konfiguracija.
+
+### 🔌 Komponente
+
+**Plugin-ovi:**
+- `joomla/plugins/content/offroadmeta/` - Automatski meta tagovi, OpenGraph i Schema.org
+
+**Tools:**
+- `tools/indexer.php` - CLI za generiranje search indeksa
+- `tools/build.sh` - Build skripta za ZIP pakete
 
 ## Komande (Composer)
 
 - `composer lint` – PHPCS (PSR-12).
 - `composer stan` – PHPStan (level 6, podesivo).
+
+## Build
+
+- `tools/build.sh` – kreira ZIP pakete za Joomla komponente.
+- `tools/indexer.php` – generiše search indeks iz Joomla baze.
 
 ## Contributing
 

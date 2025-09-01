@@ -4,6 +4,13 @@
 # Node/JS common
 node_modules/
 
+# Build artifacts
+build/
+*.zip
+
+# Public generated files
+public/search-index.json
+
 # OS junk
 .DS_Store
 Thumbs.db

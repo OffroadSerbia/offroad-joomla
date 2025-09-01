@@ -10,8 +10,13 @@
     "squizlabs/php_codesniffer": "^3.10",
     "phpstan/phpstan": "^1.11"
   },
+  "autoload": {
+    "psr-4": {
+      "OffroadSerbia\\": "src/"
+    }
+  },
   "scripts": {
-    "lint": "vendor/bin/phpcs -n -p -s --standard=phpcs.xml --extensions=php,inc,php3,php4",
-    "stan": "vendor/bin/phpstan analyse --memory-limit=1G"
+  "lint": "PHPCS_ENABLE_COLORS=0 vendor/bin/phpcs -n --no-colors -p -s --standard=phpcs.xml --extensions=php,inc,php3,php4",
+  "stan": "vendor/bin/phpstan analyse --memory-limit=1G"
   }
 }
