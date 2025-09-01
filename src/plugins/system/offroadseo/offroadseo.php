@@ -24,7 +24,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.8.6';
+    private const VERSION = '1.8.7';
     // Buffer for JSON-LD when injecting at body end
     /** @var array<int,string> JSON-LD script tags buffered for body-end */
     private array $offseoJsonLd = [];
@@ -379,6 +379,15 @@ class PlgSystemOffroadseo extends CMSPlugin
         if (!$this->app->isClient('site')) {
             return;
         }
+        // Never mutate com_ajax responses (keep robots/sitemap/diag raw)
+        $in = $this->app->getInput();
+        if (
+            $in->getCmd('option') === 'com_ajax'
+            && $in->getCmd('plugin') === 'offroadseo'
+            && $in->getCmd('group') === 'system'
+        ) {
+            return;
+        }
         $emitComment = false; // removed version HTML comment per simplified debug options
         $showBadge   = (bool) $this->params->get('show_staging_badge', 0);
         $forceOgHead = (bool) $this->params->get('force_og_head', 1);
@@ -571,6 +580,15 @@ class PlgSystemOffroadseo extends CMSPlugin
         if (!$this->app->isClient('site')) {
             return;
         }
+        // Skip header mutations for our com_ajax responses
+        $in = $this->app->getInput();
+        if (
+            $in->getCmd('option') === 'com_ajax'
+            && $in->getCmd('plugin') === 'offroadseo'
+            && $in->getCmd('group') === 'system'
+        ) {
+            return;
+        }
         if ((bool) $this->params->get('force_noindex', 0)) {
             $this->emitNoindexHeader();
         }
@@ -579,6 +597,15 @@ class PlgSystemOffroadseo extends CMSPlugin
     public function onBeforeCompileHead(): void
     {
         if (!$this->app->isClient('site')) {
+            return;
+        }
+        // Do not add head meta/scripts when serving our com_ajax endpoints
+        $in = $this->app->getInput();
+        if (
+            $in->getCmd('option') === 'com_ajax'
+            && $in->getCmd('plugin') === 'offroadseo'
+            && $in->getCmd('group') === 'system'
+        ) {
             return;
         }
 
@@ -1469,8 +1496,7 @@ class PlgSystemOffroadseo extends CMSPlugin
     {
         $hasAlt = $withAlt && $this->hasAnyAlternates($urls);
         $hasImg = $withImg && $this->hasAnyImages($urls);
-        $xml = '
-    <?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' . ($hasAlt ? '
         xmlns:xhtml="http://www.w3.org/1999/xhtml"' : '') . ($hasImg ? '
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"' : '') . '>' . "\n";
