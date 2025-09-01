@@ -156,7 +156,7 @@ class PlgSystemOffroadseo extends CMSPlugin
             }
         }
 
-    // Sitemap.xml endpoint
+        // Sitemap.xml endpoint
         if (in_array($resource, ['sitemap', 'sitemap-pages', 'sitemap-articles'])) {
             try {
                 $enableSitemap = (bool) $this->params->get('enable_sitemap', 1);
@@ -1432,62 +1432,62 @@ class PlgSystemOffroadseo extends CMSPlugin
     private function renderSitemapIndex(array $entries): string
     {
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-$xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-    foreach ($entries as $e) {
-    $xml .= ' <sitemap>' . "\n";
-        $xml .= ' <loc>' . htmlspecialchars($e['loc'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</loc>' . "\n";
-        if (!empty($e['lastmod'])) {
-        $xml .= ' <lastmod>' . htmlspecialchars($e['lastmod'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</lastmod>' .
-        "\n";
+        $xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        foreach ($entries as $e) {
+            $xml .= ' <sitemap>' . "\n";
+            $xml .= ' <loc>' . htmlspecialchars($e['loc'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</loc>' . "\n";
+            if (!empty($e['lastmod'])) {
+                $xml .= ' <lastmod>' . htmlspecialchars($e['lastmod'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</lastmod>' .
+                    "\n";
+            }
+            $xml .= ' </sitemap>' . "\n";
         }
-        $xml .= ' </sitemap>' . "\n";
+        $xml .= '</sitemapindex>' . "\n";
+        return $xml;
     }
-    $xml .= '</sitemapindex>' . "\n";
-return $xml;
-}
 
-/**
-* Render a urlset XML string with optional alternates and images.
-* Input items: loc, lastmod, changefreq, priority, alternates(map), image(url)
-*/
-/**
-* @param array<int,array{loc:string,lastmod?:string,changefreq?:string,priority?:string,alternates?:array<string,string>
+    /**
+     * Render a urlset XML string with optional alternates and images.
+     * Input items: loc, lastmod, changefreq, priority, alternates(map), image(url)
+     */
+    /**
+     * @param array<int,array{loc:string,lastmod?:string,changefreq?:string,priority?:string,alternates?:array<string,string>
     ,image?:string}> $urls
-    */
+     */
     private function renderUrlset(array $urls, bool $withAlt, bool $withImg): string
     {
-    $hasAlt = $withAlt && $this->hasAnyAlternates($urls);
-    $hasImg = $withImg && $this->hasAnyImages($urls);
-    $xml = '
+        $hasAlt = $withAlt && $this->hasAnyAlternates($urls);
+        $hasImg = $withImg && $this->hasAnyImages($urls);
+        $xml = '
     <?xml version="1.0" encoding="UTF-8"?>' . "\n";
-    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' . ($hasAlt ? '
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' . ($hasAlt ? '
         xmlns:xhtml="http://www.w3.org/1999/xhtml"' : '') . ($hasImg ? '
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"' : '') . '>' . "\n";
         foreach ($urls as $u) {
-        $xml .= ' <url>' . "\n";
+            $xml .= ' <url>' . "\n";
             $xml .= ' <loc>' . htmlspecialchars($u['loc'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</loc>' . "\n";
             if (!empty($u['lastmod'])) {
-            $xml .= ' <lastmod>' . htmlspecialchars($u['lastmod'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</lastmod>'
-            . "\n";
+                $xml .= ' <lastmod>' . htmlspecialchars($u['lastmod'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</lastmod>'
+                    . "\n";
             }
             if (!empty($u['changefreq'])) {
-            $xml .= ' <changefreq>' . htmlspecialchars($u['changefreq'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '
+                $xml .= ' <changefreq>' . htmlspecialchars($u['changefreq'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '
             </changefreq>' . "\n";
             }
             if (!empty($u['priority'])) {
-            $xml .= ' <priority>' . htmlspecialchars($u['priority'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '
+                $xml .= ' <priority>' . htmlspecialchars($u['priority'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '
             </priority>' . "\n";
             }
             if ($hasAlt && !empty($u['alternates']) && is_array($u['alternates'])) {
-            foreach ($u['alternates'] as $code => $href) {
-            $xml .= '
+                foreach ($u['alternates'] as $code => $href) {
+                    $xml .= '
             <xhtml:link rel="alternate"
                 hreflang="' . htmlspecialchars(strtolower($code), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"
                 href="' . htmlspecialchars($href, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '" />' . "\n";
-            }
+                }
             }
             if ($hasImg && !empty($u['image'])) {
-            $xml .= ' <image:image>
+                $xml .= ' <image:image>
                 <image:loc>' . htmlspecialchars($u['image'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</image:loc>
             </image:image>' . "\n";
             }
@@ -1495,48 +1495,48 @@ return $xml;
         </url>' . "\n";
         }
         $xml .= '</urlset>' . "\n";
-    return $xml;
+        return $xml;
     }
 
     /**
-    * @param array<int,array{alternates?:array<string,string>}> $urls
-        */
-        private function hasAnyAlternates(array $urls): bool
-        {
+     * @param array<int,array{alternates?:array<string,string>}> $urls
+     */
+    private function hasAnyAlternates(array $urls): bool
+    {
         foreach ($urls as $u) {
-        if (!empty($u['alternates'])) {
-        return true;
-        }
+            if (!empty($u['alternates'])) {
+                return true;
+            }
         }
         return false;
-        }
+    }
 
-        /**
-        * @param array<int,array{image?:string}> $urls
-            */
-            private function hasAnyImages(array $urls): bool
-            {
-            foreach ($urls as $u) {
+    /**
+     * @param array<int,array{image?:string}> $urls
+     */
+    private function hasAnyImages(array $urls): bool
+    {
+        foreach ($urls as $u) {
             if (!empty($u['image'])) {
-            return true;
+                return true;
             }
-            }
-            return false;
-            }
+        }
+        return false;
+    }
 
-            /**
-            * Build robots.txt content.
-            */
-            private function renderRobotsTxt(): string
-            {
-            $root = rtrim(\Joomla\CMS\Uri\Uri::root(), '/');
-            $lines = [];
-            // Always include sitemap reference
-            $lines[] = 'Sitemap: ' . $root . '/sitemap.xml';
-            $lines[] = '';
-            $lines[] = 'User-agent: *';
-            // Conservative defaults (Joomla core directories)
-            $defaults = [
+    /**
+     * Build robots.txt content.
+     */
+    private function renderRobotsTxt(): string
+    {
+        $root = rtrim(\Joomla\CMS\Uri\Uri::root(), '/');
+        $lines = [];
+        // Always include sitemap reference
+        $lines[] = 'Sitemap: ' . $root . '/sitemap.xml';
+        $lines[] = '';
+        $lines[] = 'User-agent: *';
+        // Conservative defaults (Joomla core directories)
+        $defaults = [
             '/administrator/',
             '/bin/',
             '/cache/',
@@ -1551,26 +1551,26 @@ return $xml;
             '/modules/',
             '/plugins/',
             '/tmp/',
-            ];
-            foreach ($defaults as $d) {
+        ];
+        foreach ($defaults as $d) {
             $lines[] = 'Disallow: ' . $d;
-            }
-            // Extra lines from params (one per line)
-            $extra = trim((string) $this->params->get('robots_extra', ''));
-            if ($extra !== '') {
+        }
+        // Extra lines from params (one per line)
+        $extra = trim((string) $this->params->get('robots_extra', ''));
+        if ($extra !== '') {
             $lines[] = '';
             foreach (preg_split('/\r?\n/', $extra) ?: [] as $ln) {
-            $ln = trim($ln);
-            if ($ln !== '') {
-            $lines[] = $ln;
+                $ln = trim($ln);
+                if ($ln !== '') {
+                    $lines[] = $ln;
+                }
             }
-            }
-            }
-            // Ensure trailing newline
-            $out = implode("\n", $lines);
-            if (!str_ends_with($out, "\n")) {
+        }
+        // Ensure trailing newline
+        $out = implode("\n", $lines);
+        if (!str_ends_with($out, "\n")) {
             $out .= "\n";
-            }
-            return $out;
-            }
-            }
+        }
+        return $out;
+    }
+}
