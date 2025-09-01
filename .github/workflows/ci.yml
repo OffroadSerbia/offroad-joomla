@@ -1,10 +1,12 @@
 name: CI
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
   # Optional: enable manual runs from Actions tab
-  # workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   phpqa:
