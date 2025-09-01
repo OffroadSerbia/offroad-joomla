@@ -24,7 +24,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.8.3';
+    private const VERSION = '1.8.4';
     // Buffer for JSON-LD when injecting at body end
     /** @var array<int,string> JSON-LD script tags buffered for body-end */
     private array $offseoJsonLd = [];
@@ -101,7 +101,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 
     public function onAjaxOffroadseo()
     {
-        if (!$this->app->isClient('site') || !$this->isActiveDomain()) {
+        if (!$this->app->isClient('site')) {
             return;
         }
 
@@ -130,6 +130,11 @@ class PlgSystemOffroadseo extends CMSPlugin
             } catch (\Throwable $e) {
                 // ignore
             }
+        }
+
+        // For all other resources, respect the active domain restriction
+        if (!$this->isActiveDomain()) {
+            return;
         }
 
         // robots.txt endpoint

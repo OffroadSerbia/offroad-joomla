@@ -1,5 +1,10 @@
 # OffroadSEO – Release Notes
 
+## 1.8.4 — 2025-09-01
+
+- Diagnostics endpoint (`/offseo-diag`) now responds regardless of `active_domain` to simplify staging/host debugging. It still reports `active_match` flag for visibility.
+- Bumped internal version and manifest; rebuilt package.
+
 ## 1.8.3 — 2025-09-01
 
 - Added path-based diagnostics endpoint handling in plugin: `GET /offseo-diag` → `text/plain` with host, active domain match, and enable flags.
