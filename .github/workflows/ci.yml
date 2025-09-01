@@ -31,6 +31,8 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
       - name: Install dependencies
         run: composer install --no-progress --prefer-dist
+      - name: Fix vendor permissions
+        run: chmod +x vendor/bin/*
       - name: PHPCS
         run: composer lint
       - name: PHPStan

@@ -24,7 +24,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.8.4';
+    private const VERSION = '1.8.6';
     // Buffer for JSON-LD when injecting at body end
     /** @var array<int,string> JSON-LD script tags buffered for body-end */
     private array $offseoJsonLd = [];
@@ -72,7 +72,10 @@ class PlgSystemOffroadseo extends CMSPlugin
                     && $in->getCmd('group') === 'system'
                 ) {
                     // Execute and terminate early
-                    $this->onAjaxOffroadseo();
+                    $out = $this->onAjaxOffroadseo();
+                    if (is_string($out)) {
+                        $this->app->setBody($out);
+                    }
                     // If body was set, respond now
                     if (method_exists($this->app, 'respond')) {
                         $this->app->respond();
@@ -99,10 +102,14 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
     }
 
+    /**
+     * AJAX entrypoint for com_ajax (resource parameter controls output).
+     * Returns a string body for com_ajax compatibility; also sets headers.
+     */
     public function onAjaxOffroadseo()
     {
         if (!$this->app->isClient('site')) {
-            return;
+            return '';
         }
 
         $input = $this->app->getInput();
@@ -125,8 +132,7 @@ class PlgSystemOffroadseo extends CMSPlugin
                 foreach ($flags as $k => $v) {
                     $out .= $k . '=' . $v . "\n";
                 }
-                $this->app->setBody($out);
-                return;
+                return $out;
             } catch (\Throwable $e) {
                 // ignore
             }
@@ -134,7 +140,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 
         // For all other resources, respect the active domain restriction
         if (!$this->isActiveDomain()) {
-            return;
+            return '';
         }
 
         // robots.txt endpoint
@@ -150,11 +156,10 @@ class PlgSystemOffroadseo extends CMSPlugin
                     if ($inm === $etag) {
                         http_response_code(304);
                         $this->app->setHeader('Status', '304 Not Modified', true);
-                        $this->app->setBody('');
+                        return '';
                     } else {
-                        $this->app->setBody($txt);
+                        return $txt;
                     }
-                    return;
                 }
             } catch (\Throwable $e) {
                 // ignore robots errors
@@ -356,16 +361,17 @@ class PlgSystemOffroadseo extends CMSPlugin
                     if ($inm === $etag || ($ims !== '' && strtotime($ims) >= strtotime($lastModHttp))) {
                         http_response_code(304);
                         $this->app->setHeader('Status', '304 Not Modified', true);
-                        $this->app->setBody('');
+                        return '';
                     } else {
-                        $this->app->setBody($emit);
+                        return $emit;
                     }
-                    return;
                 }
             } catch (\Throwable $e) {
                 // Ignore sitemap errors
             }
         }
+
+        return '';
     }
 
     public function onAfterRender(): void

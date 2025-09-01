@@ -1,5 +1,12 @@
 # OffroadSEO – Release Notes
 
+## 1.8.5 — 2025-09-01
+
+## 1.8.6 — Router fix for path endpoints
+
+- Router now derives the requested path from REQUEST_URI (pre-rewrite) which fixes 404 responses for /robots.txt and /sitemap\*.xml on stacks that rewrite to /index.php.
+- Bumped manifest and plugin version.
+
 ## 1.8.4 — 2025-09-01
 
 - Diagnostics endpoint (`/offseo-diag`) now responds regardless of `active_domain` to simplify staging/host debugging. It still reports `active_match` flag for visibility.

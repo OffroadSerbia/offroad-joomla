@@ -46,9 +46,11 @@ class Router
             return;
         }
 
-        $uri = Uri::getInstance();
-        $rawPath = '/' . ltrim((string) $uri->getPath(), '/');
-        $rawPath = strtolower($rawPath);
+        // Prefer REQUEST_URI to capture original path before webserver rewrites to /index.php
+        $reqUri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+        $pathFromReq = $reqUri !== '' ? (string) parse_url($reqUri, PHP_URL_PATH) : '';
+        $rawPath = $pathFromReq !== '' ? $pathFromReq : (string) Uri::getInstance()->getPath();
+        $rawPath = '/' . ltrim(strtolower($rawPath), '/');
 
         // Remove base path if site is installed in a subdirectory (e.g., /sub/site)
         $base = rtrim((string) Uri::base(true), '/'); // returns subdir path or ''
