@@ -14,7 +14,6 @@ Fallback (bez rewrite):
 
 - `GET /index.php?offseo_robots=1`
 
-
 ## Sitemape
 
 Varijante ruta:

@@ -42,9 +42,11 @@ Repozitorijum za razvoj, testiranje i automatizaciju unapređenja Joomla sajtova
 ### 🔌 Komponente
 
 **Plugin-ovi:**
+
 - `joomla/plugins/content/offroadmeta/` - Automatski meta tagovi, OpenGraph i Schema.org
 
 **Tools:**
+
 - `tools/indexer.php` - CLI za generiranje search indeksa
 - `tools/build.sh` - Build skripta za ZIP pakete
 
