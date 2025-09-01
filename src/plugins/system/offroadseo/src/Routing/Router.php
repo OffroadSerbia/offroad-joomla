@@ -26,6 +26,7 @@ class Router
         '/sitemap_index.xml' => 'sitemap',
         '/sitemap-pages.xml' => 'sitemap-pages',
         '/sitemap-articles.xml' => 'sitemap-articles',
+    '/offseo-diag' => 'diag',
     ];
 
     public function __construct(CMSApplication $app, Registry $params)

@@ -1,5 +1,27 @@
 # OffroadSEO – Release Notes
 
+## 1.8.3 — 2025-09-01
+
+- Added path-based diagnostics endpoint handling in plugin: `GET /offseo-diag` → `text/plain` with host, active domain match, and enable flags.
+- Keeps early routing via Router + com_ajax; returns immediately in `onAfterInitialise`.
+- Manifest/version bump and packaging.
+
+## 1.8.2 — 2025-09-01
+
+- Router refactor: early path mapping to com_ajax for `/robots.txt`, `/sitemap.xml`, `/sitemap_index.xml`, `/sitemap-pages.xml`, `/sitemap-articles.xml`.
+- Fixed stray newline before XML preamble in sitemaps.
+- Joomla 4/5 compatibility: PSR-4 namespaces included in manifest; Router typed to `CMSApplication`.
+- Docs: AI-OVERVIEW, ENDPOINTS, TROUBLESHOOTING, NEXT-STEPS, updated README.
+
+## 1.8.1 — 2025-09-01
+
+- Lightweight diagnostics via query param `?offseo_diag=1` for quick environment checks.
+
+## 1.8.0 — 2025-09-01
+
+- `active_domain` expanded to allow subdomains (wildcard-like match).
+- Prepped for full automation of robots/sitemaps within the plugin.
+
 ## 1.7.7 — 2025-08-29
 
 - Removed environment auto-detect and scope filters; added optional `active_domain` guard.

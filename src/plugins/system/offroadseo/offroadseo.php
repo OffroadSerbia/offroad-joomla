@@ -24,7 +24,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.8.2';
+    private const VERSION = '1.8.3';
     // Buffer for JSON-LD when injecting at body end
     /** @var array<int,string> JSON-LD script tags buffered for body-end */
     private array $offseoJsonLd = [];
@@ -108,6 +108,30 @@ class PlgSystemOffroadseo extends CMSPlugin
         $input = $this->app->getInput();
         $resource = $input->getString('resource');
 
+        // diagnostics endpoint
+        if ($resource === 'diag') {
+            try {
+                $this->app->setHeader('Content-Type', 'text/plain; charset=UTF-8', true);
+                $flags = [
+                    'version' => self::VERSION,
+                    'host' => (string) (method_exists(Uri::getInstance(), 'getHost') ? Uri::getInstance()->getHost() : ($_SERVER['HTTP_HOST'] ?? '')),
+                    'active_cfg' => (string) $this->params->get('active_domain', ''),
+                    'active_match' => $this->isActiveDomain() ? 1 : 0,
+                    'enable_robots' => (int) $this->params->get('enable_robots', 1),
+                    'enable_sitemap' => (int) $this->params->get('enable_sitemap', 1),
+                    'sitemap_use_index' => (int) $this->params->get('sitemap_use_index', 1),
+                ];
+                $out = 'OffroadSEO diag v' . self::VERSION . "\n";
+                foreach ($flags as $k => $v) {
+                    $out .= $k . '=' . $v . "\n";
+                }
+                $this->app->setBody($out);
+                return;
+            } catch (\Throwable $e) {
+                // ignore
+            }
+        }
+
         // robots.txt endpoint
         if ($resource === 'robots') {
             try {
@@ -132,7 +156,7 @@ class PlgSystemOffroadseo extends CMSPlugin
             }
         }
 
-        // Sitemap.xml endpoint
+    // Sitemap.xml endpoint
         if (in_array($resource, ['sitemap', 'sitemap-pages', 'sitemap-articles'])) {
             try {
                 $enableSitemap = (bool) $this->params->get('enable_sitemap', 1);
