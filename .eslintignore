@@ -1,0 +1,7 @@
+# Exclude vendor and build artifacts from JS/TS linting
+vendor/
+node_modules/
+build/
+**/vendor/**
+**/node_modules/**
+**/build/**
