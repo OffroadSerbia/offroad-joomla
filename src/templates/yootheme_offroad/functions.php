@@ -5,6 +5,7 @@
 
 
 use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
 
 // Inject Organization JSON-LD on homepage
 $app = Factory::getApplication();
@@ -12,13 +13,14 @@ if ($app->isClient('site')) {
     $menu = $app->getMenu();
     $isHome = $menu && $menu->getActive() && $menu->getActive()->home;
     if ($isHome) {
+        $base = rtrim(Uri::root(), '/');
         $org = [
             '@context' => 'https://schema.org',
             '@type' => 'Organization',
             'name' => 'Offroad Serbia',
             'alternateName' => '4x4 Off-Road Srbija',
-            'url' => 'https://offroadserbia.com/',
-            'logo' => 'https://offroadserbia.com/images/logo/logo-offroad-serbia-4x4.webp',
+            'url' => $base . '/',
+            'logo' => $base . '/images/logo/logo-offroad-serbia-4x4.webp',
             'contactPoint' => [
                 '@type' => 'ContactPoint',
                 'telephone' => '+381-63-348-555',

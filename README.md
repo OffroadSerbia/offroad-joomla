@@ -1,6 +1,6 @@
 # OffRoad Serbia – Joomla Dev Monorepo
 
-Repozitorijum za razvoj, testiranje i automatizaciju unapređenja Joomla sajtova (offroadserbia.com i srodni projekti).
+Repozitorijum za razvoj, testiranje i automatizaciju unapređenja Joomla sajtova (staging.offroadserbia.com u fokusu; produkcija kasnije).
 
 ## Ciljevi
 
@@ -101,3 +101,11 @@ Napomena:
 ## Promene (kratko)
 
 - Vidi detaljno: `docs/RELEASE-NOTES.md`
+
+## Bezbednost i revizija istorije (08/2025)
+
+- Uočen je procureli GitHub PAT u `docs/Untitled-1.txt` (obrisano).
+- Izvršen je rewrite GIT istorije da bi se taj fajl uklonio iz svih commit-a.
+- Svi saradnici moraju da urade fresh `git clone` posle 2025-09-01.
+- GitHub Actions su pinovani na tačne commit SHA.
+- Dodata `.eslintignore` kako bi se izbegao lint šum iz `vendor/`.

@@ -6,7 +6,7 @@
     <version>1.0.0</version>
     <description>PLG_SYSTEM_OFFROADSTAGE_DESC</description>
     <authorEmail>admin@offroadserbia.com</authorEmail>
-    <authorUrl>https://offroadserbia.com</authorUrl>
+    <authorUrl>https://staging.offroadserbia.com</authorUrl>
     <license>GPL-2.0-or-later</license>
 
     <files>

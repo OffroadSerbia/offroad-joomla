@@ -13,7 +13,7 @@ Uputstvo (kratko):
 - [x] Ostaviti samo domen - ovde upisujemo na kom domenu je plugin aktivan (nije bitno da li je staging ili produkcija)
 - [x] Disable Analytics (GA4/Pixel) on staging prebaciti u debug
 - [x] izbaci Extra html attributes - ne znam šta će tu
-- [x] Custom code in <head> (at start) - izbaci
+- [x] Custom code u zaglavlju (head, at start) - izbaci
 - [x] Only for compoments (option) - izbaci (ne znam šta je to)
 - [x] Only for views - izbaci (ne znam šta je to)
 - [x] Only for menu item IDs - izbaci (ne znam štaje to)
@@ -25,10 +25,10 @@ Uputstvo (kratko):
 - [ ] Analytics tab: Poboljšati opcije "GA config options" i "Meta Pixel init options" - dodati chekboxove za najkorišćenije opcije i ostaviti ispod polje za upis ostalih manje korišćenih opcija (ovo dobro analiziraj i daj predloge pre nego što uradiš)
 - [x] Plugin tab - izbaciti UI mod (Advanced / Simple), nek sve opcije budu otvorene
 
-Sitemap/robots (production):
+Sitemap/robots (staging):
 
 - [ ] /sitemap.xml, /sitemap-pages.xml i /sitemap-articles.xml trenutno vraćaju 404 — proveriti .htaccess/Nginx mapiranje da .xml rute idu u Joomlu (ne na fajl sistem)
-- [ ] robots.txt: dodaj "Sitemap: https://offroadserbia.com/sitemap.xml"
+- [ ] robots.txt: dodaj "Sitemap: <https://staging.offroadserbia.com/sitemap.xml>"
 - [ ]
 
 ## Glavna lista

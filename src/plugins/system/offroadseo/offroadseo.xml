@@ -5,7 +5,7 @@
     <group>system</group>
     <author>OffroadSerbia</author>
     <authorEmail>admin@offroadserbia.com</authorEmail>
-    <authorUrl>https://offroadserbia.com</authorUrl>
+    <authorUrl>https://staging.offroadserbia.com</authorUrl>
     <license>GPL-2.0-or-later</license>
     <creationDate>2025-08-29</creationDate>
     <version>1.8.6</version>
@@ -34,7 +34,7 @@
             <fieldset name="basic" label="PLG_SYSTEM_OFFROADSEO_TAB_GLOBAL">
                 <field name="basic_spacer_global" type="spacer" hr="true" class="offseo-section" label="PLG_SYSTEM_OFFROADSEO_SECTION_BASIC" />
                 <field name="env_spacer" type="spacer" label="PLG_SYSTEM_OFFROADSEO_ENV_FIELDSET" />
-                <field name="active_domain" type="text" label="PLG_SYSTEM_OFFROADSEO_ACTIVE_DOMAIN" description="PLG_SYSTEM_OFFROADSEO_ACTIVE_DOMAIN_DESC" containerclass="two-col-left" />
+                <field name="active_domain" type="text" label="PLG_SYSTEM_OFFROADSEO_ACTIVE_DOMAIN" description="PLG_SYSTEM_OFFROADSEO_ACTIVE_DOMAIN_DESC" containerclass="two-col-left" default="staging.offroadserbia.com" />
                 
                 <field name="enable_hreflang" type="radio" class="btn-group btn-group-yesno offseo-switch" label="PLG_SYSTEM_OFFROADSEO_ENABLE_HREFLANG" default="1" containerclass="two-col-left">
                     <option value="1">JYES</option>
@@ -88,8 +88,8 @@
                 <field name="org_name" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_NAME" default="Offroad Serbia" containerclass="two-col-left" />
                 <field name="org_alt" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_ALT" default="4x4 Off-Road Srbija" containerclass="two-col-right" />
                 <field name="org_desc" type="textarea" rows="3" label="PLG_SYSTEM_OFFROADSEO_ORG_DESC" description="PLG_SYSTEM_OFFROADSEO_ORG_DESC_DESC" containerclass="two-col-left" />
-                <field name="org_url" type="url" label="PLG_SYSTEM_OFFROADSEO_ORG_URL" default="https://offroadserbia.com/" containerclass="two-col-right" />
-                <field name="org_logo" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_LOGO" default="https://offroadserbia.com/images/logo/logo-offroad-serbia-4x4.webp" containerclass="two-col-left" />
+                <field name="org_url" type="url" label="PLG_SYSTEM_OFFROADSEO_ORG_URL" default="https://staging.offroadserbia.com/" containerclass="two-col-right" />
+                <field name="org_logo" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_LOGO" default="https://staging.offroadserbia.com/images/logo/logo-offroad-serbia-4x4.webp" containerclass="two-col-left" />
                 <field name="org_tel" type="text" label="PLG_SYSTEM_OFFROADSEO_ORG_TEL" default="+381-63-348-555" containerclass="two-col-right" />
                 <field name="org_sameas" type="textarea" label="PLG_SYSTEM_OFFROADSEO_ORG_SAMEAS" description="PLG_SYSTEM_OFFROADSEO_ORG_SAMEAS_DESC" rows="3" containerclass="two-col-left" />
 

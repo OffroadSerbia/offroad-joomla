@@ -8,7 +8,12 @@ Ovo je izlistano i u AI‑OVERVIEW, ovde su detalji + očekivana zaglavlja i brz
 - Metod: GET
 - Content‑Type: `text/plain; charset=UTF-8`
 - Keš: `ETag` + 304 na `If-None-Match`
-- Sadržaj: standardne Disallow linije + `Sitemap: https://<domen>/sitemap_index.xml` (ili `sitemap.xml` ako index nije uključen)
+- Sadržaj: standardne Disallow linije + `Sitemap: https://staging.offroadserbia.com/sitemap_index.xml` (ili `sitemap.xml` ako index nije uključen)
+
+Fallback (bez rewrite):
+
+- `GET /index.php?offseo_robots=1`
+
 
 ## Sitemape
 
@@ -41,10 +46,10 @@ Format:
 
 Primer izlaza:
 
-```
+```text
 OffroadSEO diag v1.8.2
 host=staging.offroadserbia.com
-active_cfg=offroadserbia.com
+active_cfg=staging.offroadserbia.com
 active_match=1
 enable_robots=1
 enable_sitemap=1
