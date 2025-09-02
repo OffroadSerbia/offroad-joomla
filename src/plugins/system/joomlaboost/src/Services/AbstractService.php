@@ -131,7 +131,7 @@ abstract class AbstractService implements ServiceInterface
 
           // Add port if not standard and port is actually specified
             if (
-                $port && 
+                $port &&
                 (($scheme === 'http' && $port !== 80) ||
                 ($scheme === 'https' && $port !== 443))
             ) {

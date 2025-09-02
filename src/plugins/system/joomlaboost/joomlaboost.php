@@ -2,7 +2,7 @@
 
 /**
  * JoomlaBoost Test Plugin - Step by Step Development
-  * @version     0.1.15-syntax-fix
+ * @version     0.1.15-syntax-fix
  */
 
 \defined('_JEXEC') or die;
@@ -189,15 +189,15 @@ class PlgSystemJoomlaboost extends CMSPlugin
 </urlset>';
     }
 
-/**
-* Get production sitemap (comprehensive)
-*/
+  /**
+   * Get production sitemap (comprehensive)
+   */
     private function getProductionSitemap(): string
     {
         $domain = $this->getCurrentDomain();
         $lastmod = date('Y-m-d\TH:i:s\Z');
 
-    // Basic sitemap for now - we'll enhance this later with Joomla menu items
+      // Basic sitemap for now - we'll enhance this later with Joomla menu items
         return '
 <?xml version="1.0" encoding="UTF-8"?>' . "\n" .
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n" .
@@ -221,23 +221,23 @@ class PlgSystemJoomlaboost extends CMSPlugin
 </urlset>';
     }
 
-/**
-* Check if this is a robots.txt request
-*/
+  /**
+   * Check if this is a robots.txt request
+   */
     private function isRobotsRequest(): bool
     {
-    // Check REQUEST_URI directly (before Joomla processes it)
+      // Check REQUEST_URI directly (before Joomla processes it)
         $requestUri = $_SERVER['REQUEST_URI'] ?? '';
 
-    // Remove query string for clean comparison
+      // Remove query string for clean comparison
         $cleanUri = strtok($requestUri, '?');
 
-    // Check for robots.txt
+      // Check for robots.txt
         if (preg_match('#/robots\.txt$#i', $cleanUri)) {
             return true;
         }
 
-    // Also check for query parameter approach
+      // Also check for query parameter approach
         if (isset($_GET['format']) && $_GET['format'] === 'robots') {
             return true;
         }
@@ -245,29 +245,29 @@ class PlgSystemJoomlaboost extends CMSPlugin
         return false;
     }
 
-/**
-* Handle robots.txt request
-*/
+  /**
+   * Handle robots.txt request
+   */
     private function handleRobotsRequest($app): void
     {
-    // Set proper headers
+      // Set proper headers
         header('Content-Type: text/plain');
         header('Cache-Control: public, max-age=3600');
 
-    // Generate robots.txt content
+      // Generate robots.txt content
         $robotsContent = $this->generateRobotsContent();
 
-    // Output and exit
+      // Output and exit
         echo $robotsContent;
         $app->close();
     }
 
-/**
-* Generate robots.txt content based on environment
-*/
+  /**
+   * Generate robots.txt content based on environment
+   */
     private function generateRobotsContent(): string
     {
-    // Detect environment using $_SERVER
+      // Detect environment using $_SERVER
         $domain = $this->getCurrentDomain();
         $isStaging = $this->isStaging($domain);
 
@@ -278,21 +278,21 @@ class PlgSystemJoomlaboost extends CMSPlugin
         }
     }
 
-/**
-* Get current domain safely
-*/
+  /**
+   * Get current domain safely
+   */
     private function getCurrentDomain(): string
     {
-    // Method 1: Use $_SERVER (most reliable and always works)
+      // Method 1: Use $_SERVER (most reliable and always works)
         $scheme = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
         $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
 
         return $scheme . '://' . $host . '/';
     }
 
-/**
-* Check if this is staging environment
-*/
+  /**
+   * Check if this is staging environment
+   */
     private function isStaging(string $domain): bool
     {
         $stagingKeywords = ['staging', 'stage', 'dev', 'test', 'localhost'];
@@ -306,9 +306,9 @@ class PlgSystemJoomlaboost extends CMSPlugin
         return false;
     }
 
-/**
-* Get staging robots.txt (block everything)
-*/
+  /**
+   * Get staging robots.txt (block everything)
+   */
     private function getStagingRobots(): string
     {
         return "# JoomlaBoost Robots.txt - STAGING ENVIRONMENT\n" .
@@ -332,9 +332,9 @@ class PlgSystemJoomlaboost extends CMSPlugin
         "# Generated: " . date('Y-m-d H:i:s T') . "\n";
     }
 
-/**
-* Get production robots.txt
-*/
+  /**
+   * Get production robots.txt
+   */
     private function getProductionRobots(): string
     {
         $baseUrl = $this->getCurrentDomain();
@@ -361,9 +361,9 @@ class PlgSystemJoomlaboost extends CMSPlugin
         "# Generated: " . date('Y-m-d H:i:s T') . "\n";
     }
 
-/**
-* Get default robots.txt (fallback)
-*/
+  /**
+   * Get default robots.txt (fallback)
+   */
     private function getDefaultRobots(): string
     {
         return "# JoomlaBoost Robots.txt - DEFAULT\n\n" .
@@ -373,13 +373,13 @@ class PlgSystemJoomlaboost extends CMSPlugin
         "# Generated: " . date('Y-m-d H:i:s T') . "\n";
     }
 
-/**
-* Safe debug logging
-*/
+  /**
+   * Safe debug logging
+   */
     private function logDebug(string $message): void
     {
         try {
-        // Only log if debug mode is enabled in plugin config
+          // Only log if debug mode is enabled in plugin config
             if ($this->params && $this->params->get('debug_mode', 0)) {
                 Factory::getApplication()->enqueueMessage(
                     "[DEBUG] " . $message,
@@ -387,38 +387,38 @@ class PlgSystemJoomlaboost extends CMSPlugin
                 );
             }
         } catch (Exception $e) {
-        // Silently fail - don't break the site
+          // Silently fail - don't break the site
         }
     }
 
-/**
-* Add Schema.org structured data
-*/
+  /**
+   * Add Schema.org structured data
+   */
     private function addSchemaMarkup($document): void
     {
         try {
-        // Initialize Schema Service if not already done
+          // Initialize Schema Service if not already done
             if ($this->schemaService === null) {
                 $this->schemaService = new SchemaService($this->getApp(), $this->params);
             }
 
-        // Check if Schema is enabled (default: true)
+          // Check if Schema is enabled (default: true)
             if (!$this->params->get('enable_schema', 1)) {
                 $this->logDebug('Schema: Disabled in plugin settings');
                 return;
             }
 
-        // Generate Schema.org JSON-LD
+          // Generate Schema.org JSON-LD
             $schema = $this->schemaService->generateSchema();
 
             if (!empty($schema)) {
-            // Add JSON-LD script to document head
+              // Add JSON-LD script to document head
                 $jsonLd = '<script type="application/ld+json">
 ' . "\n";
                 $jsonLd .= json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
                 $jsonLd .= "\n" . '</script>';
 
-                $document->addCustomTag($jsonLd);// Debug output if enabled
+                $document->addCustomTag($jsonLd); // Debug output if enabled
                 if ($this->params->get('debug_mode', 0)) {
                     $this->logDebug('Schema.org JSON-LD generated: ' . count($schema) . ' schema(s)');
                 }
@@ -426,46 +426,46 @@ class PlgSystemJoomlaboost extends CMSPlugin
                 $this->logDebug('Schema: No schema data generated');
             }
         } catch (Exception $e) {
-        // Log error but don't break the site
+          // Log error but don't break the site
             if ($this->params->get('debug_mode', 0)) {
                 $this->logDebug('Schema.org generation failed: ' . $e->getMessage());
             }
         }
     }
 
-/**
-* Add Google verification tags to the document head
-*/
+  /**
+   * Add Google verification tags to the document head
+   */
     private function addGoogleVerificationTags($document)
     {
-    // Google Search Console verification meta tag
+      // Google Search Console verification meta tag
         $gscMeta = $this->params->get('gsc_verification_meta', '');
         if (!empty($gscMeta)) {
             $document->setMetaData('google-site-verification', $gscMeta);
             $this->logDebug('Added Google Search Console verification meta tag');
         }
 
-    // Additional HTML code for Google verification
+      // Additional HTML code for Google verification
         $additionalHtml = $this->params->get('gsc_additional_html', '');
         if (!empty($additionalHtml)) {
             $document->addCustomTag($additionalHtml);
             $this->logDebug('Added additional Google verification HTML');
         }
 
-    // Add Google Analytics 4 if enabled
+      // Add Google Analytics 4 if enabled
         if ($this->params->get('enable_ga4', 0)) {
             $this->addGA4Tracking($document);
         }
 
-    // Add Google Tag Manager if enabled
+      // Add Google Tag Manager if enabled
         if ($this->params->get('enable_gtm', 0)) {
             $this->addGTMTracking($document);
         }
     }
 
-/**
-* Add Google Analytics 4 tracking code
-*/
+  /**
+   * Add Google Analytics 4 tracking code
+   */
     private function addGA4Tracking($document)
     {
         $measurementId = $this->params->get('ga4_measurement_id', '');
@@ -474,7 +474,7 @@ class PlgSystemJoomlaboost extends CMSPlugin
             return;
         }
 
-    // Add GA4 Global Site Tag
+      // Add GA4 Global Site Tag
         $ga4Script = "
 <!-- Google Analytics 4 -->
 <script async src=\"https://www.googletagmanager.com/gtag/js?id={$measurementId}\"></script>
@@ -492,9 +492,9 @@ gtag('config', '{$measurementId}');
         $this->logDebug('Added Google Analytics 4 tracking for: ' . $measurementId);
     }
 
-/**
-* Add Google Tag Manager tracking code
-*/
+  /**
+   * Add Google Tag Manager tracking code
+   */
     private function addGTMTracking($document)
     {
         $containerId = $this->params->get('gtm_container_id', '');
@@ -503,7 +503,7 @@ gtag('config', '{$measurementId}');
             return;
         }
 
-    // Add GTM head script
+      // Add GTM head script
         $gtmHead = "
 <!-- Google Tag Manager -->
 <script>
