@@ -1,179 +1,329 @@
 <?php
-
-declare(strict_types=1);
-
 /**
- * JoomlaBoost - Universal SEO & Performance Plugin
- * Simple implementation without namespaces for maximum compatibility
- * 
- * @package     JoomlaBoost
- * @subpackage  Plugin.System
- * @version     0.1.0-beta
- * @since       Joomla 4.0, PHP 8.1+
- * @author      JoomlaBoost Team
- * @copyright   (C) 2025 JoomlaBoost. All rights reserved.
- * @license     GNU General Public License version 2 or later
+ * JoomlaBoost Test Plugin - Step by Step Development
  */
 
 \defined('_JEXEC') or die;
 
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Factory;
-use Joomla\CMS\Uri\Uri;
 
 /**
- * JoomlaBoost System Plugin - Simple Implementation
- * 
- * Basic SEO optimization plugin that adapts to any domain
+ * JoomlaBoost plugin - incremental development
  */
 class PlgSystemJoomlaboost extends CMSPlugin
 {
-  /**
-   * Load the language file on instantiation
-   */
-  protected $autoloadLanguage = true;
+    /**
+     * Load the language file on instantiation
+     */
+    protected $autoloadLanguage = true;
 
-  /**
-   * Initialize plugin and handle routing
-   */
-  public function onAfterInitialise(): void
-  {
-    if (!$this->app->isClient('site')) {
-      return;
+    /**
+     * Safe application access
+     */
+    private function getApp()
+    {
+        try {
+            return Factory::getApplication();
+        } catch (Exception $e) {
+            return null;
+        }
     }
 
-    // Handle special endpoints
-    $input = $this->app->getInput();
-    $option = $input->get('option', '');
-    $task = $input->get('task', '');
+    /**
+     * Handle robots.txt requests BEFORE routing
+     */
+    public function onAfterInitialise(): void
+    {
+        $app = $this->getApp();
+        if (!$app) {
+            return; // Exit safely if app not available
+        }
 
-    // Handle robots.txt request
-    if ($option === 'com_joomlaboost' && $task === 'robots') {
-      $this->handleRobots();
-      return;
+        // Only handle on frontend
+        if (!$app->isClient('site')) {
+            if ($app->isClient('administrator')) {
+                $this->logDebug('JoomlaBoost: Backend initialized');
+            }
+            return;
+        }
+
+        // Check for robots.txt request first
+        if ($this->isRobotsRequest()) {
+            $this->handleRobotsRequest($app);
+            return;
+        }
+
+        // Check for sitemap.xml request
+        if ($this->isSitemapRequest()) {
+            $this->handleSitemapRequest($app);
+            return;
+        }
+
+        // Regular frontend initialization
+        $this->logDebug('JoomlaBoost: Frontend initialized');
     }
 
-    // Handle sitemap.xml request  
-    if ($option === 'com_joomlaboost' && $task === 'sitemap') {
-      $this->handleSitemap();
-      return;
-    }
-  }
-
-  /**
-   * Handle document modifications
-   */
-  public function onBeforeCompileHead(): void
-  {
-    if (!$this->app->isClient('site')) {
-      return;
-    }
-
-    $document = $this->app->getDocument();
-    if (!$document instanceof \Joomla\CMS\Document\HtmlDocument) {
-      return;
-    }
-
-    // Add basic SEO meta tags
-    $this->addSeoMetaTags($document);
-  }
-
-  /**
-   * Handle robots.txt generation
-   */
-  private function handleRobots(): void
-  {
-    $robots = "User-agent: *\n";
-    $robots .= "Allow: /\n";
-    $robots .= "Disallow: /administrator/\n";
-    $robots .= "Disallow: /api/\n";
-    $robots .= "Disallow: /bin/\n";
-    $robots .= "Disallow: /cache/\n";
-    $robots .= "Disallow: /cli/\n";
-    $robots .= "Disallow: /components/\n";
-    $robots .= "Disallow: /includes/\n";
-    $robots .= "Disallow: /installation/\n";
-    $robots .= "Disallow: /language/\n";
-    $robots .= "Disallow: /layouts/\n";
-    $robots .= "Disallow: /libraries/\n";
-    $robots .= "Disallow: /logs/\n";
-    $robots .= "Disallow: /modules/\n";
-    $robots .= "Disallow: /plugins/\n";
-    $robots .= "Disallow: /tmp/\n";
-
-    // Add sitemap reference
-    $domain = Uri::root();
-    $robots .= "\nSitemap: " . $domain . "index.php?option=com_joomlaboost&task=sitemap\n";
-
-    $this->sendResponse($robots, 'text/plain');
-  }
-
-  /**
-   * Handle sitemap.xml generation
-   */
-  private function handleSitemap(): void
-  {
-    $sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-    $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-
-    // Add homepage
-    $domain = Uri::root();
-    $sitemap .= '  <url>' . "\n";
-    $sitemap .= '    <loc>' . htmlspecialchars($domain) . '</loc>' . "\n";
-    $sitemap .= '    <changefreq>daily</changefreq>' . "\n";
-    $sitemap .= '    <priority>1.0</priority>' . "\n";
-    $sitemap .= '  </url>' . "\n";
-
-    $sitemap .= '</urlset>' . "\n";
-
-    $this->sendResponse($sitemap, 'application/xml');
-  }
-
-  /**
-   * Add basic SEO meta tags
-   */
-  private function addSeoMetaTags($document): void
-  {
-    // Get current URL
-    $uri = Uri::getInstance();
-    $canonical = $uri->toString();
-
-    // Add canonical URL
-    $document->addHeadLink($canonical, 'canonical');
-
-    // Add viewport meta tag
-    $document->setMetaData('viewport', 'width=device-width, initial-scale=1.0');
-
-    // Add Open Graph basic tags
-    $siteName = $this->app->get('sitename', 'Joomla Site');
-    $document->setMetaData('og:site_name', $siteName, 'property');
-    $document->setMetaData('og:url', $canonical, 'property');
-    $document->setMetaData('og:type', 'website', 'property');
-
-    // Add current page title if available
-    $title = $document->getTitle();
-    if (!empty($title)) {
-      $document->setMetaData('og:title', $title, 'property');
-    }
-  }
-
-  /**
-   * Send response and exit
-   */
-  private function sendResponse(string $content, string $contentType): void
-  {
-    // Clear any previous output
-    if (ob_get_level()) {
-      ob_clean();
+    /**
+     * Check if this is a sitemap.xml request
+     */
+    private function isSitemapRequest(): bool
+    {
+        // Check REQUEST_URI directly
+        $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+        
+        // Remove query string for clean comparison
+        $cleanUri = strtok($requestUri, '?');
+        
+        // Check for sitemap.xml
+        if (preg_match('#/sitemap\.xml$#i', $cleanUri)) {
+            return true;
+        }
+        
+        // Also check for query parameter approach
+        if (isset($_GET['format']) && $_GET['format'] === 'sitemap') {
+            return true;
+        }
+        
+        return false;
     }
 
-    // Set headers
-    header('Content-Type: ' . $contentType . '; charset=utf-8');
-    header('Cache-Control: public, max-age=3600');
-    header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 3600) . ' GMT');
+    /**
+     * Handle sitemap.xml request
+     */
+    private function handleSitemapRequest($app): void
+    {
+        // Set proper headers
+        header('Content-Type: application/xml; charset=utf-8');
+        header('Cache-Control: public, max-age=3600');
+        
+        // Generate sitemap content
+        $sitemapContent = $this->generateSitemapContent();
+        
+        // Output and exit
+        echo $sitemapContent;
+        $app->close();
+    }
 
-    // Send content and exit
-    echo $content;
-    $this->app->close();
-  }
+    /**
+     * Generate sitemap.xml content
+     */
+    private function generateSitemapContent(): string
+    {
+        $domain = $this->getCurrentDomain();
+        $isStaging = $this->isStaging($domain);
+        
+        if ($isStaging) {
+            return $this->getStagingSitemap();
+        } else {
+            return $this->getProductionSitemap();
+        }
+    }
+
+    /**
+     * Get staging sitemap (minimal)
+     */
+    private function getStagingSitemap(): string
+    {
+        $domain = $this->getCurrentDomain();
+        $lastmod = date('Y-m-d\TH:i:s\Z');
+        
+        return '<?xml version="1.0" encoding="UTF-8"?>' . "\n" .
+               '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n" .
+               '  <!-- JoomlaBoost Sitemap - STAGING ENVIRONMENT -->' . "\n" .
+               '  <!-- Limited sitemap for staging -->' . "\n" .
+               '  <url>' . "\n" .
+               '    <loc>' . htmlspecialchars($domain) . '</loc>' . "\n" .
+               '    <lastmod>' . $lastmod . '</lastmod>' . "\n" .
+               '    <changefreq>daily</changefreq>' . "\n" .
+               '    <priority>1.0</priority>' . "\n" .
+               '  </url>' . "\n" .
+               '  <!-- Generated by JoomlaBoost Plugin -->' . "\n" .
+               '  <!-- Environment: Staging -->' . "\n" .
+               '  <!-- Generated: ' . date('Y-m-d H:i:s T') . ' -->' . "\n" .
+               '</urlset>';
+    }
+
+    /**
+     * Get production sitemap (comprehensive)
+     */
+    private function getProductionSitemap(): string
+    {
+        $domain = $this->getCurrentDomain();
+        $lastmod = date('Y-m-d\TH:i:s\Z');
+        
+        // Basic sitemap for now - we'll enhance this later with Joomla menu items
+        return '<?xml version="1.0" encoding="UTF-8"?>' . "\n" .
+               '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n" .
+               '  <!-- JoomlaBoost Sitemap - PRODUCTION ENVIRONMENT -->' . "\n" .
+               '  <url>' . "\n" .
+               '    <loc>' . htmlspecialchars($domain) . '</loc>' . "\n" .
+               '    <lastmod>' . $lastmod . '</lastmod>' . "\n" .
+               '    <changefreq>daily</changefreq>' . "\n" .
+               '    <priority>1.0</priority>' . "\n" .
+               '  </url>' . "\n" .
+               '  <!-- TODO: Add menu items and articles dynamically -->' . "\n" .
+               '  <!-- Generated by JoomlaBoost Plugin -->' . "\n" .
+               '  <!-- Environment: Production -->' . "\n" .
+               '  <!-- Generated: ' . date('Y-m-d H:i:s T') . ' -->' . "\n" .
+               '</urlset>';
+    }
+
+    /**
+     * Check if this is a robots.txt request
+     */
+    private function isRobotsRequest(): bool
+    {
+        // Check REQUEST_URI directly (before Joomla processes it)
+        $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+        
+        // Remove query string for clean comparison
+        $cleanUri = strtok($requestUri, '?');
+        
+        // Check for robots.txt
+        if (preg_match('#/robots\.txt$#i', $cleanUri)) {
+            return true;
+        }
+        
+        // Also check for query parameter approach
+        if (isset($_GET['format']) && $_GET['format'] === 'robots') {
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Handle robots.txt request
+     */
+    private function handleRobotsRequest($app): void
+    {
+        // Set proper headers
+        header('Content-Type: text/plain');
+        header('Cache-Control: public, max-age=3600');
+        
+        // Generate robots.txt content
+        $robotsContent = $this->generateRobotsContent();
+        
+        // Output and exit
+        echo $robotsContent;
+        $app->close();
+    }
+
+    /**
+     * Generate robots.txt content based on environment
+     */
+    private function generateRobotsContent(): string
+    {
+        // Detect environment using $_SERVER
+        $domain = $this->getCurrentDomain();
+        $isStaging = $this->isStaging($domain);
+        
+        if ($isStaging) {
+            return $this->getStagingRobots();
+        } else {
+            return $this->getProductionRobots();
+        }
+    }
+
+    /**
+     * Get current domain safely
+     */
+    private function getCurrentDomain(): string
+    {
+        // Method 1: Use $_SERVER (most reliable and always works)
+        $scheme = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
+        
+        return $scheme . '://' . $host . '/';
+    }
+
+    /**
+     * Check if this is staging environment
+     */
+    private function isStaging(string $domain): bool
+    {
+        $stagingKeywords = ['staging', 'stage', 'dev', 'test', 'localhost'];
+        
+        foreach ($stagingKeywords as $keyword) {
+            if (stripos($domain, $keyword) !== false) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Get staging robots.txt (block everything)
+     */
+    private function getStagingRobots(): string
+    {
+        return "# JoomlaBoost Robots.txt - STAGING ENVIRONMENT\n" .
+               "# This site is not indexed by search engines\n\n" .
+               "User-agent: *\n" .
+               "Disallow: /\n\n" .
+               "# Generated by JoomlaBoost Plugin\n" .
+               "# Environment: Staging\n" .
+               "# Generated: " . date('Y-m-d H:i:s T') . "\n";
+    }
+
+    /**
+     * Get production robots.txt 
+     */
+    private function getProductionRobots(): string
+    {
+        $baseUrl = $this->getCurrentDomain();
+        
+        return "# JoomlaBoost Robots.txt - PRODUCTION ENVIRONMENT\n\n" .
+               "User-agent: *\n" .
+               "Allow: /\n\n" .
+               "# Disallow admin areas\n" .
+               "Disallow: /administrator/\n" .
+               "Disallow: /cache/\n" .
+               "Disallow: /includes/\n" .
+               "Disallow: /language/\n" .
+               "Disallow: /libraries/\n" .
+               "Disallow: /logs/\n" .
+               "Disallow: /tmp/\n\n" .
+               "# Allow specific files\n" .
+               "Allow: /templates/\n" .
+               "Allow: /media/\n" .
+               "Allow: /images/\n\n" .
+               "# Sitemap\n" .
+               "Sitemap: {$baseUrl}sitemap.xml\n\n" .
+               "# Generated by JoomlaBoost Plugin\n" .
+               "# Environment: Production\n" .
+               "# Generated: " . date('Y-m-d H:i:s T') . "\n";
+    }
+
+    /**
+     * Get default robots.txt (fallback)
+     */
+    private function getDefaultRobots(): string
+    {
+        return "# JoomlaBoost Robots.txt - DEFAULT\n\n" .
+               "User-agent: *\n" .
+               "Disallow: /administrator/\n\n" .
+               "# Generated by JoomlaBoost Plugin\n" .
+               "# Generated: " . date('Y-m-d H:i:s T') . "\n";
+    }
+
+    /**
+     * Safe debug logging
+     */
+    private function logDebug(string $message): void
+    {
+        try {
+            // Only log if debug mode is enabled in plugin config
+            if ($this->params && $this->params->get('debug_mode', 0)) {
+                Factory::getApplication()->enqueueMessage(
+                    "[DEBUG] " . $message, 
+                    'info'
+                );
+            }
+        } catch (Exception $e) {
+            // Silently fail - don't break the site
+        }
+    }
 }

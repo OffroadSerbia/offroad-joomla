@@ -30,7 +30,7 @@ JoomlaBoost je univerzalni SEO i performance plugin koji se automatski prilagođ
    # Kloniraj repozitorijum
    git clone https://github.com/OffroadSerbia/offroad-joomla.git
    cd offroad-joomla
-   
+
    # Napravi ZIP paket
    .\tools\build_joomlaboost.ps1
    ```
@@ -51,13 +51,13 @@ JoomlaBoost je univerzalni SEO i performance plugin koji se automatski prilagođ
 
 ### Osnovne funkcionalnosti
 
-| Feature | Opis | Status |
-|---------|------|--------|
-| `robots.txt` | Dinamička generacija robots.txt fajla | ✅ |
-| `sitemap.xml` | Osnovna sitemap generacija | ✅ |
-| SEO Meta Tags | Canonical, Open Graph, Viewport | ✅ |
-| Domain Detection | Automatsko prepoznavanje domena | ✅ |
-| Admin Config | Konfiguracija kroz Joomla admin | ✅ |
+| Feature          | Opis                                  | Status |
+| ---------------- | ------------------------------------- | ------ |
+| `robots.txt`     | Dinamička generacija robots.txt fajla | ✅     |
+| `sitemap.xml`    | Osnovna sitemap generacija            | ✅     |
+| SEO Meta Tags    | Canonical, Open Graph, Viewport       | ✅     |
+| Domain Detection | Automatsko prepoznavanje domena       | ✅     |
+| Admin Config     | Konfiguracija kroz Joomla admin       | ✅     |
 
 ### Pristup endpointovima
 
@@ -65,7 +65,7 @@ JoomlaBoost je univerzalni SEO i performance plugin koji se automatski prilagođ
 # Robots.txt
 https://vasesajt.com/index.php?option=com_joomlaboost&task=robots
 
-# Sitemap.xml  
+# Sitemap.xml
 https://vasesajt.com/index.php?option=com_joomlaboost&task=sitemap
 ```
 
@@ -78,6 +78,7 @@ Plugin se konfiguriše kroz Joomla admin panel:
 3. Kliknite za editovanje parametara
 
 **Dostupne opcije:**
+
 - ✅ Auto domain detection
 - 🤖 Enable robots.txt
 - 🗺️ Enable sitemap.xml
@@ -126,12 +127,12 @@ JoomlaBoost je evolucija OffroadSEO plugina sa sledećim poboljšanjima:
 
 ### Šta je novo
 
-| OffroadSEO | JoomlaBoost | Napredak |
-|------------|-------------|----------|
-| Joomla 3.x only | Joomla 4/5/6 | ✅ Modern |
-| PHP 7.x | PHP 8.1+ | ✅ Future-proof |
-| Domain-specific | Universal | ✅ Flexible |
-| Complex namespaces | Simple structure | ✅ Stable |
+| OffroadSEO         | JoomlaBoost      | Napredak        |
+| ------------------ | ---------------- | --------------- |
+| Joomla 3.x only    | Joomla 4/5/6     | ✅ Modern       |
+| PHP 7.x            | PHP 8.1+         | ✅ Future-proof |
+| Domain-specific    | Universal        | ✅ Flexible     |
+| Complex namespaces | Simple structure | ✅ Stable       |
 
 ### Migracija koraci
 
@@ -148,7 +149,7 @@ JoomlaBoost je evolucija OffroadSEO plugina sa sledećim poboljšanjima:
 - [ ] Install plugin na staging sajtu
 - [ ] Enable plugin i konfiguriši settings
 - [ ] Test robots.txt endpoint
-- [ ] Test sitemap.xml endpoint  
+- [ ] Test sitemap.xml endpoint
 - [ ] Verify domain detection
 - [ ] Check SEO meta tags
 - [ ] Test na različitim environment-ima
@@ -216,7 +217,7 @@ JoomlaBoost Plugin - Universal SEO & Performance optimization for Joomla
 
 **🏆 Napravljeno sa ❤️ za Joomla zajednicu**
 
-*JoomlaBoost - Univerzalni SEO plugin koji radi na bilo kom Joomla sajtu! 🚀*
+_JoomlaBoost - Univerzalni SEO plugin koji radi na bilo kom Joomla sajtu! 🚀_
 
 ## Struktura
 
