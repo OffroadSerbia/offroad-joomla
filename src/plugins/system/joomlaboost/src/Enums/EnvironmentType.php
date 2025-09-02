@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Environment Type Enum for JoomlaBoost
  *

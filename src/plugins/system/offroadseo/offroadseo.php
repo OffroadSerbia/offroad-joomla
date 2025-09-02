@@ -1,4 +1,5 @@
 <?php
+
 /**
  * OffroadSerbia - SEO plugin
  * Refactored with service architecture for better maintainability.
