@@ -19,19 +19,19 @@ use Offroad\Plugin\System\Offroadseo\Services\ServiceManager;
 
 /**
  * OffroadSEO System Plugin
- * 
+ *
  * @property \Joomla\Registry\Registry $params Inherited plugin parameters
  */
 class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    
+
     private const VERSION = '1.8.8';
-    
+
     /** @var \Joomla\CMS\Application\CMSApplication */
     protected $app;
-    
+
     /** @var ServiceManager */
     private ServiceManager $serviceManager;
 
@@ -116,16 +116,16 @@ class PlgSystemOffroadseo extends CMSPlugin
                 && $in->getCmd('plugin') === 'offroadseo'
                 && $in->getCmd('group') === 'system'
             );
-            
+
             if ($alreadyAjax) {
                 return;
             }
-            
+
             $resource = $this->mapOffseoResourceFromQuery();
             if ($resource === '') {
                 return;
             }
-            
+
             $this->rewriteToAjax($resource);
             $this->emitNoStoreForFallback($resource);
 
@@ -149,27 +149,27 @@ class PlgSystemOffroadseo extends CMSPlugin
     public function onAjaxOffroadseo()
     {
         $resource = $this->app->getInput()->getCmd('resource', '');
-        
+
         switch ($resource) {
             case 'robots':
                 return $this->serviceManager->getRobotService()->renderRobotsTxt();
-                
+
             case 'diag':
                 return $this->serviceManager->getHealthService()->generateDiagnosticResponse();
-                
+
             case 'health':
                 return $this->serviceManager->getHealthService()->generateHealthResponse();
-                
+
             case 'sitemap':
             case 'sitemap-index':
                 return $this->handleSitemapIndex();
-                
+
             case 'sitemap-pages':
                 return $this->handleSitemapPages();
-                
+
             case 'sitemap-articles':
                 return $this->handleSitemapArticles();
-                
+
             default:
                 return '';
         }
@@ -373,7 +373,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         if ($schemaService->isEnabled()) {
             $jsonLdBuffer = $schemaService->getJsonLdBuffer();
             $filteredBuffer = $schemaService->filterDuplicateBreadcrumbs($jsonLdBuffer);
-            
+
             if (!empty($filteredBuffer)) {
                 $content = implode("\n", $filteredBuffer);
                 if ($wrapMarkers) {
@@ -402,7 +402,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 
         $ogService = $this->serviceManager->getOpenGraphService();
         $ogMetaBuffer = $ogService->getMetaBuffer();
-        
+
         if (empty($ogMetaBuffer)) {
             return $body;
         }
@@ -411,13 +411,13 @@ class PlgSystemOffroadseo extends CMSPlugin
         foreach ($ogMetaBuffer as $tag) {
             $prop = strtolower($tag['attr']);
             $name = strtolower($tag['name']);
-            $pattern = $prop === 'property' 
+            $pattern = $prop === 'property'
                 ? '/<meta\s+property=["\']' . preg_quote($name, '/') . '["\'][^>]*>/i'
                 : '/<meta\s+name=["\']' . preg_quote($name, '["\'][^>]*>/i');
-            
+
             if (!preg_match($pattern, $body)) {
-                $missing[] = '<meta ' . htmlspecialchars($tag['attr'], ENT_QUOTES, 'UTF-8') . 
-                           '="' . htmlspecialchars($tag['name'], ENT_QUOTES, 'UTF-8') . 
+                $missing[] = '<meta ' . htmlspecialchars($tag['attr'], ENT_QUOTES, 'UTF-8') .
+                           '="' . htmlspecialchars($tag['name'], ENT_QUOTES, 'UTF-8') .
                            '" content="' . htmlspecialchars($tag['content'], ENT_QUOTES, 'UTF-8') . '" />';
             }
         }
@@ -446,10 +446,16 @@ class PlgSystemOffroadseo extends CMSPlugin
             $qsRob = (int) $in->get('offseo_robots', 0);
             $qsMap = trim((string) $in->get('offseo_sitemap', ''));
 
-            if ($qsRob === 1) return 'robots';
-            if ($qsHealth === 1) return 'health';
-            if ($qsDiag === 1) return 'diag';
-            
+            if ($qsRob === 1) {
+                return 'robots';
+            }
+            if ($qsHealth === 1) {
+                return 'health';
+            }
+            if ($qsDiag === 1) {
+                return 'diag';
+            }
+
             if ($qsMap !== '') {
                 $m = strtolower($qsMap);
                 return match ($m) {
@@ -498,7 +504,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         try {
             $this->app->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0', true);
             $this->app->setHeader('Pragma', 'no-cache', true);
-            
+
             if ($resource === 'robots' || $resource === 'diag') {
                 $this->app->setHeader('Content-Type', 'text/plain; charset=UTF-8', false);
             } elseif ($resource === 'health') {
@@ -555,7 +561,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         // Build pages URLs (menu items)
         $urls = $this->buildPagesUrls();
         $withAlt = $sitemapService->hasAnyAlternates($urls);
-        
+
         return $sitemapService->renderUrlset($urls, $withAlt, false);
     }
 
@@ -573,7 +579,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         $urls = $this->buildArticlesUrls();
         $withAlt = $sitemapService->hasAnyAlternates($urls);
         $withImg = $sitemapService->hasAnyImages($urls);
-        
+
         return $sitemapService->renderUrlset($urls, $withAlt, $withImg);
     }
 
@@ -583,7 +589,7 @@ class PlgSystemOffroadseo extends CMSPlugin
     private function buildPagesUrls(): array
     {
         $urls = [];
-        
+
         try {
             $db = Factory::getDbo();
             $query = $db->getQuery(true)
@@ -593,10 +599,10 @@ class PlgSystemOffroadseo extends CMSPlugin
                 ->where('client_id = 0')
                 ->where('menutype != ' . $db->quote('main'))
                 ->order('id ASC');
-            
+
             $db->setQuery($query);
             $items = $db->loadObjectList();
-            
+
             foreach ($items as $item) {
                 $url = $this->buildMenuItemUrl($item);
                 if ($url !== '') {
@@ -612,7 +618,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         } catch (\Throwable $e) {
             // ignore errors
         }
-        
+
         return $urls;
     }
 
@@ -622,7 +628,7 @@ class PlgSystemOffroadseo extends CMSPlugin
     private function buildArticlesUrls(): array
     {
         $urls = [];
-        
+
         try {
             $db = Factory::getDbo();
             $query = $db->getQuery(true)
@@ -630,10 +636,10 @@ class PlgSystemOffroadseo extends CMSPlugin
                 ->from('#__content')
                 ->where('state = 1')
                 ->order('id ASC');
-            
+
             $db->setQuery($query);
             $articles = $db->loadObjectList();
-            
+
             foreach ($articles as $article) {
                 $url = $this->buildArticleUrl($article);
                 if ($url !== '') {
@@ -650,7 +656,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         } catch (\Throwable $e) {
             // ignore errors
         }
-        
+
         return $urls;
     }
 
@@ -663,13 +669,13 @@ class PlgSystemOffroadseo extends CMSPlugin
             if (empty($item->link)) {
                 return '';
             }
-            
+
             $url = \Joomla\CMS\Router\Route::_($item->link);
             if (!preg_match('#^https?://#i', $url)) {
                 $uri = Uri::getInstance();
                 $url = $uri->toString(['scheme', 'host', 'port']) . '/' . ltrim($url, '/');
             }
-            
+
             return $url;
         } catch (\Throwable $e) {
             return '';
@@ -687,7 +693,7 @@ class PlgSystemOffroadseo extends CMSPlugin
                 $uri = Uri::getInstance();
                 $url = $uri->toString(['scheme', 'host', 'port']) . '/' . ltrim($url, '/');
             }
-            
+
             return $url;
         } catch (\Throwable $e) {
             return '';
@@ -700,7 +706,7 @@ class PlgSystemOffroadseo extends CMSPlugin
     private function extractArticleImages($article): array
     {
         $images = [];
-        
+
         try {
             // Check images field
             if (!empty($article->images)) {
@@ -712,7 +718,7 @@ class PlgSystemOffroadseo extends CMSPlugin
                     ];
                 }
             }
-            
+
             // Extract from content
             if (!empty($article->introtext)) {
                 if (preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $article->introtext, $matches)) {
@@ -725,7 +731,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         } catch (\Throwable $e) {
             // ignore errors
         }
-        
+
         return $images;
     }
 
@@ -737,7 +743,7 @@ class PlgSystemOffroadseo extends CMSPlugin
         if (preg_match('#^https?://#i', $url)) {
             return $url;
         }
-        
+
         try {
             $uri = Uri::getInstance();
             $baseUrl = $uri->toString(['scheme', 'host', 'port']);

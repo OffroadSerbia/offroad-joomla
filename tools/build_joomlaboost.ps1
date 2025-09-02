@@ -10,7 +10,23 @@ Write-Host ""
 $baseDir = Split-Path -Parent $PSScriptRoot
 $sourceDir = Join-Path $baseDir "src\plugins\system\joomlaboost"
 $buildDir = Join-Path $baseDir "tools\__build"
-$version = "0.1.0-beta"
+
+# Read version from XML file
+$xmlPath = Join-Path $sourceDir "joomlaboost.xml"
+if (Test-Path $xmlPath) {
+    $xmlContent = Get-Content $xmlPath -Raw
+    if ($xmlContent -match '<version>([^<]+)</version>') {
+        $version = $matches[1]
+        Write-Host "🔍 Version read from XML: $version" -ForegroundColor Green
+    } else {
+        $version = "0.1.0-beta"
+        Write-Host "⚠️  Could not read version from XML, using default: $version" -ForegroundColor Yellow
+    }
+} else {
+    $version = "0.1.0-beta"
+    Write-Host "⚠️  XML file not found, using default version: $version" -ForegroundColor Yellow
+}
+
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $zipName = "joomlaboost-$version.zip"
 

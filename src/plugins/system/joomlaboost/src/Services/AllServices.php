@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /**
  * All Services for JoomlaBoost
- * 
+ *
  * @package     JoomlaBoost
  * @subpackage  Plugin.System.Services
  * @since       Joomla 4.0, PHP 8.1+
@@ -20,62 +20,62 @@ namespace JoomlaBoost\Plugin\System\JoomlaBoost\Services;
  */
 class SchemaService extends AbstractService
 {
-  public function generateSchema(): array
-  {
-    return [];
-  }
+    public function generateSchema(): array
+    {
+        return [];
+    }
 
-  protected function getServiceKey(): string
-  {
-    return 'enable_schema';
-  }
+    protected function getServiceKey(): string
+    {
+        return 'enable_schema';
+    }
 }
 
 // Placeholder services for other functionality
 class OpenGraphService extends AbstractService
 {
-  protected function getServiceKey(): string
-  {
-    return 'enable_opengraph';
-  }
+    protected function getServiceKey(): string
+    {
+        return 'enable_opengraph';
+    }
 }
 
 class AnalyticsService extends AbstractService
 {
-  protected function getServiceKey(): string
-  {
-    return 'enable_analytics';
-  }
+    protected function getServiceKey(): string
+    {
+        return 'enable_analytics';
+    }
 }
 
 class HreflangService extends AbstractService
 {
-  protected function getServiceKey(): string
-  {
-    return 'enable_hreflang';
-  }
+    protected function getServiceKey(): string
+    {
+        return 'enable_hreflang';
+    }
 }
 
 class InjectionService extends AbstractService
 {
-  protected function getServiceKey(): string
-  {
-    return 'enable_injection';
-  }
+    protected function getServiceKey(): string
+    {
+        return 'enable_injection';
+    }
 }
 
 class HealthService extends AbstractService
 {
-  protected function getServiceKey(): string
-  {
-    return 'enable_health';
-  }
+    protected function getServiceKey(): string
+    {
+        return 'enable_health';
+    }
 }
 
 class PerformanceService extends AbstractService
 {
-  protected function getServiceKey(): string
-  {
-    return 'enable_performance';
-  }
+    protected function getServiceKey(): string
+    {
+        return 'enable_performance';
+    }
 }

@@ -16,16 +16,16 @@ class PlgSystemJoomlaboost extends CMSPlugin
   /**
    * Load the language file on instantiation
    */
-  protected $autoloadLanguage = true;
+    protected $autoloadLanguage = true;
 
   /**
    * Test method
    */
-  public function onAfterInitialise(): void
-  {
-    // Just a simple test - add comment to HTML
-    if ($this->app->isClient('site')) {
-      // Do nothing for now - just load successfully
+    public function onAfterInitialise(): void
+    {
+      // Just a simple test - add comment to HTML
+        if ($this->app->isClient('site')) {
+          // Do nothing for now - just load successfully
+        }
     }
-  }
 }
