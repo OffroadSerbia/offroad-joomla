@@ -1,7 +1,4 @@
 <?php
-
-declare(strict_types=1);
-
 /**
  * OffroadSerbia - SEO plugin
  * Refactored with service architecture for better maintainability.

@@ -1,7 +1,4 @@
 <?php
-
-declare(strict_types=1);
-
 /**
  * Environment Type Enum for JoomlaBoost
  *
