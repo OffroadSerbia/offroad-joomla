@@ -15,8 +15,10 @@ use Joomla\CMS\Uri\Uri;
 require_once __DIR__ . '/src/Services/ServiceInterface.php';
 require_once __DIR__ . '/src/Services/AbstractService.php';
 require_once __DIR__ . '/src/Services/SchemaService.php';
+require_once __DIR__ . '/src/Services/MetaPixelService.php';
 
 use JoomlaBoost\Plugin\System\JoomlaBoost\Services\SchemaService;
+use JoomlaBoost\Plugin\System\JoomlaBoost\Services\MetaPixelService;
 use JoomlaBoost\Plugin\System\JoomlaBoost\Version;
 
 /**
@@ -33,6 +35,11 @@ class PlgSystemJoomlaboost extends CMSPlugin
    * Schema Service instance
    */
   private ?SchemaService $schemaService = null;
+
+  /**
+   * Meta Pixel Service instance
+   */
+  private ?MetaPixelService $metaPixelService = null;
 
   /**
    * Safe application access
@@ -99,6 +106,9 @@ class PlgSystemJoomlaboost extends CMSPlugin
 
     // Add Google Search Console verification meta tags
     $this->addGoogleVerificationTags($document);
+
+    // Add Meta Pixel (Facebook Pixel) tracking
+    $this->addMetaPixel($document);
 
     // Add Schema.org structured data
     $this->addSchemaMarkup($document);
@@ -527,5 +537,29 @@ gtag('config', '{$measurementId}');
 
     $document->addCustomTag($gtmHead);
     $this->logDebug('Added Google Tag Manager tracking for: ' . $containerId);
+  }
+
+  /**
+   * Add Meta Pixel (Facebook Pixel) tracking
+   */
+  private function addMetaPixel(\Joomla\CMS\Document\HtmlDocument $document): void
+  {
+    if (!$this->params->get('enable_meta_pixel', false)) {
+      return;
+    }
+
+    // Initialize Meta Pixel Service if not already done
+    if ($this->metaPixelService === null) {
+      $this->metaPixelService = new MetaPixelService($this->params);
+    }
+
+    // Inject Meta Pixel base code
+    $this->metaPixelService->injectPixelCode($document);
+
+    // Inject custom events code
+    $this->metaPixelService->injectCustomEvents($document);
+
+    $debugInfo = $this->metaPixelService->getDebugInfo();
+    $this->logDebug('Added Meta Pixel tracking', $debugInfo);
   }
 }

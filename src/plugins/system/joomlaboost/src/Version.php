@@ -15,7 +15,7 @@ final class Version
   /**
    * Plugin version
    */
-  public const PLUGIN_VERSION = '0.1.16-clean';
+  public const PLUGIN_VERSION = '0.1.17-meta-pixel';
 
   /**
    * Plugin name

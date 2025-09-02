@@ -7,7 +7,7 @@
     <license>GNU General Public License version 2 or later</license>
     <authorEmail>info@joomlaboost.com</authorEmail>
     <authorUrl>https://joomlaboost.com</authorUrl>
-    <version>0.1.16-clean</version>
+    <version>0.1.17-meta-pixel</version>
     <description>PLG_SYSTEM_JOOMLABOOST_XML_DESCRIPTION</description>
     
     <!-- System Requirements -->
@@ -175,8 +175,80 @@
                 
             </fieldset>
             
+            <fieldset name="facebook" label="PLG_SYSTEM_JOOMLABOOST_FIELDSET_FACEBOOK">
+                
+                <!-- Meta Pixel (Facebook Pixel) -->
+                <field name="enable_meta_pixel" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_META_PIXEL_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_META_PIXEL_DESC"
+                       default="0"
+                       class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="meta_pixel_id" 
+                       type="text" 
+                       label="PLG_SYSTEM_JOOMLABOOST_META_PIXEL_ID_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_META_PIXEL_ID_DESC"
+                       default=""
+                       hint="123456789012345"
+                       showon="enable_meta_pixel:1"/>
+                
+                <!-- Meta Pixel Custom Events -->
+                <field name="meta_pixel_events_header" 
+                       type="note"
+                       label="PLG_SYSTEM_JOOMLABOOST_META_PIXEL_EVENTS_HEADER"
+                       description="PLG_SYSTEM_JOOMLABOOST_META_PIXEL_EVENTS_HEADER_DESC"
+                       showon="enable_meta_pixel:1"/>
+                
+                <field name="meta_pixel_track_purchase" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_META_PIXEL_TRACK_PURCHASE_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_META_PIXEL_TRACK_PURCHASE_DESC"
+                       default="0"
+                       class="btn-group btn-group-yesno"
+                       showon="enable_meta_pixel:1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="meta_pixel_track_add_to_cart" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_META_PIXEL_TRACK_ADD_TO_CART_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_META_PIXEL_TRACK_ADD_TO_CART_DESC"
+                       default="0"
+                       class="btn-group btn-group-yesno"
+                       showon="enable_meta_pixel:1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="meta_pixel_track_contact" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_META_PIXEL_TRACK_CONTACT_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_META_PIXEL_TRACK_CONTACT_DESC"
+                       default="0"
+                       class="btn-group btn-group-yesno"
+                       showon="enable_meta_pixel:1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="meta_pixel_track_lead" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_META_PIXEL_TRACK_LEAD_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_META_PIXEL_TRACK_LEAD_DESC"
+                       default="0"
+                       class="btn-group btn-group-yesno"
+                       showon="enable_meta_pixel:1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+            </fieldset>
 
-            
             <fieldset name="performance" label="PLG_SYSTEM_JOOMLABOOST_FIELDSET_PERFORMANCE">
                 
                 <field name="enable_caching" 
