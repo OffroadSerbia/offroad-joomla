@@ -7,7 +7,7 @@
     <license>GNU General Public License version 2 or later</license>
     <authorEmail>info@joomlaboost.com</authorEmail>
     <authorUrl>https://joomlaboost.com</authorUrl>
-    <version>0.1.1</version>
+    <version>0.1.16-clean</version>
     <description>PLG_SYSTEM_JOOMLABOOST_XML_DESCRIPTION</description>
     
     <!-- System Requirements -->
@@ -17,7 +17,13 @@
     
     <files>
         <filename plugin="joomlaboost">joomlaboost.php</filename>
+        <filename>joomlaboost-simple.php</filename>
+        <filename>joomlaboost-complex.php</filename>
+        <filename>joomlaboost-minimal.php</filename>
+        <filename>joomlaboost-working.php</filename>
         <folder>language</folder>
+        <folder>src</folder>
+        <folder>media</folder>
     </files>
     
     <languages>
@@ -100,26 +106,76 @@
                 
             </fieldset>
             
-            <fieldset name="analytics" label="PLG_SYSTEM_JOOMLABOOST_FIELDSET_ANALYTICS">
+            <fieldset name="google" label="PLG_SYSTEM_JOOMLABOOST_FIELDSET_GOOGLE">
                 
-                <field name="enable_analytics" 
+                <!-- Google Search Console Verification -->
+                <field name="enable_google_verification" 
                        type="radio" 
-                       label="PLG_SYSTEM_JOOMLABOOST_ANALYTICS_LABEL"
-                       description="PLG_SYSTEM_JOOMLABOOST_ANALYTICS_DESC"
+                       label="PLG_SYSTEM_JOOMLABOOST_GOOGLE_VERIFICATION_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_GOOGLE_VERIFICATION_DESC"
                        default="0"
                        class="btn-group btn-group-yesno">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
                 
-                <field name="ga_tracking_id" 
+                <field name="gsc_verification_meta" 
                        type="text" 
-                       label="PLG_SYSTEM_JOOMLABOOST_GA_TRACKING_ID_LABEL"
-                       description="PLG_SYSTEM_JOOMLABOOST_GA_TRACKING_ID_DESC"
+                       label="PLG_SYSTEM_JOOMLABOOST_GSC_VERIFICATION_META_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_GSC_VERIFICATION_META_DESC"
                        default=""
-                       showon="enable_analytics:1"/>
+                       showon="enable_google_verification:1"/>
+                
+                <field name="gsc_additional_html" 
+                       type="textarea" 
+                       label="PLG_SYSTEM_JOOMLABOOST_GSC_ADDITIONAL_HTML_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_GSC_ADDITIONAL_HTML_DESC"
+                       default=""
+                       rows="5"
+                       cols="80"
+                       showon="enable_google_verification:1"/>
+                
+                <!-- Google Analytics 4 -->
+                <field name="enable_ga4" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_GA4_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_GA4_DESC"
+                       default="0"
+                       class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="ga4_measurement_id" 
+                       type="text" 
+                       label="PLG_SYSTEM_JOOMLABOOST_GA4_MEASUREMENT_ID_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_GA4_MEASUREMENT_ID_DESC"
+                       default=""
+                       hint="G-XXXXXXXXXX"
+                       showon="enable_ga4:1"/>
+                
+                <!-- Google Tag Manager -->
+                <field name="enable_gtm" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_GTM_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_GTM_DESC"
+                       default="0"
+                       class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="gtm_container_id" 
+                       type="text" 
+                       label="PLG_SYSTEM_JOOMLABOOST_GTM_CONTAINER_ID_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_GTM_CONTAINER_ID_DESC"
+                       default=""
+                       hint="GTM-XXXXXXX"
+                       showon="enable_gtm:1"/>
                 
             </fieldset>
+            
+
             
             <fieldset name="performance" label="PLG_SYSTEM_JOOMLABOOST_FIELDSET_PERFORMANCE">
                 

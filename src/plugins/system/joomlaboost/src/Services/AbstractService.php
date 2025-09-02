@@ -129,10 +129,11 @@ abstract class AbstractService implements ServiceInterface
 
             $this->baseUrl = $scheme . '://' . $this->currentDomain;
 
-          // Add port if not standard
+          // Add port if not standard and port is actually specified
             if (
-                ($scheme === 'http' && $port !== 80) ||
-                ($scheme === 'https' && $port !== 443)
+                $port && 
+                (($scheme === 'http' && $port !== 80) ||
+                ($scheme === 'https' && $port !== 443))
             ) {
                 $this->baseUrl .= ':' . $port;
             }

@@ -206,7 +206,97 @@ parameters:
 			path: src/plugins/system/joomlaboost/src/Services/DomainDetectionService.php
 
 		-
+			message: "#^Call to an undefined method Joomla\\\\CMS\\\\Application\\\\CMSApplication\\:\\:getParams\\(\\)\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Call to an undefined static method Joomla\\\\CMS\\\\Factory\\:\\:getApplication\\(\\)\\.$#"
+			count: 9
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Call to an undefined static method Joomla\\\\CMS\\\\Factory\\:\\:getDate\\(\\)\\.$#"
+			count: 2
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Call to an undefined static method Joomla\\\\CMS\\\\Factory\\:\\:getLanguage\\(\\)\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Call to method getCategory\\(\\) on an unknown class Joomla\\\\Component\\\\Content\\\\Site\\\\Model\\\\CategoryModel\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Call to method getItem\\(\\) on an unknown class Joomla\\\\Component\\\\Content\\\\Site\\\\Model\\\\ArticleModel\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Call to method setState\\(\\) on an unknown class Joomla\\\\Component\\\\Content\\\\Site\\\\Model\\\\ArticleModel\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Call to static method addIncludePath\\(\\) on an unknown class Joomla\\\\CMS\\\\MVC\\\\Model\\\\BaseDatabaseModel\\.$#"
+			count: 2
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Instantiated class Joomla\\\\Component\\\\Content\\\\Site\\\\Model\\\\ArticleModel not found\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Instantiated class Joomla\\\\Component\\\\Content\\\\Site\\\\Model\\\\CategoryModel not found\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Method JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Services\\\\SchemaService\\:\\:extractImages\\(\\) has parameter \\$article with no type specified\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Method JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Services\\\\SchemaService\\:\\:extractImages\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Method JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Services\\\\SchemaService\\:\\:generateArticleSchema\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Method JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Services\\\\SchemaService\\:\\:generateBlogSchema\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Method JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Services\\\\SchemaService\\:\\:generateBreadcrumbSchema\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Method JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Services\\\\SchemaService\\:\\:generateCategorySchema\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Method JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Services\\\\SchemaService\\:\\:generateOrganizationSchema\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
 			message: "#^Method JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Services\\\\SchemaService\\:\\:generateSchema\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
+
+		-
+			message: "#^Method JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Services\\\\SchemaService\\:\\:generateWebsiteSchema\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
 
