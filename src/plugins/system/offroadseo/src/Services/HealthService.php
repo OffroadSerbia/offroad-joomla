@@ -6,6 +6,7 @@ namespace Offroad\Plugin\System\Offroadseo\Services;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Uri\Uri;
+use Offroad\Plugin\System\Offroadseo\Version;
 
 /**
  * Service for handling health check and diagnostic endpoints
@@ -28,8 +29,8 @@ class HealthService extends AbstractService
         'status' => 'ok',
         'timestamp' => gmdate('Y-m-d\TH:i:s\Z'),
         'plugin' => [
-        'name' => 'OffroadSEO',
-        'version' => '1.8.8'
+        'name' => Version::PLUGIN_NAME,
+        'version' => Version::PLUGIN_VERSION
         ],
         'joomla' => [
         'version' => \defined('JVERSION') ? \constant('JVERSION') : 'unknown'
@@ -57,8 +58,8 @@ class HealthService extends AbstractService
 
       // Plugin info
         $lines[] = '[Plugin Information]';
-        $lines[] = 'Name: OffroadSEO';
-        $lines[] = 'Version: 1.8.8';
+        $lines[] = 'Name: ' . Version::PLUGIN_NAME;
+        $lines[] = 'Version: ' . Version::PLUGIN_VERSION;
         $lines[] = 'Enabled: ' . ($this->isPluginEnabled() ? 'Yes' : 'No');
         $lines[] = '';
 

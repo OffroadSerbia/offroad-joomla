@@ -14,6 +14,7 @@ use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Uri\Uri;
 use Offroad\Plugin\System\Offroadseo\Routing\Router;
 use Offroad\Plugin\System\Offroadseo\Services\ServiceManager;
+use Offroad\Plugin\System\Offroadseo\Version;
 
 /**
  * OffroadSEO System Plugin
@@ -24,8 +25,6 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
   /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-
-    private const VERSION = '1.8.8';
 
   /** @var \Joomla\CMS\Application\CMSApplication */
     protected $app;
@@ -383,7 +382,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 
       // Add staging badge if enabled
         if ((bool) $this->params->get('show_staging_badge', 0)) {
-            $badge = '<div id="offseo-staging-badge" style="position:fixed;z-index:99999;right:12px;bottom:12px;background:#c00;color:#fff;font:600 12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:8px 10px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:.9;pointer-events:none;">STAGING • OffroadSEO v' . self::VERSION . '</div>';
+            $badge = '<div id="offseo-staging-badge" style="position:fixed;z-index:99999;right:12px;bottom:12px;background:#c00;color:#fff;font:600 12px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;padding:8px 10px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:.9;pointer-events:none;">STAGING • ' . Version::getDebugString() . '</div>';
             $injectionService->addBodyEnd($badge);
         }
     }

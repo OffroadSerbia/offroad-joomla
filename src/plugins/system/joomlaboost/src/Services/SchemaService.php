@@ -31,6 +31,7 @@ use Joomla\CMS\Uri\Uri;
 use Joomla\Component\Content\Site\Model\ArticleModel;
 use Joomla\Component\Content\Site\Model\CategoryModel;
 use Joomla\Registry\Registry;
+use JoomlaBoost\Plugin\System\JoomlaBoost\Version;
 
 // Make sure Joomla constants are available
 if (!defined('JPATH_ROOT')) {
@@ -70,7 +71,7 @@ class SchemaService extends AbstractService
       // Debug: Log schema generation with version
         if ($this->params->get('debug_mode', 0)) {
             Factory::getApplication()->enqueueMessage(
-                '[DEBUG] SchemaService v0.1.8-version-debug: Generating Schema.org markup',
+                '[DEBUG] ' . Version::getDebugString() . ': Generating Schema.org markup',
                 'info'
             );
         }

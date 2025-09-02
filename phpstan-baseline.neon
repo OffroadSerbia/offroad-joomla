@@ -71,7 +71,7 @@ parameters:
 			path: src/plugins/system/joomlaboost/joomlaboost.php
 
 		-
-			message: "#^Method JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Enums\\\\EnvironmentType\\:\\:getRobotsRules\\(\\) return type has no value type specified in iterable type array\\.$#"
+			message: "#^Method EnvironmentType\\:\\:getRobotsRules\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/plugins/system/joomlaboost/src/Enums/EnvironmentType.php
 
@@ -81,7 +81,27 @@ parameters:
 			path: src/plugins/system/joomlaboost/src/Services/AbstractService.php
 
 		-
+			message: "#^Call to method allowSearchEngines\\(\\) on an unknown class JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Enums\\\\EnvironmentType\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/AbstractService.php
+
+		-
+			message: "#^Call to method isProduction\\(\\) on an unknown class JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Enums\\\\EnvironmentType\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/AbstractService.php
+
+		-
 			message: "#^Call to static method add\\(\\) on an unknown class JLog\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/AbstractService.php
+
+		-
+			message: "#^Call to static method detectFromDomain\\(\\) on an unknown class JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Enums\\\\EnvironmentType\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/AbstractService.php
+
+		-
+			message: "#^Method JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Services\\\\AbstractService\\:\\:getEnvironmentType\\(\\) has invalid return type JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Enums\\\\EnvironmentType\\.$#"
 			count: 1
 			path: src/plugins/system/joomlaboost/src/Services/AbstractService.php
 
@@ -93,6 +113,16 @@ parameters:
 		-
 			message: "#^Call to an undefined method Joomla\\\\CMS\\\\Application\\\\CMSApplication\\:\\:get\\(\\)\\.$#"
 			count: 3
+			path: src/plugins/system/joomlaboost/src/Services/DomainDetectionService.php
+
+		-
+			message: "#^Call to method getRobotsRules\\(\\) on an unknown class JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Enums\\\\EnvironmentType\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/DomainDetectionService.php
+
+		-
+			message: "#^Call to static method detectFromDomain\\(\\) on an unknown class JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Enums\\\\EnvironmentType\\.$#"
+			count: 1
 			path: src/plugins/system/joomlaboost/src/Services/DomainDetectionService.php
 
 		-
@@ -114,6 +144,36 @@ parameters:
 			message: "#^Method JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Services\\\\DomainDetectionService\\:\\:getDomainMetaTags\\(\\) return type has no value type specified in iterable type array\\.$#"
 			count: 1
 			path: src/plugins/system/joomlaboost/src/Services/DomainDetectionService.php
+
+		-
+			message: "#^Method JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Services\\\\DomainDetectionService\\:\\:getEnvironmentType\\(\\) has invalid return type JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Enums\\\\EnvironmentType\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/DomainDetectionService.php
+
+		-
+			message: "#^Access to property \\$value on an unknown class JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Enums\\\\EnvironmentType\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/RobotService.php
+
+		-
+			message: "#^Call to method allowSearchEngines\\(\\) on an unknown class JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Enums\\\\EnvironmentType\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/RobotService.php
+
+		-
+			message: "#^Call to method getLabel\\(\\) on an unknown class JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Enums\\\\EnvironmentType\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/RobotService.php
+
+		-
+			message: "#^Call to method getRobotsRules\\(\\) on an unknown class JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Enums\\\\EnvironmentType\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/RobotService.php
+
+		-
+			message: "#^Call to method isProduction\\(\\) on an unknown class JoomlaBoost\\\\Plugin\\\\System\\\\JoomlaBoost\\\\Enums\\\\EnvironmentType\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/src/Services/RobotService.php
 
 		-
 			message: "#^Call to an undefined method Joomla\\\\CMS\\\\Application\\\\CMSApplication\\:\\:getParams\\(\\)\\.$#"

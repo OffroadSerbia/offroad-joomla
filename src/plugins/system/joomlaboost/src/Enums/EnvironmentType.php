@@ -1,16 +1,14 @@
 <?php
 
 /**
- * Environment Type Enum for JoomlaBoost
+ * Environment Type Detection Enum
  *
  * @package     JoomlaBoost
  * @subpackage  Plugin.System.Enums
- * @version     0.1.8-version-debug
+ * @version     1.0.0
  * @since       Joomla 4.0, PHP 8.1+
  * @author      JoomlaBoost Team
  * @copyright   (C) 2025 JoomlaBoost. All rights reserved.
- * @license     GNU General Public License version 2 or later
- */
 
 namespace JoomlaBoost\Plugin\System\JoomlaBoost\Enums;
 

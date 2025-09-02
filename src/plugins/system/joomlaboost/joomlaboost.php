@@ -2,7 +2,7 @@
 
 /**
  * JoomlaBoost Test Plugin - Step by Step Development
- * @version     0.1.15-syntax-fix
+ * @version     1.0.0
  */
 
 \defined('_JEXEC') or die;
@@ -17,6 +17,7 @@ require_once __DIR__ . '/src/Services/AbstractService.php';
 require_once __DIR__ . '/src/Services/SchemaService.php';
 
 use JoomlaBoost\Plugin\System\JoomlaBoost\Services\SchemaService;
+use JoomlaBoost\Plugin\System\JoomlaBoost\Version;
 
 /**
  * JoomlaBoost plugin - incremental development
@@ -58,13 +59,13 @@ class PlgSystemJoomlaboost extends CMSPlugin
       // Only handle on frontend
         if (!$app->isClient('site')) {
             if ($app->isClient('administrator')) {
-                $this->logDebug('JoomlaBoost: Backend initialized - Plugin v0.1.16-clean');
+                $this->logDebug('JoomlaBoost: Backend initialized - ' . Version::getDebugString());
             }
             return;
         }
 
       // Debug: Show plugin version info on frontend
-        $this->logDebug('JoomlaBoost: Frontend initialized - Plugin v0.1.16-clean');
+        $this->logDebug('JoomlaBoost: Frontend initialized - ' . Version::getDebugString());
 
       // Check for robots.txt request first
         if ($this->isRobotsRequest()) {
