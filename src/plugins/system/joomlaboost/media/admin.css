@@ -1,0 +1,139 @@
+/**
+ * JoomlaBoost Plugin - Admin Styles
+ * Version: 0.1.0-beta
+ */
+
+/* Plugin configuration styling */
+.joomlaboost-config {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.joomlaboost-config .control-group {
+  margin-bottom: 15px;
+}
+
+.joomlaboost-config .control-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.joomlaboost-config .controls {
+  margin-top: 5px;
+}
+
+/* Field descriptions */
+.joomlaboost-config small.form-text {
+  color: #666;
+  font-size: 0.875em;
+  margin-top: 5px;
+}
+
+/* Environment indicators */
+.joomlaboost-env-production {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.joomlaboost-env-staging {
+  color: #ffc107;
+  font-weight: bold;
+}
+
+.joomlaboost-env-development {
+  color: #17a2b8;
+  font-weight: bold;
+}
+
+.joomlaboost-env-local {
+  color: #6c757d;
+  font-weight: bold;
+}
+
+/* Feature toggles */
+.joomlaboost-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.joomlaboost-toggle input[type="radio"] {
+  margin: 0;
+}
+
+/* Status indicators */
+.joomlaboost-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.joomlaboost-status.enabled {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.joomlaboost-status.disabled {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Info boxes */
+.joomlaboost-info {
+  background-color: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: 4px;
+  padding: 12px;
+  margin: 10px 0;
+}
+
+.joomlaboost-info h4 {
+  margin: 0 0 8px 0;
+  color: #1976d2;
+  font-size: 1em;
+}
+
+.joomlaboost-info p {
+  margin: 0;
+  color: #333;
+  font-size: 0.9em;
+}
+
+/* Domain detection info */
+.joomlaboost-domain-info {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 10px;
+  margin: 10px 0;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+/* Version info */
+.joomlaboost-version {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #007cba;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 0.7em;
+  font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .joomlaboost-config .control-label {
+    font-size: 0.9em;
+  }
+
+  .joomlaboost-version {
+    position: static;
+    display: inline-block;
+    margin-bottom: 15px;
+  }
+}

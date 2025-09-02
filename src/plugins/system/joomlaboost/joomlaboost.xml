@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="system" method="upgrade">
+    <name>JoomlaBoost - Universal SEO & Performance Plugin</name>
+    <author>JoomlaBoost Team</author>
+    <creationDate>September 2025</creationDate>
+    <copyright>(C) 2025 JoomlaBoost. All rights reserved.</copyright>
+    <license>GNU General Public License version 2 or later</license>
+    <authorEmail>info@joomlaboost.com</authorEmail>
+    <authorUrl>https://joomlaboost.com</authorUrl>
+    <version>0.1.0-beta</version>
+    <description>PLG_SYSTEM_JOOMLABOOST_XML_DESCRIPTION</description>
+    
+    <!-- System Requirements -->
+    <php_minimum>8.1.0</php_minimum>
+    <joomla_minimum>4.0.0</joomla_minimum>
+    <joomla_maximum>6.9999.9999</joomla_maximum>
+    
+    <files>
+        <filename plugin="joomlaboost">joomlaboost.php</filename>
+        <folder>language</folder>
+    </files>
+    
+    <languages>
+        <language tag="en-GB">language/en-GB/plg_system_joomlaboost.ini</language>
+        <language tag="en-GB">language/en-GB/plg_system_joomlaboost.sys.ini</language>
+    </languages>
+    
+    <config>
+        <fields name="params">
+            <fieldset name="basic" label="PLG_SYSTEM_JOOMLABOOST_FIELDSET_BASIC">
+                
+                <!-- Domain Detection -->
+                <field name="auto_domain_detection" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_AUTO_DOMAIN_DETECTION_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_AUTO_DOMAIN_DETECTION_DESC"
+                       default="1"
+                       class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="manual_domain" 
+                       type="url" 
+                       label="PLG_SYSTEM_JOOMLABOOST_MANUAL_DOMAIN_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_MANUAL_DOMAIN_DESC"
+                       default=""
+                       showon="auto_domain_detection:0"/>
+                
+                <!-- SEO Features -->
+                <field name="enable_robots" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_ROBOTS_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_ROBOTS_DESC"
+                       default="1"
+                       class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="enable_sitemap" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_SITEMAP_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_SITEMAP_DESC"
+                       default="1"
+                       class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="enable_schema" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_SCHEMA_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_SCHEMA_DESC"
+                       default="1"
+                       class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="enable_opengraph" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_OPENGRAPH_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_OPENGRAPH_DESC"
+                       default="1"
+                       class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="enable_hreflang" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_HREFLANG_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_HREFLANG_DESC"
+                       default="1"
+                       class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+            </fieldset>
+            
+            <fieldset name="analytics" label="PLG_SYSTEM_JOOMLABOOST_FIELDSET_ANALYTICS">
+                
+                <field name="enable_analytics" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_ANALYTICS_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_ANALYTICS_DESC"
+                       default="0"
+                       class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="ga_tracking_id" 
+                       type="text" 
+                       label="PLG_SYSTEM_JOOMLABOOST_GA_TRACKING_ID_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_GA_TRACKING_ID_DESC"
+                       default=""
+                       showon="enable_analytics:1"/>
+                
+            </fieldset>
+            
+            <fieldset name="performance" label="PLG_SYSTEM_JOOMLABOOST_FIELDSET_PERFORMANCE">
+                
+                <field name="enable_caching" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_CACHING_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_CACHING_DESC"
+                       default="1"
+                       class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="cache_ttl" 
+                       type="number" 
+                       label="PLG_SYSTEM_JOOMLABOOST_CACHE_TTL_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_CACHE_TTL_DESC"
+                       default="3600"
+                       min="60"
+                       max="86400"
+                       showon="enable_caching:1"/>
+                
+            </fieldset>
+            
+            <fieldset name="debug" label="PLG_SYSTEM_JOOMLABOOST_FIELDSET_DEBUG">
+                
+                <field name="debug_mode" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_DEBUG_MODE_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_DEBUG_MODE_DESC"
+                       default="0"
+                       class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="debug_wrap_markers" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_DEBUG_WRAP_MARKERS_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_DEBUG_WRAP_MARKERS_DESC"
+                       default="0"
+                       class="btn-group btn-group-yesno"
+                       showon="debug_mode:1">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+                <field name="show_staging_badge" 
+                       type="radio" 
+                       label="PLG_SYSTEM_JOOMLABOOST_STAGING_BADGE_LABEL"
+                       description="PLG_SYSTEM_JOOMLABOOST_STAGING_BADGE_DESC"
+                       default="0"
+                       class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                
+            </fieldset>
+        </fields>
+    </config>
+    
+    <updateservers>
+        <server type="extension" priority="1" name="JoomlaBoost Update Server">
+            https://updates.joomlaboost.com/joomlaboost.xml
+        </server>
+    </updateservers>
+</extension>
