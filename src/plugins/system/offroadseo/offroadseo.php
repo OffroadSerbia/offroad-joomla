@@ -24,7 +24,7 @@ class PlgSystemOffroadseo extends CMSPlugin
 {
     /** Auto-load plugin language files */
     protected $autoloadLanguage = true;
-    private const VERSION = '1.8.7';
+    private const VERSION = '1.8.8';
     // Buffer for JSON-LD when injecting at body end
     /** @var array<int,string> JSON-LD script tags buffered for body-end */
     private array $offseoJsonLd = [];
@@ -56,11 +56,93 @@ class PlgSystemOffroadseo extends CMSPlugin
         }
     }
 
+    /**
+     * Map offseo_* query flags to a com_ajax resource string or return empty if none.
+     */
+    private function mapOffseoResourceFromQuery(): string
+    {
+        try {
+            $in = $this->app->getInput();
+            $qsDiag = (int) $in->get('offseo_diag', 0);
+            $qsHealth = (int) $in->get('offseo_health', 0);
+            $qsRob  = (int) $in->get('offseo_robots', 0);
+            $qsMap  = trim((string) $in->get('offseo_sitemap', ''));
+            if ($qsDiag === 1 || $qsHealth === 1 || $qsRob === 1 || $qsMap !== '') {
+                $resource = $qsRob === 1 ? 'robots' : ($qsHealth === 1 ? 'health' : 'diag');
+                if ($qsMap !== '') {
+                    $m = strtolower($qsMap);
+                    if ($m === 'pages') {
+                        $resource = 'sitemap-pages';
+                    } elseif ($m === 'articles') {
+                        $resource = 'sitemap-articles';
+                    } else {
+                        $resource = 'sitemap';
+                    }
+                }
+                return $resource;
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+        return '';
+    }
+
+    /**
+     * Prepare the application input for our com_ajax handler.
+     */
+    private function rewriteToAjax(string $resource): void
+    {
+        $in = $this->app->getInput();
+        $in->set('option', 'com_ajax');
+        $in->set('plugin', 'offroadseo');
+        $in->set('group', 'system');
+        $in->set('format', 'raw');
+        $in->set('resource', $resource);
+        // Light debug header on staging to verify mapping
+        try {
+            $host = isset($_SERVER['HTTP_HOST']) ? strtolower((string) $_SERVER['HTTP_HOST']) : '';
+            if ($host !== '' && (str_contains($host, 'staging.') || str_contains($host, 'stage.'))) {
+                if (method_exists($this->app, 'setHeader')) {
+                    $this->app->setHeader('X-OffroadSEO-Router', 'hit:' . $resource, true);
+                }
+            }
+        } catch (\Throwable $e) { /* ignore */
+        }
+    }
+
+    /**
+     * Emit defensive headers so caches/minifiers do not capture fallback responses.
+     */
+    private function emitNoStoreForFallback(string $resource): void
+    {
+        try {
+            $this->app->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0', true);
+            $this->app->setHeader('Pragma', 'no-cache', true);
+            if ($resource === 'robots' || $resource === 'diag') {
+                $this->app->setHeader('Content-Type', 'text/plain; charset=UTF-8', false);
+            } elseif ($resource === 'health') {
+                $this->app->setHeader('Content-Type', 'application/json; charset=UTF-8', false);
+            } elseif (str_starts_with($resource, 'sitemap')) {
+                $this->app->setHeader('Content-Type', 'application/xml; charset=UTF-8', false);
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+    }
+
     public function onAfterInitialise(): void
     {
         // Handle sitemap and robots.txt routing via our custom router
         if ($this->app->isClient('site')) {
             try {
+                // Ultra-early: direct handling of fallback query flags to avoid any contamination
+                // Examples: ?offseo_diag=1, ?offseo_robots=1, ?offseo_sitemap=index|pages|articles
+                $resource = $this->mapOffseoResourceFromQuery();
+                if ($resource !== '') {
+                    $this->rewriteToAjax($resource);
+                    $this->emitNoStoreForFallback($resource);
+                }
+
                 $router = new Router($this->app, $this->params);
                 $router->handle();
 
@@ -103,6 +185,46 @@ class PlgSystemOffroadseo extends CMSPlugin
     }
 
     /**
+     * Late guard: if some cache/minifier prevented early mapping, try again after routing.
+     */
+    public function onAfterRoute(): void
+    {
+        if (!$this->app->isClient('site')) {
+            return;
+        }
+        try {
+            $in = $this->app->getInput();
+            // If not already mapped to our com_ajax, and we detect offseo_* flags, rewrite and serve now
+            $alreadyAjax = (
+                $in->getCmd('option') === 'com_ajax'
+                && $in->getCmd('plugin') === 'offroadseo'
+                && $in->getCmd('group') === 'system'
+            );
+            if ($alreadyAjax) {
+                return;
+            }
+            $resource = $this->mapOffseoResourceFromQuery();
+            if ($resource === '') {
+                return;
+            }
+            $this->rewriteToAjax($resource);
+            $this->emitNoStoreForFallback($resource);
+
+            // Execute handler and short-circuit response
+            $out = $this->onAjaxOffroadseo();
+            if (is_string($out)) {
+                $this->app->setBody($out);
+            }
+            if (method_exists($this->app, 'respond')) {
+                $this->app->respond();
+            }
+            $this->app->close();
+        } catch (\Throwable $e) {
+            // ignore
+        }
+    }
+
+    /**
      * AJAX entrypoint for com_ajax (resource parameter controls output).
      * Returns a string body for com_ajax compatibility; also sets headers.
      */
@@ -133,6 +255,43 @@ class PlgSystemOffroadseo extends CMSPlugin
                     $out .= $k . '=' . $v . "\n";
                 }
                 return $out;
+            } catch (\Throwable $e) {
+                // ignore
+            }
+        }
+
+        // structured health endpoint (JSON) for staging validation
+        if ($resource === 'health') {
+            try {
+                $root = \defined('JPATH_ROOT') ? (string) \constant('JPATH_ROOT') : (string) getcwd();
+                $hasPhysicalRobots = is_string($root) && $root !== '' ? @is_file($root . DIRECTORY_SEPARATOR . 'robots.txt') : false;
+                $base = rtrim(\Joomla\CMS\Uri\Uri::root(), '/');
+                $payload = [
+                    'version' => self::VERSION,
+                    'host' => (string) (method_exists(Uri::getInstance(), 'getHost') ? Uri::getInstance()->getHost() : ($_SERVER['HTTP_HOST'] ?? '')),
+                    'active_cfg' => (string) $this->params->get('active_domain', ''),
+                    'active_match' => $this->isActiveDomain(),
+                    'robots' => [
+                        'enabled' => (bool) $this->params->get('enable_robots', 1),
+                        'physical_file' => (bool) $hasPhysicalRobots,
+                        'url' => $base . '/robots.txt',
+                        'fallback' => $base . '/?offseo_robots=1',
+                    ],
+                    'sitemap' => [
+                        'enabled' => (bool) $this->params->get('enable_sitemap', 1),
+                        'use_index' => (bool) $this->params->get('sitemap_use_index', 0),
+                        'index' => $base . '/sitemap.xml',
+                        'pages' => $base . '/sitemap-pages.xml',
+                        'articles' => $base . '/sitemap-articles.xml',
+                        'fallbacks' => [
+                            'index' => $base . '/?offseo_sitemap=index',
+                            'pages' => $base . '/?offseo_sitemap=pages',
+                            'articles' => $base . '/?offseo_sitemap=articles',
+                        ],
+                    ],
+                ];
+                $this->app->setHeader('Content-Type', 'application/json; charset=UTF-8', true);
+                return json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             } catch (\Throwable $e) {
                 // ignore
             }

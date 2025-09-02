@@ -27,6 +27,7 @@ class Router
         '/sitemap-pages.xml' => 'sitemap-pages',
         '/sitemap-articles.xml' => 'sitemap-articles',
         '/offseo-diag' => 'diag',
+        '/offseo-health' => 'health',
     ];
 
     public function __construct(CMSApplication $app, Registry $params)
@@ -51,10 +52,11 @@ class Router
         try {
             $in = $this->app->getInput();
             $qsDiag = (int) $in->get('offseo_diag', 0);
+            $qsHealth = (int) $in->get('offseo_health', 0);
             $qsRob  = (int) $in->get('offseo_robots', 0);
             $qsMap  = trim((string) $in->get('offseo_sitemap', ''));
-            if ($qsDiag === 1 || $qsRob === 1 || $qsMap !== '') {
-                $resource = $qsRob === 1 ? 'robots' : 'diag';
+            if ($qsDiag === 1 || $qsHealth === 1 || $qsRob === 1 || $qsMap !== '') {
+                $resource = $qsRob === 1 ? 'robots' : ($qsHealth === 1 ? 'health' : 'diag');
                 if ($qsMap !== '') {
                     $m = strtolower($qsMap);
                     if ($m === 'pages') {
