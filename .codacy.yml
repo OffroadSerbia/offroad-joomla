@@ -1,0 +1,12 @@
+# Codacy configuration to ignore external plugin inspection assets and vendor/build folders
+exclude_paths:
+  - "tools/__inspect_external_plugin/**"
+  - "vendor/**"
+  - "**/vendor/**"
+  - "node_modules/**"
+  - "**/node_modules/**"
+  - "build/**"
+  - "**/build/**"
+  - "tools/__inspect_offroadseo_zip/**"
+  - "tools/__inspect_offroadseo_zip2/**"
+  - "tools/__inspect_external_plugin/**"

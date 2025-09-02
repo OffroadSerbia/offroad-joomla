@@ -10,17 +10,16 @@ Kad razgovaramo unesi malo opuštenosti i humora
 Kad ti napišem "objasni" - napiši mi kao početniku o čemu se radi.
 Kad nešto predlažeš nek to budu stavke numeričke stavke (1. 2. 3. itd.) da bi lakše komunicirali o čemu se radi.
 
-* Treba da napravimo ceo github repozitorijum sa svim potrebnim datotekama i folderima.
-* Treba da definišemo strukturu foldera i datoteka unutar repozitorijuma.
-* Treba da dodamo sve potrebne datoteke i kod unutar repozitorijuma.
-* Treba da testiramo sve funkcionalnosti i osiguramo da sve radi ispravno.
+- Treba da napravimo ceo github repozitorijum sa svim potrebnim datotekama i folderima.
+- Treba da definišemo strukturu foldera i datoteka unutar repozitorijuma.
+- Treba da dodamo sve potrebne datoteke i kod unutar repozitorijuma.
+- Treba da testiramo sve funkcionalnosti i osiguramo da sve radi ispravno.
 
 Treba da ti dam pristup super useru u joomla ako ti je neophodan.
 
 Ostalo ćeš mi reći šta ti treba dok budemo radili.
 
-web sajt koji ćemo popravljati je:
+produkcijski web sajt koji ćemo popravljati je:
 https://offroadserbia.com
-
-Analiziraj ga i daj predloge kako ćemo nastaviti.
-
+staging sajt za ovaj projekat je:
+https://staging.offroadserbia.com

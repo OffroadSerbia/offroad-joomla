@@ -5,3 +5,4 @@ build/
 **/vendor/**
 **/node_modules/**
 **/build/**
+tools/__inspect_external_plugin/**
