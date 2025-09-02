@@ -26,24 +26,24 @@ interface ServiceInterface
   /**
    * Constructor for service injection
    */
-  public function __construct(CMSApplication $app, Registry $params);
+    public function __construct(CMSApplication $app, Registry $params);
 
   /**
    * Check if this service is enabled in plugin configuration
    */
-  public function isEnabled(): bool;
+    public function isEnabled(): bool;
 
   /**
    * Get the current domain for this service
    *
    * @return string Current domain (auto-detected or manually configured)
    */
-  public function getCurrentDomain(): string;
+    public function getCurrentDomain(): string;
 
   /**
    * Get the base URL for this service
    *
    * @return string Base URL with protocol
    */
-  public function getBaseUrl(): string;
+    public function getBaseUrl(): string;
 }

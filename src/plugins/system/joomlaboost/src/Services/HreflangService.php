@@ -18,8 +18,8 @@ namespace JoomlaBoost\Plugin\System\JoomlaBoost\Services;
  */
 class HreflangService extends AbstractService
 {
-  protected function getServiceKey(): string
-  {
-    return 'enable_hreflang';
-  }
+    protected function getServiceKey(): string
+    {
+        return 'enable_hreflang';
+    }
 }

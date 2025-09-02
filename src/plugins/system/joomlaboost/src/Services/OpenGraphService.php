@@ -18,8 +18,8 @@ namespace JoomlaBoost\Plugin\System\JoomlaBoost\Services;
  */
 class OpenGraphService extends AbstractService
 {
-  protected function getServiceKey(): string
-  {
-    return 'enable_opengraph';
-  }
+    protected function getServiceKey(): string
+    {
+        return 'enable_opengraph';
+    }
 }

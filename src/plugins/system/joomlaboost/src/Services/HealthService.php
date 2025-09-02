@@ -18,8 +18,8 @@ namespace JoomlaBoost\Plugin\System\JoomlaBoost\Services;
  */
 class HealthService extends AbstractService
 {
-  protected function getServiceKey(): string
-  {
-    return 'enable_health';
-  }
+    protected function getServiceKey(): string
+    {
+        return 'enable_health';
+    }
 }
