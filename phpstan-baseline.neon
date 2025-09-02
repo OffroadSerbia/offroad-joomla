@@ -1,133 +1,43 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Access to an undefined property object\\:\\:\\$created\\.$#"
-			count: 1
-			path: src/plugins/OffroadMetaPlugin.php
-
-		-
-			message: "#^Access to an undefined property object\\:\\:\\$introtext\\.$#"
-			count: 1
-			path: src/plugins/OffroadMetaPlugin.php
-
-		-
-			message: "#^Access to an undefined property object\\:\\:\\$title\\.$#"
-			count: 2
-			path: src/plugins/OffroadMetaPlugin.php
-
-		-
-			message: "#^Method OffroadSerbia\\\\Content\\\\OffroadMetaPlugin\\:\\:generateMetaTags\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/plugins/OffroadMetaPlugin.php
-
-		-
-			message: "#^Method OffroadSerbia\\\\Content\\\\OffroadMetaPlugin\\:\\:generateSchemaMarkup\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/plugins/OffroadMetaPlugin.php
-
-		-
-			message: "#^Call to method generateRobots\\(\\) on an unknown class RobotService\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-complex.php
-
-		-
-			message: "#^Call to method generateSitemapIndex\\(\\) on an unknown class SitemapService\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-complex.php
-
-		-
-			message: "#^Constant JDEBUG not found\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-complex.php
-
-		-
-			message: "#^Constant JVERSION not found\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-complex.php
-
-		-
-			message: "#^Method Joomla\\\\CMS\\\\Plugin\\\\CMSPlugin\\:\\:__construct\\(\\) invoked with 2 parameters, 0 required\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-complex.php
-
-		-
-			message: "#^Method PlgSystemJoomlaboost\\:\\:__construct\\(\\) has parameter \\$config with no type specified\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-complex.php
-
-		-
-			message: "#^Method PlgSystemJoomlaboost\\:\\:__construct\\(\\) has parameter \\$subject with no type specified\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-complex.php
-
-		-
-			message: "#^Method PlgSystemJoomlaboost\\:\\:handleDefault\\(\\) should return string but returns string\\|false\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-complex.php
-
-		-
-			message: "#^Method PlgSystemJoomlaboost\\:\\:handleDiagnostics\\(\\) should return string but returns string\\|false\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-complex.php
-
-		-
-			message: "#^Method PlgSystemJoomlaboost\\:\\:handleError\\(\\) should return string but returns string\\|false\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-complex.php
-
-		-
-			message: "#^Method PlgSystemJoomlaboost\\:\\:handleHealth\\(\\) should return string but returns string\\|false\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-complex.php
-
-		-
-			message: "#^Property PlgSystemJoomlaboost\\:\\:\\$autoloadLanguage has no type specified\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-complex.php
-
-		-
-			message: "#^Access to an undefined property PlgSystemJoomlaboost\\:\\:\\$app\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-minimal.php
-
-		-
-			message: "#^Property PlgSystemJoomlaboost\\:\\:\\$autoloadLanguage has no type specified\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-minimal.php
-
-		-
-			message: "#^Access to an undefined property PlgSystemJoomlaboost\\:\\:\\$app\\.$#"
-			count: 6
-			path: src/plugins/system/joomlaboost/joomlaboost-simple.php
-
-		-
-			message: "#^Method PlgSystemJoomlaboost\\:\\:addSeoMetaTags\\(\\) has parameter \\$document with no type specified\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-simple.php
-
-		-
-			message: "#^Property PlgSystemJoomlaboost\\:\\:\\$autoloadLanguage has no type specified\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-simple.php
-
-		-
-			message: "#^Access to an undefined property PlgSystemJoomlaboost\\:\\:\\$app\\.$#"
-			count: 6
-			path: src/plugins/system/joomlaboost/joomlaboost-working.php
-
-		-
-			message: "#^Method PlgSystemJoomlaboost\\:\\:addSeoMetaTags\\(\\) has parameter \\$document with no type specified\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-working.php
-
-		-
-			message: "#^Property PlgSystemJoomlaboost\\:\\:\\$autoloadLanguage has no type specified\\.$#"
-			count: 1
-			path: src/plugins/system/joomlaboost/joomlaboost-working.php
-
-		-
 			message: "#^Call to an undefined static method Joomla\\\\CMS\\\\Factory\\:\\:getApplication\\(\\)\\.$#"
 			count: 2
+			path: src/plugins/system/joomlaboost/joomlaboost.php
+
+		-
+			message: "#^Method PlgSystemJoomlaboost\\:\\:addGA4Tracking\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/joomlaboost.php
+
+		-
+			message: "#^Method PlgSystemJoomlaboost\\:\\:addGA4Tracking\\(\\) has parameter \\$document with no type specified\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/joomlaboost.php
+
+		-
+			message: "#^Method PlgSystemJoomlaboost\\:\\:addGTMTracking\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/joomlaboost.php
+
+		-
+			message: "#^Method PlgSystemJoomlaboost\\:\\:addGTMTracking\\(\\) has parameter \\$document with no type specified\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/joomlaboost.php
+
+		-
+			message: "#^Method PlgSystemJoomlaboost\\:\\:addGoogleVerificationTags\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/joomlaboost.php
+
+		-
+			message: "#^Method PlgSystemJoomlaboost\\:\\:addGoogleVerificationTags\\(\\) has parameter \\$document with no type specified\\.$#"
+			count: 1
+			path: src/plugins/system/joomlaboost/joomlaboost.php
+
+		-
+			message: "#^Method PlgSystemJoomlaboost\\:\\:addSchemaMarkup\\(\\) has parameter \\$document with no type specified\\.$#"
+			count: 1
 			path: src/plugins/system/joomlaboost/joomlaboost.php
 
 		-
@@ -212,7 +122,7 @@ parameters:
 
 		-
 			message: "#^Call to an undefined static method Joomla\\\\CMS\\\\Factory\\:\\:getApplication\\(\\)\\.$#"
-			count: 9
+			count: 10
 			path: src/plugins/system/joomlaboost/src/Services/SchemaService.php
 
 		-
@@ -549,66 +459,6 @@ parameters:
 			message: "#^Property PlgSystemOffroadseo\\:\\:\\$autoloadLanguage has no type specified\\.$#"
 			count: 1
 			path: src/plugins/system/offroadseo/offroadseo.php
-
-		-
-			message: "#^Call to protected method isActiveDomain\\(\\) of class Offroad\\\\Plugin\\\\System\\\\Offroadseo\\\\Services\\\\AbstractService\\.$#"
-			count: 1
-			path: src/plugins/system/offroadseo/offroadseo_refactored.php
-
-		-
-			message: "#^Method Joomla\\\\CMS\\\\Plugin\\\\CMSPlugin\\:\\:__construct\\(\\) invoked with 2 parameters, 0 required\\.$#"
-			count: 1
-			path: src/plugins/system/offroadseo/offroadseo_refactored.php
-
-		-
-			message: "#^Method PlgSystemOffroadseo\\:\\:__construct\\(\\) has parameter \\$config with no type specified\\.$#"
-			count: 1
-			path: src/plugins/system/offroadseo/offroadseo_refactored.php
-
-		-
-			message: "#^Method PlgSystemOffroadseo\\:\\:__construct\\(\\) has parameter \\$subject with no type specified\\.$#"
-			count: 1
-			path: src/plugins/system/offroadseo/offroadseo_refactored.php
-
-		-
-			message: "#^Method PlgSystemOffroadseo\\:\\:buildArticleUrl\\(\\) has parameter \\$article with no type specified\\.$#"
-			count: 1
-			path: src/plugins/system/offroadseo/offroadseo_refactored.php
-
-		-
-			message: "#^Method PlgSystemOffroadseo\\:\\:buildArticlesUrls\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/plugins/system/offroadseo/offroadseo_refactored.php
-
-		-
-			message: "#^Method PlgSystemOffroadseo\\:\\:buildMenuItemUrl\\(\\) has parameter \\$item with no type specified\\.$#"
-			count: 1
-			path: src/plugins/system/offroadseo/offroadseo_refactored.php
-
-		-
-			message: "#^Method PlgSystemOffroadseo\\:\\:buildPagesUrls\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/plugins/system/offroadseo/offroadseo_refactored.php
-
-		-
-			message: "#^Method PlgSystemOffroadseo\\:\\:extractArticleImages\\(\\) has parameter \\$article with no type specified\\.$#"
-			count: 1
-			path: src/plugins/system/offroadseo/offroadseo_refactored.php
-
-		-
-			message: "#^Method PlgSystemOffroadseo\\:\\:extractArticleImages\\(\\) return type has no value type specified in iterable type array\\.$#"
-			count: 1
-			path: src/plugins/system/offroadseo/offroadseo_refactored.php
-
-		-
-			message: "#^Method PlgSystemOffroadseo\\:\\:onAjaxOffroadseo\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/plugins/system/offroadseo/offroadseo_refactored.php
-
-		-
-			message: "#^Property PlgSystemOffroadseo\\:\\:\\$autoloadLanguage has no type specified\\.$#"
-			count: 1
-			path: src/plugins/system/offroadseo/offroadseo_refactored.php
 
 		-
 			message: "#^Call to an undefined static method Joomla\\\\CMS\\\\Uri\\\\Uri\\:\\:base\\(\\)\\.$#"

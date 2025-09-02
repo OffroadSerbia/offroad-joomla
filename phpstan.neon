@@ -8,6 +8,10 @@ parameters:
   ignoreErrors: []
   excludePaths:
     - src/templates/**
+    # Isključi test i development fajlove
+    - src/plugins/system/joomlaboost/joomlaboost-*.php
+    - src/plugins/system/offroadseo/offroadseo_refactored.php
+    - src/plugins/OffroadMetaPlugin.php
   bootstrapFiles:
     - stubs/bootstrap.php
   # Also exclude generated or non-analyzable plugin dirs if needed
