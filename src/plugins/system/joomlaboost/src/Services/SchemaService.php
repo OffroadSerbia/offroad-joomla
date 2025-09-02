@@ -18,13 +18,13 @@ namespace JoomlaBoost\Plugin\System\JoomlaBoost\Services;
  */
 class SchemaService extends AbstractService
 {
-    public function generateSchema(): array
-    {
-        return [];
-    }
+  public function generateSchema(): array
+  {
+    return [];
+  }
 
-    protected function getServiceKey(): string
-    {
-        return 'enable_schema';
-    }
+  protected function getServiceKey(): string
+  {
+    return 'enable_schema';
+  }
 }

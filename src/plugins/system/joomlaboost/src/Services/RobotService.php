@@ -23,43 +23,43 @@ class RobotService extends AbstractService
   /**
    * Generate robots.txt content for current domain using modern PHP 8.1+ features
    */
-    public function generateRobots(): string
-    {
-        if (!$this->isEnabled()) {
-            return $this->getDefaultRobots();
-        }
-
-        $environment = $this->getEnvironmentType();
-        $rules = $environment->getRobotsRules();
-
-      // Add sitemap reference for production
-        if ($environment->isProduction()) {
-            $baseUrl = $this->getBaseUrl();
-            $rules[] = '';
-            $rules[] = "Sitemap: {$baseUrl}/sitemap.xml";
-        }
-
-        $this->logDebug('Generated robots.txt', [
-        'domain' => $this->getCurrentDomain(),
-        'environment' => $environment->value,
-        'environment_label' => $environment->getLabel(),
-        'rules_count' => count($rules),
-        'allows_search_engines' => $environment->allowSearchEngines()
-        ]);
-
-        return implode("\n", $rules);
+  public function generateRobots(): string
+  {
+    if (!$this->isEnabled()) {
+      return $this->getDefaultRobots();
     }
+
+    $environment = $this->getEnvironmentType();
+    $rules = $environment->getRobotsRules();
+
+    // Add sitemap reference for production
+    if ($environment->isProduction()) {
+      $baseUrl = $this->getBaseUrl();
+      $rules[] = '';
+      $rules[] = "Sitemap: {$baseUrl}/sitemap.xml";
+    }
+
+    $this->logDebug('Generated robots.txt', [
+      'domain' => $this->getCurrentDomain(),
+      'environment' => $environment->value,
+      'environment_label' => $environment->getLabel(),
+      'rules_count' => count($rules),
+      'allows_search_engines' => $environment->allowSearchEngines()
+    ]);
+
+    return implode("\n", $rules);
+  }
 
   /**
    * Get default robots.txt when service is disabled
    */
-    private function getDefaultRobots(): string
-    {
-        return "User-agent: *\nDisallow: /administrator/\n";
-    }
+  private function getDefaultRobots(): string
+  {
+    return "User-agent: *\nDisallow: /administrator/\n";
+  }
 
-    protected function getServiceKey(): string
-    {
-        return 'enable_robots';
-    }
+  protected function getServiceKey(): string
+  {
+    return 'enable_robots';
+  }
 }

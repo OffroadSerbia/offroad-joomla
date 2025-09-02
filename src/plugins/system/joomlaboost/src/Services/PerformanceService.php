@@ -18,8 +18,8 @@ namespace JoomlaBoost\Plugin\System\JoomlaBoost\Services;
  */
 class PerformanceService extends AbstractService
 {
-    protected function getServiceKey(): string
-    {
-        return 'enable_performance';
-    }
+  protected function getServiceKey(): string
+  {
+    return 'enable_performance';
+  }
 }

@@ -18,8 +18,8 @@ namespace JoomlaBoost\Plugin\System\JoomlaBoost\Services;
  */
 class AnalyticsService extends AbstractService
 {
-    protected function getServiceKey(): string
-    {
-        return 'enable_analytics';
-    }
+  protected function getServiceKey(): string
+  {
+    return 'enable_analytics';
+  }
 }

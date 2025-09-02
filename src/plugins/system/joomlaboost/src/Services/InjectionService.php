@@ -18,8 +18,8 @@ namespace JoomlaBoost\Plugin\System\JoomlaBoost\Services;
  */
 class InjectionService extends AbstractService
 {
-    protected function getServiceKey(): string
-    {
-        return 'enable_injection';
-    }
+  protected function getServiceKey(): string
+  {
+    return 'enable_injection';
+  }
 }

@@ -415,8 +415,8 @@ class PlgSystemOffroadseo extends CMSPlugin
 
             if (!preg_match($pattern, $body)) {
                 $missing[] = '<meta ' . htmlspecialchars($tag['attr'], ENT_QUOTES, 'UTF-8') .
-                           '="' . htmlspecialchars($tag['name'], ENT_QUOTES, 'UTF-8') .
-                           '" content="' . htmlspecialchars($tag['content'], ENT_QUOTES, 'UTF-8') . '" />';
+                    '="' . htmlspecialchars($tag['name'], ENT_QUOTES, 'UTF-8') .
+                    '" content="' . htmlspecialchars($tag['content'], ENT_QUOTES, 'UTF-8') . '" />';
             }
         }
 
