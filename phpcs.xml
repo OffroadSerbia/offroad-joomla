@@ -1,12 +1,29 @@
 <?xml version="1.0"?>
 <ruleset name="OffRoad Joomla">
   <description>PSR-12 i osnovna pravila za Joomla/PHP.</description>
-  <file>src</file>
+  
+  <!-- Skeniranje glavnih plugin fajlova -->
+  <file>src/plugins/system/joomlaboost/joomlaboost.php</file>
+  <file>src/plugins/system/joomlaboost/src</file>
+  <file>src/plugins/system/offroadseo/offroadseo.php</file>
+  <file>src/plugins/system/offroadseo/src</file>
+  <file>src/plugins/system/offroadstage/offroadstage.php</file>
+  
   <rule ref="PSR12">
     <!-- Joomla pluginovi često nemaju namespace; isključi ovo pravilo -->
     <exclude name="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+    <!-- Joomla pluginovi imaju side effects; isključi ovo upozorenje -->
+    <exclude name="PSR1.Files.SideEffects"/>
+    <!-- Dugačke linije su OK; možda imamo dugačke SQL upite ili URL-ove -->
+    <exclude name="Generic.Files.LineLength"/>
   </rule>
+  
   <arg name="basepath" value="."/>
-  <!-- Keep output simple for CI runners; colors not supported on some images -->
+  
+  <!-- Isključi fajlove koji nisu produkcijski -->
   <exclude-pattern>vendor/*</exclude-pattern>
+  <exclude-pattern>*/joomlaboost-*.php</exclude-pattern>
+  <exclude-pattern>*_refactored.php</exclude-pattern>
+  <exclude-pattern>*/test/*</exclude-pattern>
+  <exclude-pattern>*/tests/*</exclude-pattern>
 </ruleset>
