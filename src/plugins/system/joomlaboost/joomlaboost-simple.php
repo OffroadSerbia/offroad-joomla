@@ -1,9 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
 /**
- * JoomlaBoost - Universal SEO & Performance Plugin
+ * JoomlaBoost Simple Test Plugin
  * Simple implementation without namespaces for maximum compatibility
  *
  * @package     JoomlaBoost

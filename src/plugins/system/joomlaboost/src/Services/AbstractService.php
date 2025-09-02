@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 /**
+ * Abstract Service for JoomlaBoost
+declare(strict_types=1);
+
+/**
  * Abstract base service for JoomlaBoost
  *
  * @package     JoomlaBoost

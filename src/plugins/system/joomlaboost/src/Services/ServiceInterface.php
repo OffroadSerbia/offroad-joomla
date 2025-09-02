@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Base interface for all JoomlaBoost services
+ * Service Interface for JoomlaBoost
  *
  * @package     JoomlaBoost
  * @subpackage  Plugin.System.Services
