@@ -22,37 +22,37 @@ use JoomlaBoost\Plugin\System\JoomlaBoost\Enums\EnvironmentType;
  */
 class DomainDetectionService extends AbstractService
 {
-  /**
-   * Get domain-specific configuration
-   */
+    /**
+     * Get domain-specific configuration
+     */
     public function getDomainConfig(): array
     {
         $domain = $this->getCurrentDomain();
 
         return [
-        'domain' => $domain,
-        'baseUrl' => $this->getBaseUrl(),
-        'isStaging' => $this->isStaging(),
-        'environment' => $this->getEnvironmentType(),
-        'siteName' => $this->getSiteName(),
-        'defaultLanguage' => $this->getDefaultLanguage(),
-        'availableLanguages' => $this->getAvailableLanguages(),
-        'timezone' => $this->getTimezone()
+            'domain' => $domain,
+            'baseUrl' => $this->getBaseUrl(),
+            'isStaging' => $this->isStaging(),
+            'environment' => $this->getEnvironmentType(),
+            'siteName' => $this->getSiteName(),
+            'defaultLanguage' => $this->getDefaultLanguage(),
+            'availableLanguages' => $this->getAvailableLanguages(),
+            'timezone' => $this->getTimezone()
         ];
     }
 
-  /**
-   * Get environment type based on domain
-   */
+    /**
+     * Get environment type based on domain
+     */
     public function getEnvironmentType(): EnvironmentType
     {
         $domain = strtolower($this->getCurrentDomain());
         return EnvironmentType::detectFromDomain($domain);
     }
 
-  /**
-   * Get site name from Joomla configuration
-   */
+    /**
+     * Get site name from Joomla configuration
+     */
     public function getSiteName(): string
     {
         try {
@@ -62,9 +62,9 @@ class DomainDetectionService extends AbstractService
         }
     }
 
-  /**
-   * Get default language
-   */
+    /**
+     * Get default language
+     */
     public function getDefaultLanguage(): string
     {
         try {
@@ -74,23 +74,23 @@ class DomainDetectionService extends AbstractService
         }
     }
 
-  /**
-   * Get available languages (simplified)
-   */
+    /**
+     * Get available languages (simplified)
+     */
     public function getAvailableLanguages(): array
     {
         try {
-          // This would normally query the database for enabled languages
-          // For now, return default
+            // This would normally query the database for enabled languages
+            // For now, return default
             return [$this->getDefaultLanguage()];
         } catch (\Throwable $e) {
             return ['en-GB'];
         }
     }
 
-  /**
-   * Get timezone
-   */
+    /**
+     * Get timezone
+     */
     public function getTimezone(): string
     {
         try {
@@ -100,18 +100,18 @@ class DomainDetectionService extends AbstractService
         }
     }
 
-  /**
-   * Generate domain-specific robots.txt rules
-   */
+    /**
+     * Generate domain-specific robots.txt rules
+     */
     public function generateRobotsRules(): array
     {
         $env = $this->getEnvironmentType();
         return $env->getRobotsRules();
     }
 
-  /**
-   * Get domain-specific meta tags
-   */
+    /**
+     * Get domain-specific meta tags
+     */
     public function getDomainMetaTags(): array
     {
         $domain = $this->getCurrentDomain();
@@ -119,13 +119,13 @@ class DomainDetectionService extends AbstractService
         $env = $this->getEnvironmentType();
 
         $tags = [
-        'canonical' => $this->getBaseUrl(),
-        'og:site_name' => $siteName,
-        'og:url' => $this->getBaseUrl(),
-        'twitter:domain' => $domain
+            'canonical' => $this->getBaseUrl(),
+            'og:site_name' => $siteName,
+            'og:url' => $this->getBaseUrl(),
+            'twitter:domain' => $domain
         ];
 
-      // Add environment-specific tags
+        // Add environment-specific tags
         if (!$env->isProduction()) {
             $tags['robots'] = 'noindex,nofollow';
             $tags['environment'] = $env->value;

@@ -47,27 +47,27 @@ if (!defined('JPATH_SITE')) {
  */
 class SchemaService extends AbstractService
 {
-  /**
-   * Get the correct domain URL for Schema.org markup
-   * Uses automatic domain detection from the parent AbstractService
-   *
-   * @return string The correct domain URL with trailing slash
-   */
+    /**
+     * Get the correct domain URL for Schema.org markup
+     * Uses automatic domain detection from the parent AbstractService
+     *
+     * @return string The correct domain URL with trailing slash
+     */
     private function getSchemaUrl(): string
     {
-      // Use the automatic domain detection from AbstractService
+        // Use the automatic domain detection from AbstractService
         $baseUrl = $this->getBaseUrl();
 
-      // Ensure trailing slash for consistency
+        // Ensure trailing slash for consistency
         return rtrim($baseUrl, '/') . '/';
     }
 
-  /**
-   * Main schema generation method
-   */
+    /**
+     * Main schema generation method
+     */
     public function generateSchema(): array
     {
-      // Debug: Log schema generation with version
+        // Debug: Log schema generation with version
         if ($this->params->get('debug_mode', 0)) {
             Factory::getApplication()->enqueueMessage(
                 '[DEBUG] JoomlaBoost v0.1.17-meta-pixel: Generating Schema.org markup',
@@ -77,15 +77,15 @@ class SchemaService extends AbstractService
 
         $schema = [];
 
-      // Always add Website schema
+        // Always add Website schema
         $schema[] = $this->generateWebsiteSchema();
 
-      // Always add Organization schema
+        // Always add Organization schema
         $schema[] = $this->generateOrganizationSchema();
 
-      // Context-specific schemas
-    $option = Factory::getApplication()->getInput()->get('option');
-    $view = Factory::getApplication()->getInput()->get('view');
+        // Context-specific schemas
+        $option = Factory::getApplication()->getInput()->get('option');
+        $view = Factory::getApplication()->getInput()->get('view');
 
         if ($option === 'com_content') {
             switch ($view) {
@@ -109,7 +109,7 @@ class SchemaService extends AbstractService
             }
         }
 
-      // Add BreadcrumbList if applicable
+        // Add BreadcrumbList if applicable
         $breadcrumbSchema = $this->generateBreadcrumbSchema();
         if ($breadcrumbSchema) {
             $schema[] = $breadcrumbSchema;
@@ -118,65 +118,65 @@ class SchemaService extends AbstractService
         return array_filter($schema);
     }
 
-  /**
-   * Generate Website schema
-   */
+    /**
+     * Generate Website schema
+     */
     private function generateWebsiteSchema(): array
     {
         $config = Factory::getApplication()->getConfig();
 
         return [
-        '@context' => 'https://schema.org',
-        '@type' => 'WebSite',
-        'name' => $config->get('sitename'),
-        'description' => $config->get('MetaDesc'),
-        'url' => $this->getSchemaUrl(),
-        'inLanguage' => $this->getLanguageCode(),
-        'potentialAction' => [
-        '@type' => 'SearchAction',
-        'target' => [
-          '@type' => 'EntryPoint',
-          'urlTemplate' => $this->getSchemaUrl() . 'index.php?option=com_search&searchword={search_term_string}'
-        ],
-        'query-input' => 'required name=search_term_string'
-        ]
+            '@context' => 'https://schema.org',
+            '@type' => 'WebSite',
+            'name' => $config->get('sitename'),
+            'description' => $config->get('MetaDesc'),
+            'url' => $this->getSchemaUrl(),
+            'inLanguage' => $this->getLanguageCode(),
+            'potentialAction' => [
+                '@type' => 'SearchAction',
+                'target' => [
+                    '@type' => 'EntryPoint',
+                    'urlTemplate' => $this->getSchemaUrl() . 'index.php?option=com_search&searchword={search_term_string}'
+                ],
+                'query-input' => 'required name=search_term_string'
+            ]
         ];
     }
 
-  /**
-   * Generate Organization schema
-   */
+    /**
+     * Generate Organization schema
+     */
     private function generateOrganizationSchema(): array
     {
         $config = Factory::getApplication()->getConfig();
         $domain = $this->getCurrentDomain();
 
         $schema = [
-        '@context' => 'https://schema.org',
-        '@type' => 'Organization',
-        'name' => $config->get('sitename'),
-        'url' => $this->getSchemaUrl(),
-        'description' => $config->get('MetaDesc'),
-        'contactPoint' => [
-        '@type' => 'ContactPoint',
-        'contactType' => 'customer service',
-        'availableLanguage' => $this->getLanguageCode()
-        ]
+            '@context' => 'https://schema.org',
+            '@type' => 'Organization',
+            'name' => $config->get('sitename'),
+            'url' => $this->getSchemaUrl(),
+            'description' => $config->get('MetaDesc'),
+            'contactPoint' => [
+                '@type' => 'ContactPoint',
+                'contactType' => 'customer service',
+                'availableLanguage' => $this->getLanguageCode()
+            ]
         ];
 
-      // Add specific data for OffRoad Serbia
+        // Add specific data for OffRoad Serbia
         if (str_contains($domain, 'offroadserbia')) {
             $schema['@type'] = 'Organization';
             $schema['name'] = 'OffRoad Serbia';
             $schema['alternateName'] = 'Off Road Serbia';
             $schema['description'] = 'Off-road voznja, avantura i ekstremni sport u Srbiji';
             $schema['knowsAbout'] = [
-            'Off-road voznja',
-            'ATV ture',
-            'Ekstremni sportovi',
-            'Avantura u prirodi',
-            'Off-road vozila',
-            'Terenska voznja'
+                'Off-road voznja',
+                'ATV ture',
+                'Ekstremni sportovi',
+                'Avantura u prirodi',
+                'Off-road vozila',
+                'Terenska voznja'
             ];
 
             if (!empty($config->get('MetaAuthor'))) {
@@ -187,12 +187,12 @@ class SchemaService extends AbstractService
         return $schema;
     }
 
-  /**
-   * Generate Article schema for content articles
-   */
+    /**
+     * Generate Article schema for content articles
+     */
     private function generateArticleSchema(): ?array
     {
-    $id = Factory::getApplication()->getInput()->getInt('id');
+        $id = Factory::getApplication()->getInput()->getInt('id');
 
         if (!$id) {
             return null;
@@ -214,33 +214,33 @@ class SchemaService extends AbstractService
             $dateModified = Factory::getDate($article->modified ?: $article->created)->toISO8601();
 
             $schema = [
-            '@context' => 'https://schema.org',
-            '@type' => 'Article',
-            'headline' => $article->title,
-            'description' => $article->metadesc ?: $this->extractDescription($article->introtext),
-            'articleBody' => strip_tags($article->fulltext ?: $article->introtext),
-            'url' => Uri::getInstance()->toString(),
-            'datePublished' => $dateCreated,
-            'dateModified' => $dateModified,
-            'inLanguage' => $this->getLanguageCode(),
-            'author' => [
-            '@type' => 'Person',
-            'name' => $article->created_by_alias ?: 'OffRoad Serbia'
-            ],
-            'publisher' => [
-            '@type' => 'Organization',
-            'name' => $config->get('sitename'),
-            'url' => $this->getSchemaUrl()
-            ]
+                '@context' => 'https://schema.org',
+                '@type' => 'Article',
+                'headline' => $article->title,
+                'description' => $article->metadesc ?: $this->extractDescription($article->introtext),
+                'articleBody' => strip_tags($article->fulltext ?: $article->introtext),
+                'url' => Uri::getInstance()->toString(),
+                'datePublished' => $dateCreated,
+                'dateModified' => $dateModified,
+                'inLanguage' => $this->getLanguageCode(),
+                'author' => [
+                    '@type' => 'Person',
+                    'name' => $article->created_by_alias ?: 'OffRoad Serbia'
+                ],
+                'publisher' => [
+                    '@type' => 'Organization',
+                    'name' => $config->get('sitename'),
+                    'url' => $this->getSchemaUrl()
+                ]
             ];
 
-          // Add images if available
+            // Add images if available
             $images = $this->extractImages($article);
             if (!empty($images)) {
                 $schema['image'] = $images;
             }
 
-          // Add keywords from meta_keywords
+            // Add keywords from meta_keywords
             if (!empty($article->metakey)) {
                 $keywords = array_map('trim', explode(',', $article->metakey));
                 $schema['keywords'] = $keywords;
@@ -252,12 +252,12 @@ class SchemaService extends AbstractService
         }
     }
 
-  /**
-   * Generate Category schema for content categories
-   */
+    /**
+     * Generate Category schema for content categories
+     */
     private function generateCategorySchema(): ?array
     {
-    $input = Factory::getApplication()->getInput();
+        $input = Factory::getApplication()->getInput();
         $id = $input->getInt('id');
 
         if (!$id) {
@@ -274,48 +274,48 @@ class SchemaService extends AbstractService
             }
 
             return [
-            '@context' => 'https://schema.org',
-            '@type' => 'CollectionPage',
-            'name' => $category->title,
-            'description' => $category->metadesc ?: $category->description,
-            'url' => Uri::getInstance()->toString(),
-            'inLanguage' => $this->getLanguageCode(),
-            'isPartOf' => [
-            '@type' => 'WebSite',
-            'name' => Factory::getApplication()->getConfig()->get('sitename'),
-            'url' => $this->getSchemaUrl()
-            ]
+                '@context' => 'https://schema.org',
+                '@type' => 'CollectionPage',
+                'name' => $category->title,
+                'description' => $category->metadesc ?: $category->description,
+                'url' => Uri::getInstance()->toString(),
+                'inLanguage' => $this->getLanguageCode(),
+                'isPartOf' => [
+                    '@type' => 'WebSite',
+                    'name' => Factory::getApplication()->getConfig()->get('sitename'),
+                    'url' => $this->getSchemaUrl()
+                ]
             ];
         } catch (\Exception $e) {
             return null;
         }
     }
 
-  /**
-   * Generate Blog schema for featured articles
-   */
+    /**
+     * Generate Blog schema for featured articles
+     */
     private function generateBlogSchema(): array
     {
         $config = Factory::getApplication()->getConfig();
 
         return [
-        '@context' => 'https://schema.org',
-        '@type' => 'Blog',
-        'name' => $config->get('sitename') . ' - Blog',
-        'description' => 'Najnoviji članci o off-road vožnji i avanturi',
-        'url' => Uri::getInstance()->toString(),
-        'inLanguage' => $this->getLanguageCode(),
-        'publisher' => [
-        '@type' => 'Organization',
-        'name' => $config->get('sitename'),
-        'url' => $this->getSchemaUrl()
-        ]
+            '@context' => 'https://schema.org',
+            '@type' => 'Blog',
+            'name' => $config->get('sitename') . ' - Blog',
+            'description' => 'Najnoviji članci o off-road vožnji i avanturi',
+            'url' => Uri::getInstance()->toString(),
+            'inLanguage' => $this->getLanguageCode(),
+            'publisher' => [
+                '@type' => 'Organization',
+                'name' => $config->get('sitename'),
+                'url' => $this->getSchemaUrl()
+            ]
         ];
     }
 
-  /**
-   * Generate BreadcrumbList schema
-   */
+    /**
+     * Generate BreadcrumbList schema
+     */
     private function generateBreadcrumbSchema(): ?array
     {
         $pathway = $this->app->getPathway();
@@ -328,43 +328,43 @@ class SchemaService extends AbstractService
         $listItems = [];
         $position = 1;
 
-      // Add home
+        // Add home
         $listItems[] = [
-        '@type' => 'ListItem',
-        'position' => $position++,
-        'name' => 'Početna',
-        'item' => $this->getSchemaUrl()
-        ];
-
-      // Add pathway items
-        foreach ($items as $item) {
-            $listItems[] = [
             '@type' => 'ListItem',
             'position' => $position++,
-            'name' => $item->name,
-            'item' => $item->link ? $this->getSchemaUrl() . ltrim($item->link, '/') : Uri::getInstance()->toString()
+            'name' => 'Početna',
+            'item' => $this->getSchemaUrl()
+        ];
+
+        // Add pathway items
+        foreach ($items as $item) {
+            $listItems[] = [
+                '@type' => 'ListItem',
+                'position' => $position++,
+                'name' => $item->name,
+                'item' => $item->link ? $this->getSchemaUrl() . ltrim($item->link, '/') : Uri::getInstance()->toString()
             ];
         }
 
         return [
-        '@context' => 'https://schema.org',
-        '@type' => 'BreadcrumbList',
-        'itemListElement' => $listItems
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => $listItems
         ];
     }
 
-  /**
-   * Get language code for schema
-   */
+    /**
+     * Get language code for schema
+     */
     private function getLanguageCode(): string
     {
         $lang = Factory::getLanguage();
         return $lang->getTag();
     }
 
-  /**
-   * Extract description from content
-   */
+    /**
+     * Extract description from content
+     */
     private function extractDescription(string $content): string
     {
         $text = strip_tags($content);
@@ -383,14 +383,14 @@ class SchemaService extends AbstractService
         return $text;
     }
 
-  /**
-   * Extract images from article
-   */
+    /**
+     * Extract images from article
+     */
     private function extractImages($article): array
     {
         $images = [];
 
-      // Try to get intro image
+        // Try to get intro image
         if (!empty($article->images)) {
             $articleImages = json_decode($article->images, true);
             if (!empty($articleImages['image_intro'])) {
@@ -404,7 +404,7 @@ class SchemaService extends AbstractService
             }
         }
 
-      // Extract images from content
+        // Extract images from content
         $content = $article->introtext . $article->fulltext;
         preg_match_all('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $content, $matches);
 
@@ -422,9 +422,9 @@ class SchemaService extends AbstractService
         return $images;
     }
 
-  /**
-   * Inject schema into document head
-   */
+    /**
+     * Inject schema into document head
+     */
     public function injectSchema(): void
     {
         if (!$this->isEnabled() || !$this->allowSearchEngines()) {
@@ -445,9 +445,9 @@ class SchemaService extends AbstractService
         }
     }
 
-  /**
-   * Check if service is enabled
-   */
+    /**
+     * Check if service is enabled
+     */
     public function isEnabled(): bool
     {
         return (bool) $this->params->get('schema_enabled', true);
