@@ -1,12 +1,10 @@
-includes:
-  - phpstan-baseline.neon
-
 parameters:
   paths:
     - src
   level: 7
   ignoreErrors: []
   excludePaths:
+    - archive/**
     - src/templates/**
     # Isključi test i development fajlove
     - src/plugins/system/joomlaboost/joomlaboost-*.php
