@@ -17,10 +17,10 @@ declare(strict_types=1);
 
 namespace JoomlaBoost\Plugin\System\JoomlaBoost\Services;
 
+use JoomlaBoost\Plugin\System\JoomlaBoost\Enums\EnvironmentType;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Registry\Registry;
-use JoomlaBoost\Plugin\System\JoomlaBoost\Enums\EnvironmentType;
 
 /**
  * Abstract base service for JoomlaBoost

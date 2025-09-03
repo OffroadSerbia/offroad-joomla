@@ -12,7 +12,8 @@
   },
   "autoload": {
     "psr-4": {
-      "OffroadSerbia\\": "src/"
+      "OffroadSerbia\\": "src/",
+      "JoomlaBoost\\Plugin\\System\\JoomlaBoost\\": "src/plugins/system/joomlaboost/src/"
     }
   },
   "scripts": {

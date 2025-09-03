@@ -9,6 +9,8 @@
  * @since       Joomla 4.0, PHP 8.1+
  * @author      JoomlaBoost Team
  * @copyright   (C) 2025 JoomlaBoost. All rights reserved.
+ * @license     GNU General Public License version 2 or later
+ */
 
 namespace JoomlaBoost\Plugin\System\JoomlaBoost\Enums;
 
@@ -23,9 +25,9 @@ enum EnvironmentType: string
     case LOCAL = 'local';
     case UNKNOWN = 'unknown';
 
-  /**
-   * Get human-readable label for environment
-   */
+    /**
+     * Get human-readable label for environment
+     */
     public function getLabel(): string
     {
         return match ($this) {
@@ -37,95 +39,53 @@ enum EnvironmentType: string
         };
     }
 
-  /**
-   * Check if this is a production environment
-   */
-    public function isProduction(): bool
-    {
-        return $this === self::PRODUCTION;
-    }
-
-  /**
-   * Check if search engines should be allowed
-   */
+    /**
+     * Check if current environment allows search engines
+     */
     public function allowSearchEngines(): bool
     {
         return $this === self::PRODUCTION;
     }
 
-  /**
-   * Get robots.txt rules for this environment
-   */
+    /**
+     * Check if current environment is production
+     */
+    public function isProduction(): bool
+    {
+        return $this === self::PRODUCTION;
+    }
+
+    /**
+     * Get robots.txt rules for this environment
+     * @return array<string>
+     */
     public function getRobotsRules(): array
     {
         return match ($this) {
             self::PRODUCTION => [
-            'User-agent: *',
-            'Allow: /',
-            'Disallow: /administrator/',
-            'Disallow: /api/',
-            'Disallow: /bin/',
-            'Disallow: /cache/',
-            'Disallow: /cli/',
-            'Disallow: /components/',
-            'Disallow: /includes/',
-            'Disallow: /installation/',
-            'Disallow: /language/',
-            'Disallow: /layouts/',
-            'Disallow: /libraries/',
-            'Disallow: /logs/',
-            'Disallow: /modules/',
-            'Disallow: /plugins/',
-            'Disallow: /tmp/',
-            'Disallow: /vendor/',
+                'User-agent: *',
+                'Allow: /',
+                'Disallow: /administrator/',
+                'Disallow: /api/',
+                'Disallow: /cache/',
+                'Disallow: /tmp/'
             ],
             self::STAGING => [
-            '# Allow Google Search Console and related tools for testing',
-            'User-agent: Googlebot',
-            'Allow: /',
-            'Disallow: /administrator/',
-            'Disallow: /api/',
-            'Disallow: /cache/',
-            'Disallow: /tmp/',
-            '',
-            'User-agent: Google-InspectionTool',
-            'Allow: /',
-            'Disallow: /administrator/',
-            'Disallow: /api/',
-            'Disallow: /cache/',
-            'Disallow: /tmp/',
-            '',
-            'User-agent: Google-Site-Verification',
-            'Allow: /',
-            'Disallow: /administrator/',
-            'Disallow: /api/',
-            'Disallow: /cache/',
-            'Disallow: /tmp/',
-            '',
-            'User-agent: GoogleOther',
-            'Allow: /',
-            'Disallow: /administrator/',
-            'Disallow: /api/',
-            'Disallow: /cache/',
-            'Disallow: /tmp/',
-            '',
-            '# Block all other crawlers',
-            'User-agent: *',
-            'Disallow: /',
-            '',
-            '# This is a staging environment - not for public indexing'
+                'User-agent: *',
+                'Noindex: true',
+                'Nofollow: true',
+                'Disallow: /'
             ],
             default => [
-            'User-agent: *',
-            'Disallow: /',
-            '# This is a non-production environment'
+                'User-agent: *',
+                'Disallow: /'
             ]
         };
     }
 
-  /**
-   * Detect environment type from domain
-   */
+    /**
+     * Detect environment type from domain name
+     */
     public static function detectFromDomain(string $domain): self
     {
         return match (true) {

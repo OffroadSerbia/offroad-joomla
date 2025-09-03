@@ -11,6 +11,7 @@ parameters:
     - src/plugins/system/offroadseo/offroadseo_refactored.php
     - src/plugins/OffroadMetaPlugin.php
   bootstrapFiles:
+    - stubs/autoload.php
     - stubs/bootstrap.php
   # Also exclude generated or non-analyzable plugin dirs if needed
   # - src/plugins/**

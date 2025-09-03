@@ -15,12 +15,20 @@ class ComposerStaticInitbcf473d45147a533fdbc821a4a9f2745
         array (
             'OffroadSerbia\\' => 14,
         ),
+        'J' => 
+        array (
+            'JoomlaBoost\\Plugin\\System\\JoomlaBoost\\' => 38,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
         'OffroadSerbia\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
+        ),
+        'JoomlaBoost\\Plugin\\System\\JoomlaBoost\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src/plugins/system/joomlaboost/src',
         ),
     );
 
