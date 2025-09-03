@@ -20,8 +20,29 @@ php tools/indexer.php --config=/path/to/joomla/configuration.php
 # Sa custom output fajlom
 php tools/indexer.php --config=/path/to/joomla/configuration.php --output=custom/search.json
 
+# Ograniči broj članaka (za velike baze)
+php tools/indexer.php --config=/path/to/joomla/configuration.php --limit=1000
+
+# Prilagodi batch veličinu za optimizaciju memorije
+php tools/indexer.php --config=/path/to/joomla/configuration.php --batch-size=50
+
 # Help
 php tools/indexer.php --help
+```
+
+**⚡ Nove opcije za optimizaciju resursa:**
+
+- `--limit=NUMBER` - Ograniči broj članaka (za velike baze podataka)
+- `--batch-size=SIZE` - Kontroliši potrošnju memorije (default: 100)
+
+**🔧 Preporučene kombinacije:**
+
+```bash
+# Za velike baze (>10,000 članaka)
+php tools/indexer.php --config=/path/to/joomla/configuration.php --limit=5000 --batch-size=50
+
+# Za ograničene resurse (<30MB memorije)  
+php tools/indexer.php --config=/path/to/joomla/configuration.php --batch-size=25
 ```
 
 ## 📋 Primer izlaza

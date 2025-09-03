@@ -49,7 +49,9 @@ class OffroadIndexer
             'joomla_path' => null,
             'output_file' => 'public/search-index.json',
             'categories' => ['ekspedicije', 'vesti', 'oprema'],
-            'help' => false
+            'help' => false,
+            'limit' => null,
+            'batch_size' => 100
         ];
         
         foreach ($argv as $arg) {
@@ -57,6 +59,10 @@ class OffroadIndexer
                 $this->config['joomla_path'] = substr($arg, 9);
             } elseif (strpos($arg, '--output=') === 0) {
                 $this->config['output_file'] = substr($arg, 9);
+            } elseif (strpos($arg, '--limit=') === 0) {
+                $this->config['limit'] = (int) substr($arg, 8);
+            } elseif (strpos($arg, '--batch-size=') === 0) {
+                $this->config['batch_size'] = (int) substr($arg, 13);
             } elseif ($arg === '--help' || $arg === '-h') {
                 $this->config['help'] = true;
             }
@@ -86,9 +92,11 @@ class OffroadIndexer
         echo "  php tools/indexer.php --config=path/to/configuration.php [opcije]" . PHP_EOL;
         echo "" . PHP_EOL;
         echo "Opcije:" . PHP_EOL;
-        echo "  --config=PATH    Putanja do Joomla configuration.php fajla (obavezno)" . PHP_EOL;
-        echo "  --output=PATH    Izlazni fajl (default: public/search-index.json)" . PHP_EOL;
-        echo "  --help, -h       Prikaži ovu poruku" . PHP_EOL;
+        echo "  --config=PATH      Putanja do Joomla configuration.php fajla (obavezno)" . PHP_EOL;
+        echo "  --output=PATH      Izlazni fajl (default: public/search-index.json)" . PHP_EOL;
+        echo "  --limit=NUMBER     Maksimalan broj članaka za obradu (default: bez limita)" . PHP_EOL;
+        echo "  --batch-size=SIZE  Broj članaka po batch-u (default: 100)" . PHP_EOL;
+        echo "  --help, -h         Prikaži ovu poruku" . PHP_EOL;
         echo "" . PHP_EOL;
     }
     
@@ -135,26 +143,176 @@ class OffroadIndexer
     {
         echo "Počinje generiranje search indeksa..." . PHP_EOL;
         
-        $articles = $this->fetchArticles();
+        // Prikaži početnu potrošnju memorije
+        $startMemory = memory_get_usage(true);
+        echo "Početna potrošnja memorije: " . $this->formatBytes($startMemory) . PHP_EOL;
+        
+        if ($this->config['limit']) {
+            echo "Limit članaka: {$this->config['limit']}" . PHP_EOL;
+        }
+        echo "Batch veličina: {$this->config['batch_size']}" . PHP_EOL;
+        echo "" . PHP_EOL;
+        
         $categories = $this->fetchCategories();
+        $totalArticles = $this->getArticleCount();
         
-        $index = [
-            'generated_at' => date('Y-m-d H:i:s'),
-            'total_articles' => count($articles),
-            'categories' => $categories,
-            'articles' => $articles
-        ];
+        echo "Ukupno dostupnih članaka u bazi: $totalArticles" . PHP_EOL;
         
-        $this->saveIndex($index);
+        // Ograniči broj članaka ako je postavljen limit
+        $articlesToProcess = $this->config['limit'] ? min($this->config['limit'], $totalArticles) : $totalArticles;
+        echo "Članci za obradu: $articlesToProcess" . PHP_EOL;
+        echo "" . PHP_EOL;
         
+        // Generiši indeks sa streaming-om
+        $this->generateIndexWithStreaming($categories, $articlesToProcess);
+        
+        $endMemory = memory_get_usage(true);
+        echo "" . PHP_EOL;
         echo "✓ Search indeks je uspešno generisan!" . PHP_EOL;
-        echo "  - Ukupno članaka: " . count($articles) . PHP_EOL;
+        echo "  - Obrađeno članaka: $articlesToProcess" . PHP_EOL;
         echo "  - Kategorija: " . count($categories) . PHP_EOL;
+        echo "  - Finalna potrošnja memorije: " . $this->formatBytes($endMemory) . PHP_EOL;
+        echo "  - Maksimalna potrošnja memorije: " . $this->formatBytes(memory_get_peak_usage(true)) . PHP_EOL;
         echo "  - Sačuvano u: {$this->config['output_file']}" . PHP_EOL;
     }
     
     /**
-     * Dohvata članke iz baze
+     * Formatiranje bytes u čitljivu formu
+     */
+    private function formatBytes(int $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB'];
+        $factor = floor((strlen($bytes) - 1) / 3);
+        return sprintf("%.2f %s", $bytes / pow(1024, $factor), $units[$factor]);
+    }
+    
+    /**
+     * Broji ukupan broj članaka u bazi
+     */
+    private function getArticleCount(): int
+    {
+        $sql = "
+            SELECT COUNT(*) as total
+            FROM #__content a
+            LEFT JOIN #__categories c ON a.catid = c.id
+            WHERE a.state = 1 
+            AND c.published = 1
+        ";
+        
+        $stmt = $this->db->prepare(str_replace('#__', 'jos_', $sql));
+        $stmt->execute();
+        
+        $result = $stmt->fetch();
+        return (int) $result['total'];
+    }
+    
+    /**
+     * Generiše indeks sa streaming pristupom
+     */
+    private function generateIndexWithStreaming(array $categories, int $totalArticles): void
+    {
+        $outputDir = dirname($this->config['output_file']);
+        if (!is_dir($outputDir)) {
+            mkdir($outputDir, 0755, true);
+        }
+        
+        $file = fopen($this->config['output_file'], 'w');
+        if (!$file) {
+            die("GREŠKA: Nije moguće otvoriti fajl za pisanje: {$this->config['output_file']}" . PHP_EOL);
+        }
+        
+        // Početak JSON objekta
+        fwrite($file, "{\n");
+        fwrite($file, '  "generated_at": "' . date('Y-m-d H:i:s') . '",' . "\n");
+        fwrite($file, '  "total_articles": ' . $totalArticles . ',' . "\n");
+        fwrite($file, '  "categories": ' . json_encode($categories, JSON_UNESCAPED_UNICODE) . ',' . "\n");
+        fwrite($file, '  "articles": [' . "\n");
+        
+        $processed = 0;
+        $offset = 0;
+        $isFirstArticle = true;
+        
+        while ($processed < $totalArticles) {
+            $currentMemory = memory_get_usage(true);
+            echo "Obrađujem batch $offset-" . ($offset + $this->config['batch_size']) . 
+                 " (memorija: " . $this->formatBytes($currentMemory) . ")" . PHP_EOL;
+            
+            $articles = $this->fetchArticlesBatch($offset, $this->config['batch_size']);
+            
+            if (empty($articles)) {
+                break;
+            }
+            
+            foreach ($articles as $article) {
+                if ($processed >= $totalArticles) {
+                    break;
+                }
+                
+                if (!$isFirstArticle) {
+                    fwrite($file, ",\n");
+                } else {
+                    $isFirstArticle = false;
+                }
+                
+                fwrite($file, '    ' . json_encode($article, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+                $processed++;
+            }
+            
+            $offset += $this->config['batch_size'];
+            
+            // Oslobodi memoriju
+            unset($articles);
+            
+            // Proveri da li treba da stane zbog memorije
+            $peakMemory = memory_get_peak_usage(true);
+            if ($peakMemory > 30000000) { // 30MB limit
+                echo "UPOZORENJE: Dostignut memorijski limit od ~30MB, prekidam obradu." . PHP_EOL;
+                break;
+            }
+        }
+        
+        // Zatvaranje JSON objekta
+        fwrite($file, "\n  ]\n}");
+        fclose($file);
+    }
+    
+    /**
+     * Dohvata članke iz baze sa paginacijom
+     */
+    private function fetchArticlesBatch(int $offset, int $limit): array
+    {
+        $sql = "
+            SELECT 
+                a.id,
+                a.title,
+                a.alias,
+                a.introtext,
+                a.fulltext,
+                a.metadesc,
+                a.metakey,
+                a.created,
+                a.modified,
+                a.state,
+                c.title as category_title,
+                c.alias as category_alias,
+                u.name as author_name
+            FROM #__content a
+            LEFT JOIN #__categories c ON a.catid = c.id
+            LEFT JOIN #__users u ON a.created_by = u.id
+            WHERE a.state = 1 
+            AND c.published = 1
+            ORDER BY a.created DESC
+            LIMIT $limit OFFSET $offset
+        ";
+        
+        $stmt = $this->db->prepare(str_replace('#__', 'jos_', $sql));
+        $stmt->execute();
+        
+        return $this->processArticleRows($stmt);
+    }
+    
+    /**
+     * Dohvata članke iz baze (legacy metoda)
      */
     private function fetchArticles(): array
     {
@@ -184,6 +342,14 @@ class OffroadIndexer
         $stmt = $this->db->prepare(str_replace('#__', 'jos_', $sql));
         $stmt->execute();
         
+        return $this->processArticleRows($stmt);
+    }
+    
+    /**
+     * Procesira redove članaka i kreira finalne objekte
+     */
+    private function processArticleRows($stmt): array
+    {
         $articles = [];
         while ($row = $stmt->fetch()) {
             // Izvuci tagove iz metakey
