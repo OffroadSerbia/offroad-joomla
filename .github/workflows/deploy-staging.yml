@@ -6,7 +6,6 @@ on:
     branches:
       - main
     paths:
-      - src/plugins/system/offroadseo/**
       - src/plugins/system/offroadstage/**
       - src/templates/yootheme_offroad/**
       - .github/workflows/deploy-staging.yml
@@ -23,21 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
-      # FTP/FTPS deploy – tri ciljne putanje
-      - name: Upload offroadseo via FTP
-        uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65
-        with:
-          server: ${{ secrets.STAGING_FTP_HOST }}
-          username: ${{ secrets.STAGING_FTP_USER }}
-          password: ${{ secrets.STAGING_FTP_PASS }}
-          protocol: ftp
-          security: loose
-          local-dir: src/plugins/system/offroadseo/
-          server-dir: ${{ secrets.STAGING_DOCROOT_RELATIVE }}/plugins/system/offroadseo/
-          dangerous-clean-slate: true
-          log-level: verbose
-          timeout: 120000
-
+      # FTP/FTPS deploy – dve ciljne putanje
       - name: Upload offroadstage via FTP
         if: ${{ hashFiles('src/plugins/system/offroadstage/**') != '' }}
         uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65

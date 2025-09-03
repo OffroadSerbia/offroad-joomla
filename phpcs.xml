@@ -5,8 +5,6 @@
   <!-- Skeniranje glavnih plugin fajlova -->
   <file>src/plugins/system/joomlaboost/joomlaboost.php</file>
   <file>src/plugins/system/joomlaboost/src</file>
-  <file>src/plugins/system/offroadseo/offroadseo.php</file>
-  <file>src/plugins/system/offroadseo/src</file>
   <file>src/plugins/system/offroadstage/offroadstage.php</file>
   
   <rule ref="PSR12">
