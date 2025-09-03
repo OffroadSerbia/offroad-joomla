@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * OffRoad Serbia Extension for Joomla
  *
@@ -19,31 +21,39 @@ class OffroadMetaPlugin
     /**
      * Dodaje meta tagove za SEO i AI pretragu
      *
-     * @param object $article
-     * @return array
+     * @param object{title?: string, metadesc?: string, introtext?: string} $article
+     * @return array<string, string>
      */
-    public function generateMetaTags($article): array
+    public function generateMetaTags(object $article): array
     {
+        $title = (string) ($article->title ?? '');
+        $metaDesc = (string) ($article->metadesc ?? '');
+        $intro = (string) ($article->introtext ?? '');
+        $desc = $metaDesc !== '' ? $metaDesc : substr(strip_tags($intro), 0, 160);
+
         return [
-            'og:title' => $article->title,
+            'og:title' => $title,
             'og:type' => 'article',
-            'og:description' => $article->metadesc ?? substr(strip_tags($article->introtext), 0, 160)
+            'og:description' => $desc
         ];
     }
 
     /**
      * Generiše Schema.org JSON-LD
      *
-     * @param object $article
-     * @return array
+     * @param object{title?: string, created?: string} $article
+     * @return array<string, mixed>
      */
-    public function generateSchemaMarkup($article): array
+    public function generateSchemaMarkup(object $article): array
     {
+        $title = (string) ($article->title ?? '');
+        $created = (string) ($article->created ?? '');
+
         return [
             '@context' => 'https://schema.org',
             '@type' => 'Article',
-            'headline' => $article->title,
-            'datePublished' => $article->created
+            'headline' => $title,
+            'datePublished' => $created
         ];
     }
 }

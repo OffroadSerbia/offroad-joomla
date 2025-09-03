@@ -1,7 +1,5 @@
 <?php
 
-/**
- * Abstract Service for JoomlaBoost
 declare(strict_types=1);
 
 /**
@@ -9,7 +7,7 @@ declare(strict_types=1);
  *
  * @package     JoomlaBoost
  * @subpackage  Plugin.System.Services
- * @since       Joomla 4.0, PHP 8.1+
+ * @since       4.0
  * @author      JoomlaBoost Team
  * @copyright   (C) 2025 JoomlaBoost. All rights reserved.
  * @license     GNU General Public License version 2 or later
@@ -166,6 +164,8 @@ abstract class AbstractService implements ServiceInterface
 
   /**
    * Log debug message if debug mode is enabled
+   *
+   * @param array<string, mixed> $context
    */
   protected function logDebug(string $message, array $context = []): void
   {
@@ -173,7 +173,7 @@ abstract class AbstractService implements ServiceInterface
       try {
         $logMessage = '[JoomlaBoost] ' . $message;
         if (!empty($context)) {
-          $logMessage .= ' | Context: ' . json_encode($context);
+          $logMessage .= ' | Context: ' . json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         }
         \JLog::add($logMessage, \JLog::DEBUG, 'joomlaboost');
       } catch (\Throwable $e) {

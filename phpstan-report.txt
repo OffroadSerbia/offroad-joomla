@@ -1,0 +1,137 @@
+  0/21 [>---------------------------]   0%[1G[2K 20/21 [==========================>-]  95%[1G[2K 21/21 [============================] 100%
+
+ ------ -------------------------------------------------------------------------------------- 
+  Line   plugins\OffroadMetaPlugin.php                                                         
+ ------ -------------------------------------------------------------------------------------- 
+  :25    Method OffroadSerbia\Content\OffroadMetaPlugin::generateMetaTags() return type        
+         has no value type specified in iterable type array.                                   
+         ≡ƒÆí See:                                                                               
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type  
+  :28    Access to an undefined property object::$title.                                       
+         ≡ƒÆí Learn more:                                                                        
+            https://phpstan.org/blog/solving-phpstan-access-to-undefined-property              
+  :30    Access to an undefined property object::$introtext.                                   
+         ≡ƒÆí Learn more:                                                                        
+            https://phpstan.org/blog/solving-phpstan-access-to-undefined-property              
+  :40    Method OffroadSerbia\Content\OffroadMetaPlugin::generateSchemaMarkup() return         
+         type has no value type specified in iterable type array.                              
+         ≡ƒÆí See:                                                                               
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type  
+  :45    Access to an undefined property object::$title.                                       
+         ≡ƒÆí Learn more:                                                                        
+            https://phpstan.org/blog/solving-phpstan-access-to-undefined-property              
+  :46    Access to an undefined property object::$created.                                     
+         ≡ƒÆí Learn more:                                                                        
+            https://phpstan.org/blog/solving-phpstan-access-to-undefined-property              
+ ------ -------------------------------------------------------------------------------------- 
+
+ ------ ---------------------------------------------------------------------------------- 
+  Line   plugins\system\joomlaboost\joomlaboost.php                                        
+ ------ ---------------------------------------------------------------------------------- 
+  :31    Property PlgSystemJoomlaboost::$autoloadLanguage has no type specified.           
+  :46    Method PlgSystemJoomlaboost::getApp() has no return type specified.               
+  :128   Parameter #2 $subject of function preg_match expects string, string|false given.  
+  :143   Method PlgSystemJoomlaboost::handleSitemapRequest() has parameter $app with no    
+         type specified.                                                                   
+  :246   Parameter #2 $subject of function preg_match expects string, string|false given.  
+  :261   Method PlgSystemJoomlaboost::handleRobotsRequest() has parameter $app with no     
+         type specified.                                                                   
+  :377   Method PlgSystemJoomlaboost::getDefaultRobots() is unused.                        
+  :407   Method PlgSystemJoomlaboost::addSchemaMarkup() has parameter $document with no    
+         type specified.                                                                   
+  :448   Method PlgSystemJoomlaboost::addGoogleVerificationTags() has no return type       
+         specified.                                                                        
+  :448   Method PlgSystemJoomlaboost::addGoogleVerificationTags() has parameter $document  
+         with no type specified.                                                           
+  :478   Method PlgSystemJoomlaboost::addGA4Tracking() has no return type specified.       
+  :478   Method PlgSystemJoomlaboost::addGA4Tracking() has parameter $document with no     
+         type specified.                                                                   
+  :507   Method PlgSystemJoomlaboost::addGTMTracking() has no return type specified.       
+  :507   Method PlgSystemJoomlaboost::addGTMTracking() has parameter $document with no     
+         type specified.                                                                   
+ ------ ---------------------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------------------------- 
+  Line   plugins\system\joomlaboost\src\Services\AbstractService.php                           
+ ------ -------------------------------------------------------------------------------------- 
+  :170   Method JoomlaBoost\Plugin\System\JoomlaBoost\Services\AbstractService::logDebug()     
+         has parameter $context with no value type specified in iterable type array.           
+         ≡ƒÆí See:                                                                               
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type  
+ ------ -------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------------ 
+  Line   plugins\system\joomlaboost\src\Services\DomainDetectionService.php                              
+ ------ ------------------------------------------------------------------------------------------------ 
+  :28    Method                                                                                          
+         JoomlaBoost\Plugin\System\JoomlaBoost\Services\DomainDetectionService::getDomainConfig()        
+         return type has no value type specified in iterable type array.                                 
+         ≡ƒÆí See:                                                                                         
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type            
+  :80    Method                                                                                          
+         JoomlaBoost\Plugin\System\JoomlaBoost\Services\DomainDetectionService::getAvailableLanguages()  
+         return type has no value type specified in iterable type array.                                 
+         ≡ƒÆí See:                                                                                         
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type            
+  :106   Method                                                                                          
+         JoomlaBoost\Plugin\System\JoomlaBoost\Services\DomainDetectionService::generateRobotsRules()    
+         return type has no value type specified in iterable type array.                                 
+         ≡ƒÆí See:                                                                                         
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type            
+  :115   Method                                                                                          
+         JoomlaBoost\Plugin\System\JoomlaBoost\Services\DomainDetectionService::getDomainMetaTags()      
+         return type has no value type specified in iterable type array.                                 
+         ≡ƒÆí See:                                                                                         
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type            
+ ------ ------------------------------------------------------------------------------------------------ 
+
+ ------ -------------------------------------------------------------------------------------------- 
+  Line   plugins\system\joomlaboost\src\Services\SchemaService.php                                   
+ ------ -------------------------------------------------------------------------------------------- 
+  :68    Method                                                                                      
+         JoomlaBoost\Plugin\System\JoomlaBoost\Services\SchemaService::generateSchema()              
+         return type has no value type specified in iterable type array.                             
+         ≡ƒÆí See:                                                                                     
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type        
+  :124   Method                                                                                      
+         JoomlaBoost\Plugin\System\JoomlaBoost\Services\SchemaService::generateWebsiteSchema()       
+         return type has no value type specified in iterable type array.                             
+         ≡ƒÆí See:                                                                                     
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type        
+  :149   Method                                                                                      
+         JoomlaBoost\Plugin\System\JoomlaBoost\Services\SchemaService::generateOrganizationSchema()  
+         return type has no value type specified in iterable type array.                             
+         ≡ƒÆí See:                                                                                     
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type        
+  :193   Method                                                                                      
+         JoomlaBoost\Plugin\System\JoomlaBoost\Services\SchemaService::generateArticleSchema()       
+         return type has no value type specified in iterable type array.                             
+         ≡ƒÆí See:                                                                                     
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type        
+  :258   Method                                                                                      
+         JoomlaBoost\Plugin\System\JoomlaBoost\Services\SchemaService::generateCategorySchema()      
+         return type has no value type specified in iterable type array.                             
+         ≡ƒÆí See:                                                                                     
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type        
+  :297   Method                                                                                      
+         JoomlaBoost\Plugin\System\JoomlaBoost\Services\SchemaService::generateBlogSchema()          
+         return type has no value type specified in iterable type array.                             
+         ≡ƒÆí See:                                                                                     
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type        
+  :319   Method                                                                                      
+         JoomlaBoost\Plugin\System\JoomlaBoost\Services\SchemaService::generateBreadcrumbSchema()    
+         return type has no value type specified in iterable type array.                             
+         ≡ƒÆí See:                                                                                     
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type        
+  :389   Method                                                                                      
+         JoomlaBoost\Plugin\System\JoomlaBoost\Services\SchemaService::extractImages() has           
+         parameter $article with no type specified.                                                  
+  :389   Method                                                                                      
+         JoomlaBoost\Plugin\System\JoomlaBoost\Services\SchemaService::extractImages()               
+         return type has no value type specified in iterable type array.                             
+         ≡ƒÆí See:                                                                                     
+            https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type        
+ ------ -------------------------------------------------------------------------------------------- 
+
+ [ERROR] Found 34 errors                                                                   
+

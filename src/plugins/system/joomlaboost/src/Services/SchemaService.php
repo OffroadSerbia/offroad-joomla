@@ -1,23 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Schema.org Service for JoomlaBoost
  *
  * @package     JoomlaBoost
  * @subpackage  Plugin.System.Services
- * @since       Joomla 4.0, PHP 8.1+
+ * @since       4.0
  * @author      JoomlaBoost Team
- * @copyright   (C) 2025 Jo    private function generateCategorySchema(): ?array
-    {
-        $id = Factory::getApplication()->input->getInt('id');
-
-        if (!$id) {
-            return null;
-        }
-
-        try {
-            $modelsPath = JPATH_ROOT . '/components/com_content/models';
-            BaseDatabaseModel::addIncludePath($modelsPath);All rights reserved.
+ * @copyright   (C) 2025 JoomlaBoost
  * @license     GNU General Public License version 2 or later
  */
 
@@ -64,6 +56,8 @@ class SchemaService extends AbstractService
 
     /**
      * Main schema generation method
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function generateSchema(): array
     {
@@ -120,6 +114,8 @@ class SchemaService extends AbstractService
 
     /**
      * Generate Website schema
+     *
+     * @return array<string, mixed>
      */
     private function generateWebsiteSchema(): array
     {
@@ -145,6 +141,8 @@ class SchemaService extends AbstractService
 
     /**
      * Generate Organization schema
+     *
+     * @return array<string, mixed>
      */
     private function generateOrganizationSchema(): array
     {
@@ -189,6 +187,8 @@ class SchemaService extends AbstractService
 
     /**
      * Generate Article schema for content articles
+     *
+     * @return array<string, mixed>|null
      */
     private function generateArticleSchema(): ?array
     {
@@ -254,6 +254,8 @@ class SchemaService extends AbstractService
 
     /**
      * Generate Category schema for content categories
+     *
+     * @return array<string, mixed>|null
      */
     private function generateCategorySchema(): ?array
     {
@@ -293,6 +295,8 @@ class SchemaService extends AbstractService
 
     /**
      * Generate Blog schema for featured articles
+     *
+     * @return array<string, mixed>
      */
     private function generateBlogSchema(): array
     {
@@ -315,6 +319,8 @@ class SchemaService extends AbstractService
 
     /**
      * Generate BreadcrumbList schema
+     *
+     * @return array<string, mixed>|null
      */
     private function generateBreadcrumbSchema(): ?array
     {
@@ -385,8 +391,11 @@ class SchemaService extends AbstractService
 
     /**
      * Extract images from article
+     *
+     * @param object $article Article object with introtext/fulltext/images properties
+     * @return array<int, string>
      */
-    private function extractImages($article): array
+    private function extractImages(object $article): array
     {
         $images = [];
 
@@ -405,7 +414,7 @@ class SchemaService extends AbstractService
         }
 
         // Extract images from content
-        $content = $article->introtext . $article->fulltext;
+        $content = (string)($article->introtext ?? '') . (string)($article->fulltext ?? '');
         preg_match_all('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $content, $matches);
 
         if (!empty($matches[1])) {

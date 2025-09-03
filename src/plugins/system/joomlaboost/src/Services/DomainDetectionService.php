@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Domain Detection Service for JoomlaBoost
  *
@@ -24,6 +26,17 @@ class DomainDetectionService extends AbstractService
 {
     /**
      * Get domain-specific configuration
+     *
+     * @return array{
+     *   domain: string,
+     *   baseUrl: string,
+     *   isStaging: bool,
+     *   environment: EnvironmentType,
+     *   siteName: string,
+     *   defaultLanguage: string,
+     *   availableLanguages: array<int, string>,
+     *   timezone: string
+     * }
      */
     public function getDomainConfig(): array
     {
@@ -76,6 +89,8 @@ class DomainDetectionService extends AbstractService
 
     /**
      * Get available languages (simplified)
+     *
+     * @return array<int, string>
      */
     public function getAvailableLanguages(): array
     {
@@ -102,6 +117,8 @@ class DomainDetectionService extends AbstractService
 
     /**
      * Generate domain-specific robots.txt rules
+     *
+     * @return array<int, string>
      */
     public function generateRobotsRules(): array
     {
@@ -111,6 +128,8 @@ class DomainDetectionService extends AbstractService
 
     /**
      * Get domain-specific meta tags
+     *
+     * @return array<string, string>
      */
     public function getDomainMetaTags(): array
     {
