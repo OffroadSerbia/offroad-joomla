@@ -35,7 +35,8 @@ class PlgSystemOffroadstage extends CMSPlugin
         $domainsParam = (string) $this->params->get('staging_domains', 'staging.offroadserbia.com');
 
         // Parse comma/newline separated domains
-        $domains = array_filter(array_map('trim', \preg_split('/\s*[\n,]\s*/', $domainsParam)));
+        $splitResult = \preg_split('/\s*[\n,]\s*/', $domainsParam);
+        $domains = array_filter(array_map('trim', $splitResult ?: []));
 
         $isStaging = false;
         foreach ($domains as $domain) {

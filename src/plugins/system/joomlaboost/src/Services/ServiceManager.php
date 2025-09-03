@@ -11,6 +11,8 @@
  * @license     GNU General Public License version 2 or later
  */
 
+namespace JoomlaBoost\Plugin\System\JoomlaBoost\Services;
+
 \defined('_JEXEC') or die;
 
 use Joomla\CMS\Application\CMSApplication;
@@ -37,81 +39,101 @@ class ServiceManager
 
   /**
    * Get Domain Detection Service
+   * @return DomainDetectionService
    */
     public function getDomainDetectionService(): DomainDetectionService
     {
+        /** @var DomainDetectionService */
         return $this->getService('domainDetection', DomainDetectionService::class);
     }
 
   /**
    * Get Robot Service
+   * @return RobotService
    */
     public function getRobotService(): RobotService
     {
+        /** @var RobotService */
         return $this->getService('robot', RobotService::class);
     }
 
   /**
    * Get Sitemap Service
+   * @return SitemapService
    */
     public function getSitemapService(): SitemapService
     {
+        /** @var SitemapService */
         return $this->getService('sitemap', SitemapService::class);
     }
 
   /**
    * Get Schema Service
+   * @return SchemaService
    */
     public function getSchemaService(): SchemaService
     {
+        /** @var SchemaService */
         return $this->getService('schema', SchemaService::class);
     }
 
   /**
    * Get OpenGraph Service
+   * @return OpenGraphService
    */
     public function getOpenGraphService(): OpenGraphService
     {
+        /** @var OpenGraphService */
         return $this->getService('openGraph', OpenGraphService::class);
     }
 
   /**
    * Get Analytics Service
+   * @return AnalyticsService
    */
     public function getAnalyticsService(): AnalyticsService
     {
+        /** @var AnalyticsService */
         return $this->getService('analytics', AnalyticsService::class);
     }
 
   /**
    * Get Hreflang Service
+   * @return HreflangService
    */
     public function getHreflangService(): HreflangService
     {
+        /** @var HreflangService */
         return $this->getService('hreflang', HreflangService::class);
     }
 
   /**
    * Get Injection Service
+   * @return InjectionService
    */
     public function getInjectionService(): InjectionService
     {
+        /** @var InjectionService */
         return $this->getService('injection', InjectionService::class);
     }
 
   /**
    * Get Health Service
+   * @return HealthService
    */
     public function getHealthService(): HealthService
     {
+        /** @var HealthService */
         return $this->getService('health', HealthService::class);
     }
 
   /**
    * Get Performance Service
+   * @return PerformanceService
    */
     public function getPerformanceService(): PerformanceService
     {
+        /** @var PerformanceService */
         return $this->getService('performance', PerformanceService::class);
     }
 
@@ -121,7 +143,9 @@ class ServiceManager
     private function getService(string $key, string $className): ServiceInterface
     {
         if (!isset($this->services[$key])) {
-            $this->services[$key] = new $className($this->app, $this->params);
+            /** @var ServiceInterface $service */
+            $service = new $className($this->app, $this->params);
+            $this->services[$key] = $service;
         }
 
         return $this->services[$key];
@@ -129,6 +153,7 @@ class ServiceManager
 
   /**
    * Get all enabled services
+   * @return ServiceInterface[]
    */
     public function getEnabledServices(): array
     {
@@ -159,6 +184,7 @@ class ServiceManager
 
   /**
    * Get domain configuration from domain detection service
+   * @return array<string, mixed>
    */
     public function getDomainConfig(): array
     {
