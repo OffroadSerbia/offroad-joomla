@@ -60,10 +60,10 @@ final class MetaPixelService
       return;
     }
 
-        $pixelId = $this->getPixelId();
-        $version = 'JoomlaBoost v0.1.17-meta-pixel';
+    $pixelId = $this->getPixelId();
+    $version = 'JoomlaBoost v0.1.17-meta-pixel';
 
-        $pixelCode = $this->generatePixelCode($pixelId, $version);    // Add to document head
+    $pixelCode = $this->generatePixelCode($pixelId, $version);    // Add to document head
     $document->addCustomTag($pixelCode);
   }
 
