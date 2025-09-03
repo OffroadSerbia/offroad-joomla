@@ -265,8 +265,9 @@ class OffroadIndexer
             
             // Proveri da li treba da stane zbog memorije
             $peakMemory = memory_get_peak_usage(true);
-            if ($peakMemory > 30000000) { // 30MB limit
-                echo "UPOZORENJE: Dostignut memorijski limit od ~30MB, prekidam obradu." . PHP_EOL;
+            if ($peakMemory > 30 * 1024 * 1024) { // 30MB limit (30,000 KB)
+                echo "UPOZORENJE: Dostignut memorijski limit od 30MB (~30,000 KB), prekidam obradu." . PHP_EOL;
+                echo "Koristite --limit ili --batch-size opcije za smanjenje potrošnje memorije." . PHP_EOL;
                 break;
             }
         }
@@ -312,10 +313,20 @@ class OffroadIndexer
     }
     
     /**
-     * Dohvata članke iz baze (legacy metoda)
+     * Dohvata članke iz baze (legacy metoda - deprecated za velike baze)
+     * 
+     * @deprecated Koristi fetchArticlesBatch() za bolje performanse
      */
     private function fetchArticles(): array
     {
+        // Upozori o potencijalnim problemima sa memorijom
+        $totalArticles = $this->getArticleCount();
+        if ($totalArticles > 1000) {
+            echo "UPOZORENJE: Pokušava se učitavanje $totalArticles članaka odjednom!" . PHP_EOL;
+            echo "           Preporučuje se korišćenje --limit opcije." . PHP_EOL;
+            echo "" . PHP_EOL;
+        }
+
         $sql = "
             SELECT 
                 a.id,
