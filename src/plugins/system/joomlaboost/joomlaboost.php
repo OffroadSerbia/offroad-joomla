@@ -19,7 +19,6 @@ require_once __DIR__ . '/src/Services/MetaPixelService.php';
 
 use JoomlaBoost\Plugin\System\JoomlaBoost\Services\SchemaService;
 use JoomlaBoost\Plugin\System\JoomlaBoost\Services\MetaPixelService;
-use JoomlaBoost\Plugin\System\JoomlaBoost\Version;
 
 /**
  * JoomlaBoost plugin - incremental development
@@ -66,13 +65,13 @@ class PlgSystemJoomlaboost extends CMSPlugin
     // Only handle on frontend
     if (!$app->isClient('site')) {
       if ($app->isClient('administrator')) {
-        $this->logDebug('JoomlaBoost: Backend initialized - ' . Version::getDebugString());
+        $this->logDebug('JoomlaBoost: Backend initialized - JoomlaBoost v0.1.17-meta-pixel');
       }
       return;
     }
 
     // Debug: Show plugin version info on frontend
-    $this->logDebug('JoomlaBoost: Frontend initialized - ' . Version::getDebugString());
+    $this->logDebug('JoomlaBoost: Frontend initialized - JoomlaBoost v0.1.17-meta-pixel');
 
     // Check for robots.txt request first
     if ($this->isRobotsRequest()) {

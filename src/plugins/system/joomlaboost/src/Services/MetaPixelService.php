@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace JoomlaBoost\Plugin\System\JoomlaBoost\Services;
 
-use JoomlaBoost\Plugin\System\JoomlaBoost\Version;
 use Joomla\CMS\Document\HtmlDocument;
 use Joomla\Registry\Registry;
 
@@ -15,68 +14,66 @@ use Joomla\Registry\Registry;
  */
 final class MetaPixelService
 {
-    /**
-     * Plugin parameters
-     */
-    private Registry $params;
+  /**
+   * Plugin parameters
+   */
+  private Registry $params;
 
-    /**
-     * Constructor
-     */
-    public function __construct(Registry $params)
-    {
-        $this->params = $params;
+  /**
+   * Constructor
+   */
+  public function __construct(Registry $params)
+  {
+    $this->params = $params;
+  }
+
+  /**
+   * Check if Meta Pixel is enabled
+   */
+  public function isEnabled(): bool
+  {
+    return (bool) $this->params->get('enable_meta_pixel', false);
+  }
+
+  /**
+   * Get Meta Pixel ID
+   */
+  public function getPixelId(): string
+  {
+    return (string) $this->params->get('meta_pixel_id', '');
+  }
+
+  /**
+   * Check if Meta Pixel is properly configured
+   */
+  public function isConfigured(): bool
+  {
+    return $this->isEnabled() && !empty($this->getPixelId());
+  }
+
+  /**
+   * Inject Meta Pixel base code into document head
+   */
+  public function injectPixelCode(HtmlDocument $document): void
+  {
+    if (!$this->isConfigured()) {
+      return;
     }
-
-    /**
-     * Check if Meta Pixel is enabled
-     */
-    public function isEnabled(): bool
-    {
-        return (bool) $this->params->get('enable_meta_pixel', false);
-    }
-
-    /**
-     * Get Meta Pixel ID
-     */
-    public function getPixelId(): string
-    {
-        return (string) $this->params->get('meta_pixel_id', '');
-    }
-
-    /**
-     * Check if Meta Pixel is properly configured
-     */
-    public function isConfigured(): bool
-    {
-        return $this->isEnabled() && !empty($this->getPixelId());
-    }
-
-    /**
-     * Inject Meta Pixel base code into document head
-     */
-    public function injectPixelCode(HtmlDocument $document): void
-    {
-        if (!$this->isConfigured()) {
-            return;
-        }
 
         $pixelId = $this->getPixelId();
-        $version = Version::getDebugString();
+        $version = 'JoomlaBoost v0.1.17-meta-pixel';
 
-        $pixelCode = $this->generatePixelCode($pixelId, $version);
-        
-        // Add to document head
-        $document->addCustomTag($pixelCode);
-    }
+        $pixelCode = $this->generatePixelCode($pixelId, $version);    // Add to document head
+    $document->addCustomTag($pixelCode);
+  }
 
-    /**
-     * Generate Meta Pixel tracking code
-     */
-    private function generatePixelCode(string $pixelId, string $version): string
-    {
-        return sprintf(
-            '<!-- Meta Pixel Code by %s -->
+  /**
+   * Generate Meta Pixel tracking code
+   */
+  private function generatePixelCode(string $pixelId, string $version): string
+  {
+    return sprintf(
+      '<!-- Meta Pixel Code by %s -->
 <script>
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -94,66 +91,66 @@ fbq(\'track\', \'PageView\');
      src="https://www.facebook.com/tr?id=%s&ev=PageView&noscript=1"/>
 </noscript>
 <!-- End Meta Pixel Code -->',
-            $version,
-            $pixelId,
-            $pixelId
-        );
+      $version,
+      $pixelId,
+      $pixelId
+    );
+  }
+
+  /**
+   * Generate custom event tracking code
+   */
+  public function generateCustomEventCode(): string
+  {
+    if (!$this->isConfigured()) {
+      return '';
     }
 
-    /**
-     * Generate custom event tracking code
-     */
-    public function generateCustomEventCode(): string
-    {
-        if (!$this->isConfigured()) {
-            return '';
-        }
+    $events = [];
+    $version = 'JoomlaBoost v0.1.17-meta-pixel';
 
-        $events = [];
-        $version = Version::getDebugString();
+    // Purchase event
+    if ($this->params->get('meta_pixel_track_purchase', false)) {
+      $events[] = $this->generateEventScript('Purchase');
+    }
 
-        // Purchase event
-        if ($this->params->get('meta_pixel_track_purchase', false)) {
-            $events[] = $this->generateEventScript('Purchase');
-        }
+    // Add to Cart event
+    if ($this->params->get('meta_pixel_track_add_to_cart', false)) {
+      $events[] = $this->generateEventScript('AddToCart');
+    }
 
-        // Add to Cart event
-        if ($this->params->get('meta_pixel_track_add_to_cart', false)) {
-            $events[] = $this->generateEventScript('AddToCart');
-        }
+    // Contact event
+    if ($this->params->get('meta_pixel_track_contact', false)) {
+      $events[] = $this->generateEventScript('Contact');
+    }
 
-        // Contact event
-        if ($this->params->get('meta_pixel_track_contact', false)) {
-            $events[] = $this->generateEventScript('Contact');
-        }
+    // Lead event
+    if ($this->params->get('meta_pixel_track_lead', false)) {
+      $events[] = $this->generateEventScript('Lead');
+    }
 
-        // Lead event
-        if ($this->params->get('meta_pixel_track_lead', false)) {
-            $events[] = $this->generateEventScript('Lead');
-        }
+    if (empty($events)) {
+      return '';
+    }
 
-        if (empty($events)) {
-            return '';
-        }
-
-        return sprintf(
-            '<!-- Meta Pixel Custom Events by %s -->
+    return sprintf(
+      '<!-- Meta Pixel Custom Events by %s -->
 <script>
 %s
 </script>
 <!-- End Meta Pixel Custom Events -->',
-            $version,
-            implode("\n", $events)
-        );
-    }
+      $version,
+      implode("\n", $events)
+    );
+  }
 
-    /**
-     * Generate individual event tracking script
-     */
-    private function generateEventScript(string $eventName): string
-    {
-        return sprintf(
-            '// %s Event Tracking
+  /**
+   * Generate individual event tracking script
+   */
+  private function generateEventScript(string $eventName): string
+  {
+    return sprintf(
+      '// %s Event Tracking
 function joomlaBoostTrack%s(value, currency) {
     if (typeof fbq !== "undefined") {
         var eventData = {};
@@ -163,40 +160,40 @@ function joomlaBoostTrack%s(value, currency) {
         console.log("Meta Pixel: %s event tracked", eventData);
     }
 }',
-            $eventName,
-            $eventName,
-            $eventName,
-            $eventName
-        );
-    }
+      $eventName,
+      $eventName,
+      $eventName,
+      $eventName
+    );
+  }
 
-    /**
-     * Inject custom events code into document
-     */
-    public function injectCustomEvents(HtmlDocument $document): void
-    {
-        $customEventsCode = $this->generateCustomEventCode();
-        
-        if (!empty($customEventsCode)) {
-            $document->addCustomTag($customEventsCode);
-        }
-    }
+  /**
+   * Inject custom events code into document
+   */
+  public function injectCustomEvents(HtmlDocument $document): void
+  {
+    $customEventsCode = $this->generateCustomEventCode();
 
-    /**
-     * Get debug information
-     */
-    public function getDebugInfo(): array
-    {
-        return [
-            'enabled' => $this->isEnabled(),
-            'configured' => $this->isConfigured(),
-            'pixel_id' => $this->getPixelId(),
-            'events' => [
-                'purchase' => $this->params->get('meta_pixel_track_purchase', false),
-                'add_to_cart' => $this->params->get('meta_pixel_track_add_to_cart', false),
-                'contact' => $this->params->get('meta_pixel_track_contact', false),
-                'lead' => $this->params->get('meta_pixel_track_lead', false),
-            ],
-        ];
+    if (!empty($customEventsCode)) {
+      $document->addCustomTag($customEventsCode);
     }
+  }
+
+  /**
+   * Get debug information
+   */
+  public function getDebugInfo(): array
+  {
+    return [
+      'enabled' => $this->isEnabled(),
+      'configured' => $this->isConfigured(),
+      'pixel_id' => $this->getPixelId(),
+      'events' => [
+        'purchase' => $this->params->get('meta_pixel_track_purchase', false),
+        'add_to_cart' => $this->params->get('meta_pixel_track_add_to_cart', false),
+        'contact' => $this->params->get('meta_pixel_track_contact', false),
+        'lead' => $this->params->get('meta_pixel_track_lead', false),
+      ],
+    ];
+  }
 }
