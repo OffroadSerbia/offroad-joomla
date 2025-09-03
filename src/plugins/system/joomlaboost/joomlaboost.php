@@ -28,464 +28,464 @@ class PlgSystemJoomlaboost extends CMSPlugin
   /**
    * Load the language file on instantiation
    */
-  protected $autoloadLanguage = true;
+    protected $autoloadLanguage = true;
 
   /**
    * Schema Service instance
    */
-  private ?SchemaService $schemaService = null;
+    private ?SchemaService $schemaService = null;
 
   /**
    * Meta Pixel Service instance
    */
-  private ?MetaPixelService $metaPixelService = null;
+    private ?MetaPixelService $metaPixelService = null;
 
   /**
    * Safe application access
    */
-  private function getApp()
-  {
-    try {
-      return Factory::getApplication();
-    } catch (Exception $e) {
-      return null;
+    private function getApp()
+    {
+        try {
+            return Factory::getApplication();
+        } catch (Exception $e) {
+            return null;
+        }
     }
-  }
 
   /**
    * Handle robots.txt requests BEFORE routing
    */
-  public function onAfterInitialise(): void
-  {
-    $app = $this->getApp();
-    if (!$app) {
-      return; // Exit safely if app not available
+    public function onAfterInitialise(): void
+    {
+        $app = $this->getApp();
+        if (!$app) {
+            return; // Exit safely if app not available
+        }
+
+      // Only handle on frontend
+        if (!$app->isClient('site')) {
+            if ($app->isClient('administrator')) {
+                $this->logDebug('JoomlaBoost: Backend initialized - JoomlaBoost v0.1.17-meta-pixel');
+            }
+            return;
+        }
+
+      // Debug: Show plugin version info on frontend
+        $this->logDebug('JoomlaBoost: Frontend initialized - JoomlaBoost v0.1.17-meta-pixel');
+
+      // Check for robots.txt request first
+        if ($this->isRobotsRequest()) {
+            $this->handleRobotsRequest($app);
+            return;
+        }
+
+      // Check for sitemap.xml request
+        if ($this->isSitemapRequest()) {
+            $this->handleSitemapRequest($app);
+            return;
+        }
+
+      // Regular frontend initialization
     }
-
-    // Only handle on frontend
-    if (!$app->isClient('site')) {
-      if ($app->isClient('administrator')) {
-        $this->logDebug('JoomlaBoost: Backend initialized - JoomlaBoost v0.1.17-meta-pixel');
-      }
-      return;
-    }
-
-    // Debug: Show plugin version info on frontend
-    $this->logDebug('JoomlaBoost: Frontend initialized - JoomlaBoost v0.1.17-meta-pixel');
-
-    // Check for robots.txt request first
-    if ($this->isRobotsRequest()) {
-      $this->handleRobotsRequest($app);
-      return;
-    }
-
-    // Check for sitemap.xml request
-    if ($this->isSitemapRequest()) {
-      $this->handleSitemapRequest($app);
-      return;
-    }
-
-    // Regular frontend initialization
-  }
 
   /**
    * Handle document modifications and add Schema.org markup
    */
-  public function onBeforeCompileHead(): void
-  {
-    $app = $this->getApp();
-    if (!$app || !$app->isClient('site')) {
-      return;
+    public function onBeforeCompileHead(): void
+    {
+        $app = $this->getApp();
+        if (!$app || !$app->isClient('site')) {
+            return;
+        }
+
+        $document = $app->getDocument();
+        if (!$document instanceof \Joomla\CMS\Document\HtmlDocument) {
+            return;
+        }
+
+      // Add Google Search Console verification meta tags
+        $this->addGoogleVerificationTags($document);
+
+      // Add Meta Pixel (Facebook Pixel) tracking
+        $this->addMetaPixel($document);
+
+      // Add Schema.org structured data
+        $this->addSchemaMarkup($document);
     }
-
-    $document = $app->getDocument();
-    if (!$document instanceof \Joomla\CMS\Document\HtmlDocument) {
-      return;
-    }
-
-    // Add Google Search Console verification meta tags
-    $this->addGoogleVerificationTags($document);
-
-    // Add Meta Pixel (Facebook Pixel) tracking
-    $this->addMetaPixel($document);
-
-    // Add Schema.org structured data
-    $this->addSchemaMarkup($document);
-  }
 
   /**
    * Check if this is a sitemap.xml request
    */
-  private function isSitemapRequest(): bool
-  {
-    // Check REQUEST_URI directly
-    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+    private function isSitemapRequest(): bool
+    {
+      // Check REQUEST_URI directly
+        $requestUri = $_SERVER['REQUEST_URI'] ?? '';
 
-    // Remove query string for clean comparison
-    $cleanUri = strtok($requestUri, '?');
+      // Remove query string for clean comparison
+        $cleanUri = strtok($requestUri, '?');
 
-    // Check for sitemap.xml
-    if (preg_match('#/sitemap\.xml$#i', $cleanUri)) {
-      return true;
+      // Check for sitemap.xml
+        if (preg_match('#/sitemap\.xml$#i', $cleanUri)) {
+            return true;
+        }
+
+      // Also check for query parameter approach
+        if (isset($_GET['format']) && $_GET['format'] === 'sitemap') {
+            return true;
+        }
+
+        return false;
     }
-
-    // Also check for query parameter approach
-    if (isset($_GET['format']) && $_GET['format'] === 'sitemap') {
-      return true;
-    }
-
-    return false;
-  }
 
   /**
    * Handle sitemap.xml request
    */
-  private function handleSitemapRequest($app): void
-  {
-    // Set proper headers
-    header('Content-Type: application/xml; charset=utf-8');
-    header('Cache-Control: public, max-age=3600');
+    private function handleSitemapRequest($app): void
+    {
+      // Set proper headers
+        header('Content-Type: application/xml; charset=utf-8');
+        header('Cache-Control: public, max-age=3600');
 
-    // Generate sitemap content
-    $sitemapContent = $this->generateSitemapContent();
+      // Generate sitemap content
+        $sitemapContent = $this->generateSitemapContent();
 
-    // Output and exit
-    echo $sitemapContent;
-    $app->close();
-  }
+      // Output and exit
+        echo $sitemapContent;
+        $app->close();
+    }
 
   /**
    * Generate sitemap.xml content
    */
-  private function generateSitemapContent(): string
-  {
-    $domain = $this->getCurrentDomain();
-    $isStaging = $this->isStaging($domain);
+    private function generateSitemapContent(): string
+    {
+        $domain = $this->getCurrentDomain();
+        $isStaging = $this->isStaging($domain);
 
-    if ($isStaging) {
-      return $this->getStagingSitemap();
-    } else {
-      return $this->getProductionSitemap();
+        if ($isStaging) {
+            return $this->getStagingSitemap();
+        } else {
+            return $this->getProductionSitemap();
+        }
     }
-  }
 
   /**
    * Get staging sitemap (minimal)
    */
-  private function getStagingSitemap(): string
-  {
-    $domain = $this->getCurrentDomain();
-    $lastmod = date('Y-m-d\TH:i:s\Z');
+    private function getStagingSitemap(): string
+    {
+        $domain = $this->getCurrentDomain();
+        $lastmod = date('Y-m-d\TH:i:s\Z');
 
-    return '<?xml version="1.0" encoding="UTF-8"?>' . "\n" .
-      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n" .
-      '
+        return '<?xml version="1.0" encoding="UTF-8"?>' . "\n" .
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n" .
+        '
   <!-- JoomlaBoost Sitemap - STAGING ENVIRONMENT -->' . "\n" .
-      '
+        '
   <!-- Limited sitemap for staging -->' . "\n" .
-      ' <url>' . "\n" .
-      ' <loc>' . htmlspecialchars($domain) . '</loc>' . "\n" .
-      ' <lastmod>' . $lastmod . '</lastmod>' . "\n" .
-      ' <changefreq>daily</changefreq>' . "\n" .
-      ' <priority>1.0</priority>' . "\n" .
-      ' </url>' . "\n" .
-      '
+        ' <url>' . "\n" .
+        ' <loc>' . htmlspecialchars($domain) . '</loc>' . "\n" .
+        ' <lastmod>' . $lastmod . '</lastmod>' . "\n" .
+        ' <changefreq>daily</changefreq>' . "\n" .
+        ' <priority>1.0</priority>' . "\n" .
+        ' </url>' . "\n" .
+        '
   <!-- Generated by JoomlaBoost Plugin -->' . "\n" .
-      '
+        '
   <!-- Environment: Staging -->' . "\n" .
-      '
+        '
   <!-- Generated: ' . date('Y-m-d H:i:s T') . ' -->' . "\n" .
-      '
+        '
 </urlset>';
-  }
+    }
 
   /**
    * Get production sitemap (comprehensive)
    */
-  private function getProductionSitemap(): string
-  {
-    $domain = $this->getCurrentDomain();
-    $lastmod = date('Y-m-d\TH:i:s\Z');
+    private function getProductionSitemap(): string
+    {
+        $domain = $this->getCurrentDomain();
+        $lastmod = date('Y-m-d\TH:i:s\Z');
 
-    // Basic sitemap for now - we'll enhance this later with Joomla menu items
-    return '
+      // Basic sitemap for now - we'll enhance this later with Joomla menu items
+        return '
 <?xml version="1.0" encoding="UTF-8"?>' . "\n" .
-      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n" .
-      '
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n" .
+        '
   <!-- JoomlaBoost Sitemap - PRODUCTION ENVIRONMENT -->' . "\n" .
-      ' <url>' . "\n" .
-      ' <loc>' . htmlspecialchars($domain) . '</loc>' . "\n" .
-      ' <lastmod>' . $lastmod . '</lastmod>' . "\n" .
-      ' <changefreq>daily</changefreq>' . "\n" .
-      ' <priority>1.0</priority>' . "\n" .
-      ' </url>' . "\n" .
-      '
+        ' <url>' . "\n" .
+        ' <loc>' . htmlspecialchars($domain) . '</loc>' . "\n" .
+        ' <lastmod>' . $lastmod . '</lastmod>' . "\n" .
+        ' <changefreq>daily</changefreq>' . "\n" .
+        ' <priority>1.0</priority>' . "\n" .
+        ' </url>' . "\n" .
+        '
   <!-- TODO: Add menu items and articles dynamically -->' . "\n" .
-      '
+        '
       // Generated by JoomlaBoost Plugin v0.1.16-clean' . "\n" .
-      '
+        '
   <!-- Environment: Production -->' . "\n" .
-      '
+        '
   <!-- Generated: ' . date('Y-m-d H:i:s T') . ' -->' . "\n" .
-      '
+        '
 </urlset>';
-  }
+    }
 
   /**
    * Check if this is a robots.txt request
    */
-  private function isRobotsRequest(): bool
-  {
-    // Check REQUEST_URI directly (before Joomla processes it)
-    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+    private function isRobotsRequest(): bool
+    {
+      // Check REQUEST_URI directly (before Joomla processes it)
+        $requestUri = $_SERVER['REQUEST_URI'] ?? '';
 
-    // Remove query string for clean comparison
-    $cleanUri = strtok($requestUri, '?');
+      // Remove query string for clean comparison
+        $cleanUri = strtok($requestUri, '?');
 
-    // Check for robots.txt
-    if (preg_match('#/robots\.txt$#i', $cleanUri)) {
-      return true;
+      // Check for robots.txt
+        if (preg_match('#/robots\.txt$#i', $cleanUri)) {
+            return true;
+        }
+
+      // Also check for query parameter approach
+        if (isset($_GET['format']) && $_GET['format'] === 'robots') {
+            return true;
+        }
+
+        return false;
     }
-
-    // Also check for query parameter approach
-    if (isset($_GET['format']) && $_GET['format'] === 'robots') {
-      return true;
-    }
-
-    return false;
-  }
 
   /**
    * Handle robots.txt request
    */
-  private function handleRobotsRequest($app): void
-  {
-    // Set proper headers
-    header('Content-Type: text/plain');
-    header('Cache-Control: public, max-age=3600');
+    private function handleRobotsRequest($app): void
+    {
+      // Set proper headers
+        header('Content-Type: text/plain');
+        header('Cache-Control: public, max-age=3600');
 
-    // Generate robots.txt content
-    $robotsContent = $this->generateRobotsContent();
+      // Generate robots.txt content
+        $robotsContent = $this->generateRobotsContent();
 
-    // Output and exit
-    echo $robotsContent;
-    $app->close();
-  }
+      // Output and exit
+        echo $robotsContent;
+        $app->close();
+    }
 
   /**
    * Generate robots.txt content based on environment
    */
-  private function generateRobotsContent(): string
-  {
-    // Detect environment using $_SERVER
-    $domain = $this->getCurrentDomain();
-    $isStaging = $this->isStaging($domain);
+    private function generateRobotsContent(): string
+    {
+      // Detect environment using $_SERVER
+        $domain = $this->getCurrentDomain();
+        $isStaging = $this->isStaging($domain);
 
-    if ($isStaging) {
-      return $this->getStagingRobots();
-    } else {
-      return $this->getProductionRobots();
+        if ($isStaging) {
+            return $this->getStagingRobots();
+        } else {
+            return $this->getProductionRobots();
+        }
     }
-  }
 
   /**
    * Get current domain safely
    */
-  private function getCurrentDomain(): string
-  {
-    // Method 1: Use $_SERVER (most reliable and always works)
-    $scheme = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
+    private function getCurrentDomain(): string
+    {
+      // Method 1: Use $_SERVER (most reliable and always works)
+        $scheme = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
 
-    return $scheme . '://' . $host . '/';
-  }
+        return $scheme . '://' . $host . '/';
+    }
 
   /**
    * Check if this is staging environment
    */
-  private function isStaging(string $domain): bool
-  {
-    $stagingKeywords = ['staging', 'stage', 'dev', 'test', 'localhost'];
+    private function isStaging(string $domain): bool
+    {
+        $stagingKeywords = ['staging', 'stage', 'dev', 'test', 'localhost'];
 
-    foreach ($stagingKeywords as $keyword) {
-      if (stripos($domain, $keyword) !== false) {
-        return true;
-      }
+        foreach ($stagingKeywords as $keyword) {
+            if (stripos($domain, $keyword) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
-
-    return false;
-  }
 
   /**
    * Get staging robots.txt (block everything)
    */
-  private function getStagingRobots(): string
-  {
-    return "# JoomlaBoost Robots.txt - STAGING ENVIRONMENT\n" .
-      "# This site is not indexed by search engines\n\n" .
-      "# Allow Google Search Console and related tools for testing\n" .
-      "User-agent: Googlebot\n" .
-      "User-agent: Google-InspectionTool\n" .
-      "User-agent: Google-Site-Verification\n" .
-      "User-agent: GoogleOther\n" .
-      "Allow: /\n" .
-      "Disallow: /administrator/\n" .
-      "Disallow: /api/\n" .
-      "Disallow: /cache/\n" .
-      "Disallow: /tmp/\n\n" .
-      "# Block all other crawlers\n" .
-      "User-agent: *\n" .
-      "Disallow: /\n\n" .
-      "# This is a staging environment - not for public indexing\n\n" .
-      "# Generated by JoomlaBoost Plugin v0.1.16-clean\n" .
-      "# Environment: Staging\n" .
-      "# Generated: " . date('Y-m-d H:i:s T') . "\n";
-  }
+    private function getStagingRobots(): string
+    {
+        return "# JoomlaBoost Robots.txt - STAGING ENVIRONMENT\n" .
+        "# This site is not indexed by search engines\n\n" .
+        "# Allow Google Search Console and related tools for testing\n" .
+        "User-agent: Googlebot\n" .
+        "User-agent: Google-InspectionTool\n" .
+        "User-agent: Google-Site-Verification\n" .
+        "User-agent: GoogleOther\n" .
+        "Allow: /\n" .
+        "Disallow: /administrator/\n" .
+        "Disallow: /api/\n" .
+        "Disallow: /cache/\n" .
+        "Disallow: /tmp/\n\n" .
+        "# Block all other crawlers\n" .
+        "User-agent: *\n" .
+        "Disallow: /\n\n" .
+        "# This is a staging environment - not for public indexing\n\n" .
+        "# Generated by JoomlaBoost Plugin v0.1.16-clean\n" .
+        "# Environment: Staging\n" .
+        "# Generated: " . date('Y-m-d H:i:s T') . "\n";
+    }
 
   /**
    * Get production robots.txt
    */
-  private function getProductionRobots(): string
-  {
-    $baseUrl = $this->getCurrentDomain();
+    private function getProductionRobots(): string
+    {
+        $baseUrl = $this->getCurrentDomain();
 
-    return "# JoomlaBoost Robots.txt - PRODUCTION ENVIRONMENT\n\n" .
-      "User-agent: *\n" .
-      "Allow: /\n\n" .
-      "# Disallow admin areas\n" .
-      "Disallow: /administrator/\n" .
-      "Disallow: /cache/\n" .
-      "Disallow: /includes/\n" .
-      "Disallow: /language/\n" .
-      "Disallow: /libraries/\n" .
-      "Disallow: /logs/\n" .
-      "Disallow: /tmp/\n\n" .
-      "# Allow specific files\n" .
-      "Allow: /templates/\n" .
-      "Allow: /media/\n" .
-      "Allow: /images/\n\n" .
-      "# Sitemap\n" .
-      "Sitemap: {$baseUrl}sitemap.xml\n\n" .
-      "# Generated by JoomlaBoost Plugin v0.1.16-clean\n" .
-      "# Environment: Production\n" .
-      "# Generated: " . date('Y-m-d H:i:s T') . "\n";
-  }
+        return "# JoomlaBoost Robots.txt - PRODUCTION ENVIRONMENT\n\n" .
+        "User-agent: *\n" .
+        "Allow: /\n\n" .
+        "# Disallow admin areas\n" .
+        "Disallow: /administrator/\n" .
+        "Disallow: /cache/\n" .
+        "Disallow: /includes/\n" .
+        "Disallow: /language/\n" .
+        "Disallow: /libraries/\n" .
+        "Disallow: /logs/\n" .
+        "Disallow: /tmp/\n\n" .
+        "# Allow specific files\n" .
+        "Allow: /templates/\n" .
+        "Allow: /media/\n" .
+        "Allow: /images/\n\n" .
+        "# Sitemap\n" .
+        "Sitemap: {$baseUrl}sitemap.xml\n\n" .
+        "# Generated by JoomlaBoost Plugin v0.1.16-clean\n" .
+        "# Environment: Production\n" .
+        "# Generated: " . date('Y-m-d H:i:s T') . "\n";
+    }
 
   /**
    * Get default robots.txt (fallback)
    */
-  private function getDefaultRobots(): string
-  {
-    return "# JoomlaBoost Robots.txt - DEFAULT\n\n" .
-      "User-agent: *\n" .
-      "Disallow: /administrator/\n\n" .
-      "# Generated by JoomlaBoost Plugin v0.1.16-clean\n" .
-      "# Generated: " . date('Y-m-d H:i:s T') . "\n";
-  }
+    private function getDefaultRobots(): string
+    {
+        return "# JoomlaBoost Robots.txt - DEFAULT\n\n" .
+        "User-agent: *\n" .
+        "Disallow: /administrator/\n\n" .
+        "# Generated by JoomlaBoost Plugin v0.1.16-clean\n" .
+        "# Generated: " . date('Y-m-d H:i:s T') . "\n";
+    }
 
   /**
    * Safe debug logging
    */
-  private function logDebug(string $message): void
-  {
-    try {
-      // Only log if debug mode is enabled in plugin config
-      if ($this->params && $this->params->get('debug_mode', 0)) {
-        Factory::getApplication()->enqueueMessage(
-          "[DEBUG] " . $message,
-          'info'
-        );
-      }
-    } catch (Exception $e) {
-      // Silently fail - don't break the site
+    private function logDebug(string $message): void
+    {
+        try {
+          // Only log if debug mode is enabled in plugin config
+            if ($this->params && $this->params->get('debug_mode', 0)) {
+                Factory::getApplication()->enqueueMessage(
+                    "[DEBUG] " . $message,
+                    'info'
+                );
+            }
+        } catch (Exception $e) {
+          // Silently fail - don't break the site
+        }
     }
-  }
 
   /**
    * Add Schema.org structured data
    */
-  private function addSchemaMarkup($document): void
-  {
-    try {
-      // Initialize Schema Service if not already done
-      if ($this->schemaService === null) {
-        $this->schemaService = new SchemaService($this->getApp(), $this->params);
-      }
+    private function addSchemaMarkup($document): void
+    {
+        try {
+          // Initialize Schema Service if not already done
+            if ($this->schemaService === null) {
+                $this->schemaService = new SchemaService($this->getApp(), $this->params);
+            }
 
-      // Check if Schema is enabled (default: true)
-      if (!$this->params->get('enable_schema', 1)) {
-        $this->logDebug('Schema: Disabled in plugin settings');
-        return;
-      }
+          // Check if Schema is enabled (default: true)
+            if (!$this->params->get('enable_schema', 1)) {
+                $this->logDebug('Schema: Disabled in plugin settings');
+                return;
+            }
 
-      // Generate Schema.org JSON-LD
-      $schema = $this->schemaService->generateSchema();
+          // Generate Schema.org JSON-LD
+            $schema = $this->schemaService->generateSchema();
 
-      if (!empty($schema)) {
-        // Add JSON-LD script to document head
-        $jsonLd = '<script type="application/ld+json">
+            if (!empty($schema)) {
+              // Add JSON-LD script to document head
+                $jsonLd = '<script type="application/ld+json">
 ' . "\n";
-        $jsonLd .= json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        $jsonLd .= "\n" . '</script>';
+                $jsonLd .= json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                $jsonLd .= "\n" . '</script>';
 
-        $document->addCustomTag($jsonLd); // Debug output if enabled
-        if ($this->params->get('debug_mode', 0)) {
-          $this->logDebug('Schema.org JSON-LD generated: ' . count($schema) . ' schema(s)');
+                $document->addCustomTag($jsonLd); // Debug output if enabled
+                if ($this->params->get('debug_mode', 0)) {
+                    $this->logDebug('Schema.org JSON-LD generated: ' . count($schema) . ' schema(s)');
+                }
+            } else {
+                $this->logDebug('Schema: No schema data generated');
+            }
+        } catch (Exception $e) {
+          // Log error but don't break the site
+            if ($this->params->get('debug_mode', 0)) {
+                $this->logDebug('Schema.org generation failed: ' . $e->getMessage());
+            }
         }
-      } else {
-        $this->logDebug('Schema: No schema data generated');
-      }
-    } catch (Exception $e) {
-      // Log error but don't break the site
-      if ($this->params->get('debug_mode', 0)) {
-        $this->logDebug('Schema.org generation failed: ' . $e->getMessage());
-      }
     }
-  }
 
   /**
    * Add Google verification tags to the document head
    */
-  private function addGoogleVerificationTags($document)
-  {
-    // Google Search Console verification meta tag
-    $gscMeta = $this->params->get('gsc_verification_meta', '');
-    if (!empty($gscMeta)) {
-      $document->setMetaData('google-site-verification', $gscMeta);
-      $this->logDebug('Added Google Search Console verification meta tag');
-    }
+    private function addGoogleVerificationTags($document)
+    {
+      // Google Search Console verification meta tag
+        $gscMeta = $this->params->get('gsc_verification_meta', '');
+        if (!empty($gscMeta)) {
+            $document->setMetaData('google-site-verification', $gscMeta);
+            $this->logDebug('Added Google Search Console verification meta tag');
+        }
 
-    // Additional HTML code for Google verification
-    $additionalHtml = $this->params->get('gsc_additional_html', '');
-    if (!empty($additionalHtml)) {
-      $document->addCustomTag($additionalHtml);
-      $this->logDebug('Added additional Google verification HTML');
-    }
+      // Additional HTML code for Google verification
+        $additionalHtml = $this->params->get('gsc_additional_html', '');
+        if (!empty($additionalHtml)) {
+            $document->addCustomTag($additionalHtml);
+            $this->logDebug('Added additional Google verification HTML');
+        }
 
-    // Add Google Analytics 4 if enabled
-    if ($this->params->get('enable_ga4', 0)) {
-      $this->addGA4Tracking($document);
-    }
+      // Add Google Analytics 4 if enabled
+        if ($this->params->get('enable_ga4', 0)) {
+            $this->addGA4Tracking($document);
+        }
 
-    // Add Google Tag Manager if enabled
-    if ($this->params->get('enable_gtm', 0)) {
-      $this->addGTMTracking($document);
+      // Add Google Tag Manager if enabled
+        if ($this->params->get('enable_gtm', 0)) {
+            $this->addGTMTracking($document);
+        }
     }
-  }
 
   /**
    * Add Google Analytics 4 tracking code
    */
-  private function addGA4Tracking($document)
-  {
-    $measurementId = $this->params->get('ga4_measurement_id', '');
-    if (empty($measurementId)) {
-      $this->logDebug('GA4: No measurement ID provided');
-      return;
-    }
+    private function addGA4Tracking($document)
+    {
+        $measurementId = $this->params->get('ga4_measurement_id', '');
+        if (empty($measurementId)) {
+            $this->logDebug('GA4: No measurement ID provided');
+            return;
+        }
 
-    // Add GA4 Global Site Tag
-    $ga4Script = "
+      // Add GA4 Global Site Tag
+        $ga4Script = "
 <!-- Google Analytics 4 -->
 <script async src=\"https://www.googletagmanager.com/gtag/js?id={$measurementId}\"></script>
 <script>
@@ -498,23 +498,23 @@ gtag('js', new Date());
 gtag('config', '{$measurementId}');
 </script>";
 
-    $document->addCustomTag($ga4Script);
-    $this->logDebug('Added Google Analytics 4 tracking for: ' . $measurementId);
-  }
+        $document->addCustomTag($ga4Script);
+        $this->logDebug('Added Google Analytics 4 tracking for: ' . $measurementId);
+    }
 
   /**
    * Add Google Tag Manager tracking code
    */
-  private function addGTMTracking($document)
-  {
-    $containerId = $this->params->get('gtm_container_id', '');
-    if (empty($containerId)) {
-      $this->logDebug('GTM: No container ID provided');
-      return;
-    }
+    private function addGTMTracking($document)
+    {
+        $containerId = $this->params->get('gtm_container_id', '');
+        if (empty($containerId)) {
+            $this->logDebug('GTM: No container ID provided');
+            return;
+        }
 
-    // Add GTM head script
-    $gtmHead = "
+      // Add GTM head script
+        $gtmHead = "
 <!-- Google Tag Manager -->
 <script>
 (function(w, d, s, l, i) {
@@ -534,31 +534,31 @@ gtag('config', '{$measurementId}');
 </script>
 <!-- End Google Tag Manager -->";
 
-    $document->addCustomTag($gtmHead);
-    $this->logDebug('Added Google Tag Manager tracking for: ' . $containerId);
-  }
+        $document->addCustomTag($gtmHead);
+        $this->logDebug('Added Google Tag Manager tracking for: ' . $containerId);
+    }
 
   /**
    * Add Meta Pixel (Facebook Pixel) tracking
    */
-  private function addMetaPixel(\Joomla\CMS\Document\HtmlDocument $document): void
-  {
-    if (!$this->params->get('enable_meta_pixel', false)) {
-      return;
+    private function addMetaPixel(\Joomla\CMS\Document\HtmlDocument $document): void
+    {
+        if (!$this->params->get('enable_meta_pixel', false)) {
+            return;
+        }
+
+      // Initialize Meta Pixel Service if not already done
+        if ($this->metaPixelService === null) {
+            $this->metaPixelService = new MetaPixelService($this->params);
+        }
+
+      // Inject Meta Pixel base code
+        $this->metaPixelService->injectPixelCode($document);
+
+      // Inject custom events code
+        $this->metaPixelService->injectCustomEvents($document);
+
+        $debugInfo = $this->metaPixelService->getDebugInfo();
+        $this->logDebug('Added Meta Pixel tracking', $debugInfo);
     }
-
-    // Initialize Meta Pixel Service if not already done
-    if ($this->metaPixelService === null) {
-      $this->metaPixelService = new MetaPixelService($this->params);
-    }
-
-    // Inject Meta Pixel base code
-    $this->metaPixelService->injectPixelCode($document);
-
-    // Inject custom events code
-    $this->metaPixelService->injectCustomEvents($document);
-
-    $debugInfo = $this->metaPixelService->getDebugInfo();
-    $this->logDebug('Added Meta Pixel tracking', $debugInfo);
-  }
 }
