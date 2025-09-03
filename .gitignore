@@ -23,6 +23,8 @@ tools/*.zip
 tools/__build/
 tools/__inspect_*/
 
+# Archive - offroadseo legacy (arhiviran plugin)
+archive/offroadseo-legacy/
 
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
