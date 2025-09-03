@@ -28,7 +28,7 @@ class ServiceManager
     private CMSApplication $app;
     private Registry $params;
 
-  /** @var ServiceInterface[] */
+    /** @var ServiceInterface[] */
     private array $services = [];
 
     public function __construct(CMSApplication $app, Registry $params)
@@ -37,109 +37,109 @@ class ServiceManager
         $this->params = $params;
     }
 
-  /**
-   * Get Domain Detection Service
-   * @return DomainDetectionService
-   */
+    /**
+     * Get Domain Detection Service
+     * @return DomainDetectionService
+     */
     public function getDomainDetectionService(): DomainDetectionService
     {
         /** @var DomainDetectionService */
         return $this->getService('domainDetection', DomainDetectionService::class);
     }
 
-  /**
-   * Get Robot Service
-   * @return RobotService
-   */
+    /**
+     * Get Robot Service
+     * @return RobotService
+     */
     public function getRobotService(): RobotService
     {
         /** @var RobotService */
         return $this->getService('robot', RobotService::class);
     }
 
-  /**
-   * Get Sitemap Service
-   * @return SitemapService
-   */
+    /**
+     * Get Sitemap Service
+     * @return SitemapService
+     */
     public function getSitemapService(): SitemapService
     {
         /** @var SitemapService */
         return $this->getService('sitemap', SitemapService::class);
     }
 
-  /**
-   * Get Schema Service
-   * @return SchemaService
-   */
+    /**
+     * Get Schema Service
+     * @return SchemaService
+     */
     public function getSchemaService(): SchemaService
     {
         /** @var SchemaService */
         return $this->getService('schema', SchemaService::class);
     }
 
-  /**
-   * Get OpenGraph Service
-   * @return OpenGraphService
-   */
+    /**
+     * Get OpenGraph Service
+     * @return OpenGraphService
+     */
     public function getOpenGraphService(): OpenGraphService
     {
         /** @var OpenGraphService */
         return $this->getService('openGraph', OpenGraphService::class);
     }
 
-  /**
-   * Get Analytics Service
-   * @return AnalyticsService
-   */
+    /**
+     * Get Analytics Service
+     * @return AnalyticsService
+     */
     public function getAnalyticsService(): AnalyticsService
     {
         /** @var AnalyticsService */
         return $this->getService('analytics', AnalyticsService::class);
     }
 
-  /**
-   * Get Hreflang Service
-   * @return HreflangService
-   */
+    /**
+     * Get Hreflang Service
+     * @return HreflangService
+     */
     public function getHreflangService(): HreflangService
     {
         /** @var HreflangService */
         return $this->getService('hreflang', HreflangService::class);
     }
 
-  /**
-   * Get Injection Service
-   * @return InjectionService
-   */
+    /**
+     * Get Injection Service
+     * @return InjectionService
+     */
     public function getInjectionService(): InjectionService
     {
         /** @var InjectionService */
         return $this->getService('injection', InjectionService::class);
     }
 
-  /**
-   * Get Health Service
-   * @return HealthService
-   */
+    /**
+     * Get Health Service
+     * @return HealthService
+     */
     public function getHealthService(): HealthService
     {
         /** @var HealthService */
         return $this->getService('health', HealthService::class);
     }
 
-  /**
-   * Get Performance Service
-   * @return PerformanceService
-   */
+    /**
+     * Get Performance Service
+     * @return PerformanceService
+     */
     public function getPerformanceService(): PerformanceService
     {
         /** @var PerformanceService */
         return $this->getService('performance', PerformanceService::class);
     }
 
-  /**
-   * Get service instance (lazy loading with caching)
-   */
+    /**
+     * Get service instance (lazy loading with caching)
+     */
     private function getService(string $key, string $className): ServiceInterface
     {
         if (!isset($this->services[$key])) {
@@ -151,25 +151,25 @@ class ServiceManager
         return $this->services[$key];
     }
 
-  /**
-   * Get all enabled services
-   * @return ServiceInterface[]
-   */
+    /**
+     * Get all enabled services
+     * @return ServiceInterface[]
+     */
     public function getEnabledServices(): array
     {
         $enabled = [];
 
         $serviceMap = [
-        'domainDetection' => DomainDetectionService::class,
-        'robot' => RobotService::class,
-        'sitemap' => SitemapService::class,
-        'schema' => SchemaService::class,
-        'openGraph' => OpenGraphService::class,
-        'analytics' => AnalyticsService::class,
-        'hreflang' => HreflangService::class,
-        'injection' => InjectionService::class,
-        'health' => HealthService::class,
-        'performance' => PerformanceService::class
+            'domainDetection' => DomainDetectionService::class,
+            'robot' => RobotService::class,
+            'sitemap' => SitemapService::class,
+            'schema' => SchemaService::class,
+            'openGraph' => OpenGraphService::class,
+            'analytics' => AnalyticsService::class,
+            'hreflang' => HreflangService::class,
+            'injection' => InjectionService::class,
+            'health' => HealthService::class,
+            'performance' => PerformanceService::class
         ];
 
         foreach ($serviceMap as $key => $className) {
@@ -182,10 +182,10 @@ class ServiceManager
         return $enabled;
     }
 
-  /**
-   * Get domain configuration from domain detection service
-   * @return array<string, mixed>
-   */
+    /**
+     * Get domain configuration from domain detection service
+     * @return array<string, mixed>
+     */
     public function getDomainConfig(): array
     {
         return $this->getDomainDetectionService()->getDomainConfig();

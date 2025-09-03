@@ -126,9 +126,9 @@ class DomainDetectionService extends AbstractService
         ];
 
       // Add environment-specific tags
-        if ($env !== 'production') {
+        if (!$env->isProduction()) {
             $tags['robots'] = 'noindex,nofollow';
-            $tags['environment'] = $env;
+            $tags['environment'] = $env->value;
         }
 
         return $tags;

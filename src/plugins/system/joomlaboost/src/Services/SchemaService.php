@@ -84,8 +84,8 @@ class SchemaService extends AbstractService
         $schema[] = $this->generateOrganizationSchema();
 
       // Context-specific schemas
-        $option = Factory::getApplication()->input->get('option');
-        $view = Factory::getApplication()->input->get('view');
+    $option = Factory::getApplication()->getInput()->get('option');
+    $view = Factory::getApplication()->getInput()->get('view');
 
         if ($option === 'com_content') {
             switch ($view) {
@@ -192,7 +192,7 @@ class SchemaService extends AbstractService
    */
     private function generateArticleSchema(): ?array
     {
-        $id = Factory::getApplication()->input->getInt('id');
+    $id = Factory::getApplication()->getInput()->getInt('id');
 
         if (!$id) {
             return null;
@@ -257,7 +257,7 @@ class SchemaService extends AbstractService
    */
     private function generateCategorySchema(): ?array
     {
-        $input = Factory::getApplication()->input;
+    $input = Factory::getApplication()->getInput();
         $id = $input->getInt('id');
 
         if (!$id) {

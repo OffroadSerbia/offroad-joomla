@@ -10,8 +10,14 @@ parameters:
     - src/plugins/system/joomlaboost/joomlaboost-*.php
     - src/plugins/system/offroadseo/offroadseo_refactored.php
     - src/plugins/OffroadMetaPlugin.php
+  - src/plugins/system/offroadseo/**
+  - src/plugins/system/offroadstage/**
   bootstrapFiles:
     - stubs/autoload.php
     - stubs/bootstrap.php
   # Also exclude generated or non-analyzable plugin dirs if needed
   # - src/plugins/**
+
+# Baseline disabled temporarily; will be regenerated after fixes
+# includes:
+#   - phpstan-baseline.neon

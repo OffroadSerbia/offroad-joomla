@@ -27,6 +27,10 @@ namespace Joomla\CMS\Application {
         {
             return true;
         }
+        public function get($key, $default = null)
+        {
+            return $default;
+        }
         public function getMenu($c = null)
         {
             return new class {
@@ -63,6 +67,10 @@ namespace Joomla\CMS\Application {
                 {
                     return 0;
                 }
+                public function get($k)
+                {
+                    return null;
+                }
             };
         }
         public function getPathway()
@@ -73,6 +81,23 @@ namespace Joomla\CMS\Application {
                     return [];
                 }
             };
+        }
+        public function getDocument()
+        {
+            return new \Joomla\CMS\Document\HtmlDocument();
+        }
+        public function getConfig()
+        {
+            return new class {
+                public function get($k)
+                {
+                    return null;
+                }
+            };
+        }
+        public function getParams()
+        {
+            return new \Joomla\Registry\Registry();
         }
     }
 }
@@ -105,6 +130,10 @@ namespace Joomla\CMS\Document {
 namespace Joomla\CMS {
     class Factory
     {
+        public static function getApplication()
+        {
+            return new \Joomla\CMS\Application\CMSApplication();
+        }
         public static function getDocument()
         {
             return new \Joomla\CMS\Document\HtmlDocument();
@@ -185,6 +214,19 @@ namespace Joomla\CMS {
                 }
             };
         }
+        public static function getLanguage()
+        {
+            return new class {
+                public function getTag()
+                {
+                    return 'en-GB';
+                }
+            };
+        }
+        public static function getDate($time = 'now')
+        {
+            return new \Joomla\CMS\Date\Date($time);
+        }
     }
 }
 
@@ -205,6 +247,18 @@ namespace Joomla\CMS\Uri {
                 public function getHost()
                 {
                     return 'example.com';
+                }
+                public function getScheme()
+                {
+                    return 'https';
+                }
+                public function getPort()
+                {
+                    return 443;
+                }
+                public function toString()
+                {
+                    return 'https://example.com/';
                 }
             };
         }
@@ -264,6 +318,59 @@ namespace Joomla\CMS\Date {
         public function __construct($t = 'now', $tz = null)
         {
             parent::__construct(is_string($t) ? $t : 'now', $tz ?: new \DateTimeZone('UTC'));
+        }
+        public function toISO8601()
+        {
+            return $this->format(DATE_ATOM);
+        }
+    }
+}
+
+namespace {
+    class JLog
+    {
+        public const DEBUG = 100;
+        public static function add($message, $level = self::DEBUG, $category = 'default') {}
+    }
+}
+
+namespace Joomla\CMS\MVC\Model {
+    class BaseDatabaseModel
+    {
+        public static function addIncludePath($path) {}
+    }
+}
+
+namespace Joomla\Component\Content\Site\Model {
+    class ArticleModel
+    {
+        public function __construct($config = []) {}
+        public function setState($key, $value) {}
+        public function getItem($id)
+        {
+            return (object) [
+                'id' => $id,
+                'title' => 'Sample',
+                'introtext' => '',
+                'fulltext' => '',
+                'created' => 'now',
+                'modified' => 'now',
+                'metadesc' => '',
+                'metakey' => ''
+            ];
+        }
+    }
+    class CategoryModel
+    {
+        public function __construct($config = []) {}
+        public function getCategory($id)
+        {
+            return (object) [
+                'id' => $id,
+                'title' => 'Category',
+                'metadesc' => '',
+                'description' => ''
+            ];
         }
     }
 }
